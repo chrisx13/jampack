@@ -21,11 +21,12 @@ ALTER TABLE "SocieteRole"   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "TaxRate"        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Product"        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "NumberSequence" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Invoice"        ENABLE ROW LEVEL SECURITY;
 
 DO $$
 DECLARE t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['Societe','Establishment','Company','Contact','Opportunity','Activity','PipelineStage','Role','Membership','SocieteRole','TaxRate','Product','NumberSequence']
+  FOREACH t IN ARRAY ARRAY['Societe','Establishment','Company','Contact','Opportunity','Activity','PipelineStage','Role','Membership','SocieteRole','TaxRate','Product','NumberSequence','Invoice']
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS org_isolation ON %I;', t);
     EXECUTE format(

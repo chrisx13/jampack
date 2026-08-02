@@ -30,6 +30,7 @@ model Organization {
   taxRates        TaxRate[]
   products        Product[]
   numberSequences NumberSequence[]
+  invoices        Invoice[]
 }
 
 // ── Société gérée dans le compte (entité juridique : compta/factu séparées) ──
@@ -52,6 +53,7 @@ model Societe {
   establishments Establishment[]
   products        Product[]
   numberSequences NumberSequence[]
+  invoices        Invoice[]
   @@unique([organizationId, name])
   @@index([organizationId])
 }
@@ -128,6 +130,7 @@ model Company {
   contacts       Contact[]
   opportunities  Opportunity[]
   establishments Establishment[]
+  invoices       Invoice[]
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   createdById    String?
@@ -226,6 +229,7 @@ model Establishment {
   isBilling      Boolean      @default(false)
   isDelivery     Boolean      @default(false)
   contacts       Contact[]
+  invoices       Invoice[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   @@index([organizationId])
@@ -265,10 +269,51 @@ model Product {
   priceHt        Decimal      @db.Decimal(12, 2) @default(0)
   taxRate        TaxRate?     @relation(fields: [taxRateId], references: [id])
   taxRateId      String?
+  invoiceLines   InvoiceLine[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   @@index([organizationId])
   @@index([societeId])
+}
+
+// ── Facturation ──
+model Invoice {
+  id              String         @id @default(cuid())
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  organizationId  String
+  societe         Societe        @relation(fields: [societeId], references: [id])
+  societeId       String
+  company         Company        @relation(fields: [companyId], references: [id])
+  companyId       String
+  establishment   Establishment? @relation(fields: [establishmentId], references: [id])
+  establishmentId String?
+  number          String?        // null tant que brouillon ; attribué à la validation
+  status          String         @default("draft") // draft | validated | paid | cancelled
+  issueDate       DateTime?
+  dueDate         DateTime?
+  notes           String?
+  lines           InvoiceLine[]
+  createdById     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  @@unique([societeId, number])
+  @@index([organizationId])
+  @@index([societeId])
+  @@index([companyId])
+}
+
+model InvoiceLine {
+  id           String   @id @default(cuid())
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId    String
+  product      Product? @relation(fields: [productId], references: [id])
+  productId    String?
+  label        String
+  quantity     Decimal  @db.Decimal(12, 3) @default(1)
+  unitPriceHt  Decimal  @db.Decimal(12, 2) @default(0)
+  taxRatePct   Decimal  @db.Decimal(5, 2)  @default(0) // taux figé sur la ligne
+  position     Int      @default(0)
+  @@index([invoiceId])
 }
 
 // Numérotation des pièces (par société et par type de document)
