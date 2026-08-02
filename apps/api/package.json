@@ -1,0 +1,31 @@
+{
+  "name": "@jampack/api",
+  "version": "0.0.0",
+  "main": "./src/trpc/router.ts",
+  "types": "./src/trpc/router.ts",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@jampack/db": "workspace:*",
+    "@jampack/domain": "workspace:*",
+    "@nestjs/common": "^10.4.0",
+    "@nestjs/core": "^10.4.0",
+    "@nestjs/platform-express": "^10.4.0",
+    "@trpc/server": "^11.0.0",
+    "jose": "^5.9.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.0",
+    "superjson": "^2.2.1",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.4.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

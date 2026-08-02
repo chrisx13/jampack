@@ -1,0 +1,104 @@
+// ──────────────────────────────────────────────────────────────
+// JAMPACK — thème officiel (dérivé du template Jampack, Bootstrap 5)
+// Primaire teal #007D88 · DM Sans · item de menu actif teal 15 %
+// ──────────────────────────────────────────────────────────────
+
+// Palette source (template Jampack)
+$teal:    #007D88;
+$green:   #00D67F;
+$cyan:    #18DDEF;
+$red:     #FF0000;
+$yellow:  #FFC400;
+$black-2: #2F343A;
+
+// Overrides Bootstrap (doivent précéder l'import)
+$primary:   $teal;
+$success:   $green;
+$info:      $cyan;
+$warning:   $yellow;
+$danger:    $red;
+$body-color: $black-2;
+$font-family-sans-serif: 'DM Sans', system-ui, -apple-system, sans-serif;
+$border-radius:    .5rem;
+$border-radius-sm: .375rem;
+$border-radius-lg: .75rem;
+$card-border-color: rgba($black-2, .08);
+$card-cap-bg: transparent;
+$headings-font-weight: 600;
+
+@import "bootstrap/scss/bootstrap";
+
+// ── Variables de layout Jampack (hk-*) ──
+:root {
+  --hk-navbar-height: 65px;
+  --hk-menu-width: 270px;
+  --hk-menu-bg: #{$white};
+  --hk-menu-text: #{$black-2};
+  --hk-menu-border: #{rgba($black-2, .08)};
+  --hk-menu-item-active-bg: #{rgba($primary, .15)};
+  --hk-menu-item-active-text: #{$primary};
+}
+[data-bs-theme="dark"] {
+  --hk-menu-bg: #212529;
+  --hk-menu-text: #{$gray-300};
+  --hk-menu-border: #35393f;
+  --hk-menu-item-active-bg: #{rgba($primary, .22)};
+  --hk-menu-item-active-text: #{tint-color($primary, 35%)};
+}
+
+body { background: var(--bs-tertiary-bg); }
+
+// ── Navbar fixe ──
+.hk-navbar {
+  position: fixed; inset: 0 0 auto 0; z-index: 1030;
+  height: var(--hk-navbar-height);
+  display: flex; align-items: center; gap: .5rem;
+  padding: 0 1.25rem;
+  background: var(--hk-menu-bg);
+  border-bottom: 1px solid var(--hk-menu-border);
+}
+.hk-navbar .brand { font-weight: 700; font-size: 1.25rem; letter-spacing: -.02em; color: var(--bs-primary); }
+
+// ── Sidebar verticale ──
+.hk-menu {
+  position: fixed; top: var(--hk-navbar-height); bottom: 0; left: 0; z-index: 1029;
+  width: var(--hk-menu-width);
+  padding: 1rem .75rem;
+  overflow-y: auto;
+  background: var(--hk-menu-bg);
+  border-right: 1px solid var(--hk-menu-border);
+  transition: transform .2s ease;
+}
+.hk-menu .nav-header {
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--bs-secondary-color); padding: 1rem 1rem .35rem; font-weight: 600;
+}
+.hk-menu .nav-link {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .55rem .85rem; margin-bottom: .1rem;
+  border-radius: .5rem; font-weight: 500;
+  color: var(--hk-menu-text);
+}
+.hk-menu .nav-link i { font-size: 1.05rem; width: 1.25rem; text-align: center; }
+.hk-menu .nav-link:hover { background: rgba(var(--bs-primary-rgb), .07); color: var(--hk-menu-item-active-text); }
+.hk-menu .nav-link.active { background: var(--hk-menu-item-active-bg); color: var(--hk-menu-item-active-text); font-weight: 600; }
+
+// ── Zone de contenu ──
+.hk-pg-wrapper {
+  min-height: 100vh;
+  padding: calc(var(--hk-navbar-height) + 1.5rem) 1.5rem 2rem calc(var(--hk-menu-width) + 1.5rem);
+  transition: padding-left .2s ease;
+}
+.hk-wrapper.is-collapsed .hk-menu { transform: translateX(-100%); }
+.hk-wrapper.is-collapsed .hk-pg-wrapper { padding-left: 1.5rem; }
+
+// ── Bricoles ──
+.stat-icon { width: 46px; height: 46px; border-radius: .75rem; display: grid; place-items: center; font-size: 1.3rem; }
+.card { box-shadow: 0 .125rem .5rem rgba($black-2, .05); }
+.table > :not(caption) > * > * { padding: .75rem 1rem; }
+
+@media (max-width: 991.98px) {
+  .hk-menu { transform: translateX(-100%); }
+  .hk-wrapper.is-open .hk-menu { transform: none; }
+  .hk-pg-wrapper { padding-left: 1.5rem; }
+}

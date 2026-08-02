@@ -1,0 +1,67 @@
+# JAMPACK — stack complète en local : `docker compose up --build`
+# Web → http://localhost:5173 · API → http://localhost:3000/trpc · Keycloak → http://localhost:8080
+# Connexion démo : admin@demo.fr / admin  ·  compta@demo.fr / compta
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: jampack
+      POSTGRES_PASSWORD: jampack
+      POSTGRES_DB: jampack
+    ports:
+      - "5432:5432"
+    volumes:
+      - jampack_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jampack"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    ports:
+      - "8080:8080"
+
+  app:
+    build:
+      context: .
+      target: api
+    depends_on:
+      db:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    environment:
+      DB_HOST: db
+      DATABASE_URL_OWNER: postgresql://jampack:jampack@db:5432/jampack?schema=public
+      DATABASE_URL_APP: postgresql://jampack_app:jampack@db:5432/jampack?schema=public
+      APP_DB_PASSWORD: jampack
+      # Authentification OIDC (Keycloak). AUTH_DEV_STUB=false → jeton exigé.
+      AUTH_DEV_STUB: "false"
+      OIDC_ISSUER: http://localhost:8080/realms/jampack
+      OIDC_JWKS_URL: http://keycloak:8080/realms/jampack/protocol/openid-connect/certs
+      OIDC_AUDIENCE: jampack-web
+    ports:
+      - "3000:3000"
+
+  web:
+    build:
+      context: .
+      target: web
+      args:
+        VITE_OIDC_AUTHORITY: http://localhost:8080/realms/jampack
+        VITE_OIDC_CLIENT_ID: jampack-web
+    depends_on:
+      - app
+    ports:
+      - "5173:80"
+
+volumes:
+  jampack_pg:

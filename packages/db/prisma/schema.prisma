@@ -1,0 +1,289 @@
+// JAMPACK — socle IAM + CRM (Phase 0 / MVP)
+// Hiérarchie : Organization (= compte) ▸ Societe (entité juridique) ▸ données CRM
+// Rôles PAR SOCIÉTÉ et CUMULABLES : SocieteRole (userId × societeId × roleId, multiple).
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ── Compte (le tenant / l'abonnement) ──
+model Organization {
+  id             String          @id @default(cuid())
+  name           String
+  slug           String          @unique
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  memberships    Membership[]
+  roles          Role[]
+  societes       Societe[]
+  societeRoles   SocieteRole[]
+  companies      Company[]
+  contacts       Contact[]
+  opportunities  Opportunity[]
+  activities     Activity[]
+  pipelineStages PipelineStage[]
+  establishments Establishment[]
+  taxRates        TaxRate[]
+  products        Product[]
+  numberSequences NumberSequence[]
+}
+
+// ── Société gérée dans le compte (entité juridique : compta/factu séparées) ──
+model Societe {
+  id             String        @id @default(cuid())
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  name           String
+  siren          String?
+  siret          String?
+  tvaNumber      String?
+  city           String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  companies      Company[]
+  contacts       Contact[]
+  opportunities  Opportunity[]
+  activities     Activity[]
+  societeRoles   SocieteRole[]
+  establishments Establishment[]
+  products        Product[]
+  numberSequences NumberSequence[]
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  createdAt    DateTime      @default(now())
+  memberships  Membership[]
+  societeRoles SocieteRole[]
+}
+
+// ── Appartenance au compte (accès au tenant, sans rôle : les rôles sont par société) ──
+model Membership {
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  createdAt      DateTime     @default(now())
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+// ── Définition de rôle (réutilisable dans les sociétés du compte) ──
+model Role {
+  id             String        @id @default(cuid())
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  name           String
+  permissions    Permission[]
+  societeRoles   SocieteRole[]
+  @@unique([organizationId, name])
+}
+
+// ── Attribution d'un rôle à un utilisateur DANS une société (cumulable) ──
+model SocieteRole {
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  role           Role         @relation(fields: [roleId], references: [id])
+  roleId         String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  createdAt      DateTime     @default(now())
+  @@unique([userId, societeId, roleId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([societeId])
+}
+
+model Permission {
+  id      String @id @default(cuid())
+  action  String
+  subject String
+  roles   Role[]
+  @@unique([action, subject])
+}
+
+// ── CRM (rattaché à une Societe) ──
+model Company {
+  id             String        @id @default(cuid())
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe       @relation(fields: [societeId], references: [id])
+  societeId      String
+  name           String
+  siren          String?
+  isCustomer     Boolean       @default(true)
+  isSupplier     Boolean       @default(false)
+  contacts       Contact[]
+  opportunities  Opportunity[]
+  establishments Establishment[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  createdById    String?
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+model Contact {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  company         Company?       @relation(fields: [companyId], references: [id])
+  companyId       String?
+  establishment   Establishment? @relation(fields: [establishmentId], references: [id])
+  establishmentId String?
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  activities      Activity[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+model PipelineStage {
+  id             String        @id @default(cuid())
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  name           String
+  order          Int
+  opportunities  Opportunity[]
+  @@unique([organizationId, name])
+}
+
+model Opportunity {
+  id             String        @id @default(cuid())
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe       @relation(fields: [societeId], references: [id])
+  societeId      String
+  company        Company?      @relation(fields: [companyId], references: [id])
+  companyId      String?
+  title          String
+  amount         Decimal?      @db.Decimal(12, 2)
+  stage          PipelineStage @relation(fields: [stageId], references: [id])
+  stageId        String
+  activities     Activity[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+model Activity {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  type           String
+  content        String
+  dueAt          DateTime?
+  contact        Contact?     @relation(fields: [contactId], references: [id])
+  contactId      String?
+  opportunity    Opportunity? @relation(fields: [opportunityId], references: [id])
+  opportunityId  String?
+  createdAt      DateTime     @default(now())
+  createdById    String?
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+// ── Établissement d'un client (adresse ; siège / facturation / livraison) ──
+model Establishment {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  company        Company      @relation(fields: [companyId], references: [id])
+  companyId      String
+  name           String       // ex. Siège, Agence Lyon, Entrepôt
+  siret          String?      // 14 chiffres (propre à l'établissement)
+  addressLine1   String?
+  addressLine2   String?
+  postalCode     String?
+  city           String?
+  country        String       @default("France")
+  phone          String?
+  email          String?
+  isHeadquarters Boolean      @default(false)
+  isBilling      Boolean      @default(false)
+  isDelivery     Boolean      @default(false)
+  contacts       Contact[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
+  @@index([companyId])
+}
+
+// ── Référentiels ──
+
+// Taux de TVA (niveau compte, partagés par les sociétés)
+model TaxRate {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  name           String       // ex. "TVA 20 %"
+  rate           Decimal      @db.Decimal(5, 2) // 20.00
+  isDefault      Boolean      @default(false)
+  products       Product[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+// Articles & services (catalogue, par société)
+model Product {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  reference      String?      // SKU
+  name           String
+  description    String?
+  kind           String       @default("bien") // "bien" | "service"
+  unit           String       @default("unité")
+  priceHt        Decimal      @db.Decimal(12, 2) @default(0)
+  taxRate        TaxRate?     @relation(fields: [taxRateId], references: [id])
+  taxRateId      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+// Numérotation des pièces (par société et par type de document)
+model NumberSequence {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  docType        String       // "facture" | "devis" | "avoir" | "commande"
+  prefix         String       @default("")
+  nextValue      Int          @default(1)
+  padding        Int          @default(4)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@unique([societeId, docType])
+  @@index([organizationId])
+}

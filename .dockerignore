@@ -1,0 +1,9 @@
+**/node_modules
+node_modules
+**/dist
+.git
+.turbo
+apps/desktop/src-tauri/target
+_to_delete
+*.tgz
+*.docx

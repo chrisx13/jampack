@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.turbo/
+coverage/
+*.log
+.env
+.env.local
+apps/desktop/src-tauri/target/
+.DS_Store
+
+# Fichiers de travail Cowork (à ne pas versionner)
+_to_delete/
+*.tgz
+themeforest-*.zip
