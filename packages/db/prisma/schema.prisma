@@ -29,6 +29,7 @@ model Organization {
   establishments Establishment[]
   taxRates        TaxRate[]
   products        Product[]
+  productCategories ProductCategory[]
   numberSequences NumberSequence[]
   invoices        Invoice[]
 }
@@ -52,6 +53,7 @@ model Societe {
   societeRoles   SocieteRole[]
   establishments Establishment[]
   products        Product[]
+  productCategories ProductCategory[]
   numberSequences NumberSequence[]
   invoices        Invoice[]
   @@unique([organizationId, name])
@@ -269,11 +271,36 @@ model Product {
   priceHt        Decimal      @db.Decimal(12, 2) @default(0)
   taxRate        TaxRate?     @relation(fields: [taxRateId], references: [id])
   taxRateId      String?
+  category       ProductCategory? @relation(fields: [categoryId], references: [id])
+  categoryId     String?
   invoiceLines   InvoiceLine[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   @@index([organizationId])
   @@index([societeId])
+  @@index([categoryId])
+}
+
+// ── Catégories d'articles (référentiel par société, hiérarchie optionnelle) ──
+model ProductCategory {
+  id             String            @id @default(cuid())
+  organization   Organization      @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe           @relation(fields: [societeId], references: [id])
+  societeId      String
+  name           String
+  parent         ProductCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  parentId       String?
+  children       ProductCategory[] @relation("CategoryTree")
+  position       Int               @default(0)
+  isActive       Boolean           @default(true)
+  products       Product[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  @@unique([societeId, name])
+  @@index([organizationId])
+  @@index([societeId])
+  @@index([parentId])
 }
 
 // ── Facturation ──

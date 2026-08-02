@@ -37,6 +37,23 @@ export const taxRateUpdate = z.object({
 });
 export type TaxRateUpdate = z.infer<typeof taxRateUpdate>;
 
+// ── Référentiels : catégories d'articles ──
+export const productCategoryCreate = z.object({
+  name: z.string().min(1),
+  parentId: z.string().optional(),
+  position: z.number().int().optional(),
+});
+export type ProductCategoryCreate = z.infer<typeof productCategoryCreate>;
+
+export const productCategoryUpdate = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).optional(),
+  parentId: z.string().nullable().optional(),
+  position: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+});
+export type ProductCategoryUpdate = z.infer<typeof productCategoryUpdate>;
+
 // ── Référentiels : articles & services ──
 export const productCreate = z.object({
   name: z.string().min(1),
@@ -46,6 +63,7 @@ export const productCreate = z.object({
   unit: z.string().optional(),
   priceHt: z.number().nonnegative().optional(),
   taxRateId: z.string().optional(),
+  categoryId: z.string().optional(),
 });
 export type ProductCreate = z.infer<typeof productCreate>;
 
@@ -58,6 +76,7 @@ export const productUpdate = z.object({
   unit: z.string().optional(),
   priceHt: z.number().nonnegative().optional(),
   taxRateId: z.string().nullable().optional(),
+  categoryId: z.string().nullable().optional(),
 });
 export type ProductUpdate = z.infer<typeof productUpdate>;
 

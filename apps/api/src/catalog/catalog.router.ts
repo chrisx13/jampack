@@ -1,6 +1,10 @@
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { productCreate, productUpdate, taxRateCreate, taxRateUpdate, byId } from '@jampack/domain';
+import {
+  productCreate, productUpdate,
+  productCategoryCreate, productCategoryUpdate,
+  taxRateCreate, taxRateUpdate, byId,
+} from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
 const scope = (societeId: string | null) => (societeId ? { societeId } : {});
@@ -14,7 +18,11 @@ export const catalogRouter = router({
   products: router({
     list: authed('read', 'Product').query(({ ctx }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
-        tx.product.findMany({ where: scope(ctx.societeId), include: { taxRate: { select: { name: true, rate: true } } }, orderBy: { name: 'asc' } })
+        tx.product.findMany({
+          where: scope(ctx.societeId),
+          include: { taxRate: { select: { name: true, rate: true } }, category: { select: { id: true, name: true } } },
+          orderBy: { name: 'asc' },
+        })
       )
     ),
     create: authed('create', 'Product').input(productCreate).mutation(({ ctx, input }) => {
@@ -44,6 +52,33 @@ export const catalogRouter = router({
     }),
     remove: authed('manage', 'all').input(byId).mutation(({ ctx, input }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.taxRate.delete({ where: { id: input.id } }))
+    ),
+  }),
+
+  // ── Catégories d'articles (par société) ──
+  categories: router({
+    list: protectedProcedure.query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.productCategory.findMany({
+          where: scope(ctx.societeId),
+          include: { _count: { select: { products: true } } },
+          orderBy: [{ position: 'asc' }, { name: 'asc' }],
+        })
+      )
+    ),
+    create: authed('create', 'Product').input(productCategoryCreate).mutation(({ ctx, input }) => {
+      const societeId = requireSociete(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.productCategory.create({ data: { ...input, organizationId: ctx.user.organizationId, societeId } })
+      );
+    }),
+    update: authed('update', 'Product').input(productCategoryUpdate).mutation(({ ctx, input }) => {
+      const { id, ...data } = input;
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.productCategory.update({ where: { id }, data }));
+    }),
+    // Pas de suppression physique : on archive (actif → inactif).
+    archive: authed('update', 'Product').input(byId).mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.productCategory.update({ where: { id: input.id }, data: { isActive: false } }))
     ),
   }),
 

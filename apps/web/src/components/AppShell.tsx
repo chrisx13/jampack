@@ -98,6 +98,25 @@ export default function AppShell() {
     });
   };
 
+  // ── Gestion des onglets (menu contextuel type navigateur) ──
+  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+
+  // Ferme selon un prédicat « garder » — l'onglet épinglé est toujours conservé.
+  const applyClose = (keep: (id: string, idx: number, target: number) => boolean) => {
+    setOpenIds((prev) => {
+      const target = menu ? prev.indexOf(menu.id) : -1;
+      const next = prev.filter((id, idx) => id === DASHBOARD_VIEW.id || keep(id, idx, target));
+      if (!next.includes(activeId)) setActiveId(next[next.length - 1] ?? DASHBOARD_VIEW.id);
+      return next;
+    });
+    setMenu(null);
+  };
+  const closeThis = () => applyClose((id) => id !== menu?.id);
+  const closeOthers = () => applyClose((id) => id === menu?.id);
+  const closeLeft = () => applyClose((_id, idx, target) => idx >= target);
+  const closeRight = () => applyClose((_id, idx, target) => idx <= target);
+  const closeAll = () => applyClose(() => false);
+
   const toggleTheme = () => {
     const next = dark ? 'light' : 'dark';
     document.documentElement.setAttribute('data-bs-theme', next);
@@ -184,7 +203,13 @@ export default function AppShell() {
           if (!v) return null;
           const pinned = id === DASHBOARD_VIEW.id;
           return (
-            <div key={id} className={`hk-tab${activeId === id ? ' active' : ''}`} onClick={() => setActiveId(id)} title={v.label}>
+            <div
+              key={id}
+              className={`hk-tab${activeId === id ? ' active' : ''}`}
+              onClick={() => setActiveId(id)}
+              onContextMenu={(e) => { e.preventDefault(); setActiveId(id); setMenu({ id, x: e.clientX, y: e.clientY }); }}
+              title={v.label}
+            >
               <i className={`bi ${v.icon}`} />
               <span>{v.label}</span>
               {pinned ? (
@@ -211,6 +236,23 @@ export default function AppShell() {
           );
         })}
       </main>
+
+      {/* Menu contextuel des onglets (type navigateur), relatif à l'onglet ciblé */}
+      {menu && (
+        <>
+          <div className="hk-ctx-backdrop" onClick={() => setMenu(null)} onContextMenu={(e) => { e.preventDefault(); setMenu(null); }} />
+          <div className="hk-ctx" style={{ top: menu.y, left: menu.x }}>
+            {menu.id !== DASHBOARD_VIEW.id && (
+              <button className="hk-ctx-item" onClick={closeThis}><i className="bi bi-x-lg" />Fermer</button>
+            )}
+            <button className="hk-ctx-item" onClick={closeOthers}><i className="bi bi-x-circle" />Fermer les autres</button>
+            <button className="hk-ctx-item" onClick={closeLeft}><i className="bi bi-arrow-bar-left" />Fermer à gauche</button>
+            <button className="hk-ctx-item" onClick={closeRight}><i className="bi bi-arrow-bar-right" />Fermer à droite</button>
+            <div className="hk-ctx-sep" />
+            <button className="hk-ctx-item" onClick={closeAll}><i className="bi bi-x-octagon" />Tout fermer</button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

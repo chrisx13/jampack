@@ -149,15 +149,25 @@ async function main() {
     });
   }
 
+  // ── Référentiels : catégories d'articles (par société) ──
+  const ensureCategory = async (societeId: string, name: string) => {
+    const f = await prisma.productCategory.findFirst({ where: { societeId, name } });
+    return f ?? prisma.productCategory.create({ data: { organizationId: org.id, societeId, name } });
+  };
+  const catPains = await ensureCategory(boulangerie.id, 'Pains');
+  const catVienn = await ensureCategory(boulangerie.id, 'Viennoiseries');
+  const catDesign = await ensureCategory(studio.id, 'Design');
+  const catDev = await ensureCategory(studio.id, 'Développement');
+
   // ── Référentiels : articles & services (par société) ──
   const ensureProduct = async (societeId: string, name: string, data: Record<string, unknown>) => {
     const f = await prisma.product.findFirst({ where: { organizationId: org.id, societeId, name } });
     return f ?? prisma.product.create({ data: { organizationId: org.id, societeId, name, ...data } });
   };
-  await ensureProduct(boulangerie.id, 'Baguette tradition', { reference: 'PAIN-001', kind: 'bien', unit: 'pièce', priceHt: 1.1, taxRateId: tr['TVA 5,5 %'].id });
-  await ensureProduct(boulangerie.id, 'Croissant', { reference: 'VIEN-001', kind: 'bien', unit: 'pièce', priceHt: 1.2, taxRateId: tr['TVA 5,5 %'].id });
-  await ensureProduct(studio.id, 'Création logo', { reference: 'SRV-LOGO', kind: 'service', unit: 'forfait', priceHt: 900, taxRateId: tr['TVA 20 %'].id });
-  await ensureProduct(studio.id, 'Journée de développement', { reference: 'SRV-DEV', kind: 'service', unit: 'jour', priceHt: 650, taxRateId: tr['TVA 20 %'].id });
+  await ensureProduct(boulangerie.id, 'Baguette tradition', { reference: 'PAIN-001', kind: 'bien', unit: 'pièce', priceHt: 1.1, taxRateId: tr['TVA 5,5 %'].id, categoryId: catPains.id });
+  await ensureProduct(boulangerie.id, 'Croissant', { reference: 'VIEN-001', kind: 'bien', unit: 'pièce', priceHt: 1.2, taxRateId: tr['TVA 5,5 %'].id, categoryId: catVienn.id });
+  await ensureProduct(studio.id, 'Création logo', { reference: 'SRV-LOGO', kind: 'service', unit: 'forfait', priceHt: 900, taxRateId: tr['TVA 20 %'].id, categoryId: catDesign.id });
+  await ensureProduct(studio.id, 'Journée de développement', { reference: 'SRV-DEV', kind: 'service', unit: 'jour', priceHt: 650, taxRateId: tr['TVA 20 %'].id, categoryId: catDev.id });
 
   // ── Référentiels : numérotation des pièces (par société) ──
   const seqs: [string, string][] = [['facture', 'FA-'], ['devis', 'DE-'], ['avoir', 'AV-'], ['commande', 'CM-']];

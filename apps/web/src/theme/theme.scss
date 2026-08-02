@@ -195,3 +195,20 @@ body { background: var(--bs-tertiary-bg); }
   .hk-tabbar { left: var(--hk-activity-width); }
   .hk-content { padding-left: calc(var(--hk-activity-width) + 1rem); padding-right: 1rem; }
 }
+
+// Menu contextuel des onglets (type navigateur)
+.hk-ctx-backdrop { position: fixed; inset: 0; z-index: 1090; }
+.hk-ctx {
+  position: fixed; z-index: 1091; min-width: 190px;
+  background: var(--hk-menu-bg); border: 1px solid var(--hk-menu-border);
+  border-radius: .5rem; box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .18); padding: .35rem;
+}
+.hk-ctx-item {
+  display: flex; align-items: center; gap: .6rem; width: 100%;
+  border: 0; background: transparent; text-align: left;
+  padding: .45rem .6rem; border-radius: .375rem; font-size: .88rem; color: var(--bs-body-color);
+}
+.hk-ctx-item i { font-size: .95rem; width: 1.1rem; text-align: center; color: var(--bs-secondary-color); }
+.hk-ctx-item:hover { background: rgba(var(--bs-primary-rgb), .10); color: var(--bs-primary); }
+.hk-ctx-item:hover i { color: var(--bs-primary); }
+.hk-ctx-sep { height: 1px; background: var(--hk-menu-border); margin: .3rem .2rem; }
