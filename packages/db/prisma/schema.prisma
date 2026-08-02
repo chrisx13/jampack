@@ -17,6 +17,7 @@ model Organization {
   slug           String          @unique
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  theme          Json?           // Look & feel du compte (couleurs de marque)
   memberships    Membership[]
   roles          Role[]
   societes       Societe[]

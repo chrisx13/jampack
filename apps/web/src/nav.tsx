@@ -5,6 +5,7 @@ import Clients from './pages/Clients';
 import Contacts from './pages/Contacts';
 import Catalogue from './pages/Catalogue';
 import Settings from './pages/Settings';
+import Appearance from './pages/Appearance';
 import Placeholder from './pages/Placeholder';
 
 /**
@@ -58,6 +59,7 @@ export const DOMAINS: Domain[] = [
     icon: 'bi-gear-fill',
     views: [
       { id: 'settings', label: 'Paramètres', icon: 'bi-sliders', element: <Settings /> },
+      { id: 'appearance', label: 'Apparence', icon: 'bi-palette', element: <Appearance />, can: ['manage', 'all'] },
     ],
   },
 ];

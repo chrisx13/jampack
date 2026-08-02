@@ -37,6 +37,25 @@ export const taxRateUpdate = z.object({
 });
 export type TaxRateUpdate = z.infer<typeof taxRateUpdate>;
 
+// ── Look & feel (thème du compte) ──
+const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Couleur hexadécimale attendue (#RRGGBB)');
+export const themeColors = z.object({
+  primary: hex,
+  success: hex,
+  info: hex,
+  warning: hex,
+  danger: hex,
+});
+export type ThemeColors = z.infer<typeof themeColors>;
+
+export const DEFAULT_THEME: ThemeColors = {
+  primary: '#007D88',
+  success: '#00D67F',
+  info: '#18DDEF',
+  warning: '#FFC400',
+  danger: '#FF0000',
+};
+
 // ── Référentiels : catégories d'articles ──
 export const productCategoryCreate = z.object({
   name: z.string().min(1),

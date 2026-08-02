@@ -4,6 +4,7 @@ import { useAuth } from 'react-oidc-context';
 import { trpc } from '../trpc';
 import { activeSociete, ALL } from '../activeSociete';
 import { defineAbilityFor } from '@jampack/domain';
+import { applyTheme } from '../theme/applyTheme';
 import { DOMAINS, DASHBOARD_VIEW, type View } from '../nav';
 
 function SocieteSwitcher() {
@@ -50,6 +51,10 @@ export default function AppShell() {
   const auth = useAuth(); // undefined si OIDC désactivé (mode dev)
   const me = trpc.iam.me.useQuery();
   const ability = useMemo(() => defineAbilityFor(me.data?.permissions ?? []), [me.data]);
+
+  // Look & feel du compte : applique la charte (couleurs de marque) au chargement.
+  const theme = trpc.settings.getTheme.useQuery();
+  useEffect(() => { if (theme.data) applyTheme(theme.data); }, [theme.data]);
 
   // Grands domaines filtrés par les droits (une vue s'affiche si son droit est accordé).
   // On n'applique le filtre qu'une fois les droits chargés, sinon le domaine actif par
