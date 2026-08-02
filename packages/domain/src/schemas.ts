@@ -189,3 +189,52 @@ export const activityCreate = z.object({
   opportunityId: z.string().optional(),
 });
 export type ActivityCreate = z.infer<typeof activityCreate>;
+
+// ── Facturation ──
+export const invoiceLineInput = z.object({
+  productId: z.string().optional(),
+  label: z.string().min(1),
+  quantity: z.number().positive(),
+  unitPriceHt: z.number().nonnegative(),
+  taxRatePct: z.number().min(0).max(100),
+  position: z.number().int().optional(),
+});
+export type InvoiceLineInput = z.infer<typeof invoiceLineInput>;
+
+export const invoiceCreate = z.object({
+  companyId: z.string().min(1),
+  establishmentId: z.string().optional(),
+  issueDate: z.string().optional(),
+  dueDate: z.string().optional(),
+  notes: z.string().optional(),
+  lines: z.array(invoiceLineInput).default([]),
+});
+export type InvoiceCreate = z.infer<typeof invoiceCreate>;
+
+export const invoiceUpdate = z.object({
+  id: z.string().min(1),
+  companyId: z.string().optional(),
+  establishmentId: z.string().nullable().optional(),
+  issueDate: z.string().nullable().optional(),
+  dueDate: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  lines: z.array(invoiceLineInput).optional(),
+});
+export type InvoiceUpdate = z.infer<typeof invoiceUpdate>;
+
+/** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
+export function computeInvoiceTotals(
+  lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[]
+): { totalHt: number; totalTva: number; totalTtc: number } {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  let totalHt = 0;
+  let totalTva = 0;
+  for (const l of lines) {
+    const lineHt = r2(l.quantity * l.unitPriceHt);
+    totalHt += lineHt;
+    totalTva += r2(lineHt * (l.taxRatePct / 100));
+  }
+  totalHt = r2(totalHt);
+  totalTva = r2(totalTva);
+  return { totalHt, totalTva, totalTtc: r2(totalHt + totalTva) };
+}

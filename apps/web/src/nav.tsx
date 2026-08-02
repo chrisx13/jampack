@@ -4,6 +4,7 @@ import Pipeline from './pages/Pipeline';
 import Clients from './pages/Clients';
 import Contacts from './pages/Contacts';
 import Catalogue from './pages/Catalogue';
+import Factures from './pages/Factures';
 import Settings from './pages/Settings';
 import Appearance from './pages/Appearance';
 import Placeholder from './pages/Placeholder';
@@ -42,7 +43,7 @@ export const DOMAINS: Domain[] = [
     icon: 'bi-receipt',
     views: [
       { id: 'catalog', label: 'Catalogue', icon: 'bi-box-seam', element: <Catalogue />, can: ['read', 'Product'] },
-      { id: 'invoices', label: 'Factures', icon: 'bi-file-earmark-text', element: <Placeholder title="Factures" /> },
+      { id: 'invoices', label: 'Factures', icon: 'bi-file-earmark-text', element: <Factures />, can: ['read', 'Invoice'] },
     ],
   },
   {

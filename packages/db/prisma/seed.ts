@@ -29,6 +29,7 @@ async function main() {
     ['read', 'Contact'], ['create', 'Contact'], ['update', 'Contact'],
     ['read', 'Opportunity'], ['create', 'Opportunity'], ['update', 'Opportunity'],
     ['read', 'Product'], ['create', 'Product'], ['update', 'Product'],
+    ['read', 'Invoice'], ['create', 'Invoice'], ['update', 'Invoice'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -52,6 +53,7 @@ async function main() {
     'read:Contact', 'create:Contact', 'update:Contact',
     'read:Opportunity', 'create:Opportunity', 'update:Opportunity',
     'read:Product', 'create:Product', 'update:Product',
+    'read:Invoice', 'create:Invoice', 'update:Invoice',
   ]);
   const comptable = await role('Comptable', ['read:Company', 'read:Contact', 'read:Opportunity', 'read:Product']);
 
@@ -168,6 +170,23 @@ async function main() {
   await ensureProduct(boulangerie.id, 'Croissant', { reference: 'VIEN-001', kind: 'bien', unit: 'pièce', priceHt: 1.2, taxRateId: tr['TVA 5,5 %'].id, categoryId: catVienn.id });
   await ensureProduct(studio.id, 'Création logo', { reference: 'SRV-LOGO', kind: 'service', unit: 'forfait', priceHt: 900, taxRateId: tr['TVA 20 %'].id, categoryId: catDesign.id });
   await ensureProduct(studio.id, 'Journée de développement', { reference: 'SRV-DEV', kind: 'service', unit: 'jour', priceHt: 650, taxRateId: tr['TVA 20 %'].id, categoryId: catDev.id });
+
+  // ── Facture de démonstration (brouillon) ──
+  const existingInvoice = await prisma.invoice.findFirst({ where: { societeId: boulangerie.id } });
+  if (!existingInvoice) {
+    await prisma.invoice.create({
+      data: {
+        organizationId: org.id, societeId: boulangerie.id, companyId: c1.id, status: 'draft',
+        notes: 'Facture de démonstration',
+        lines: {
+          create: [
+            { label: 'Baguette tradition', quantity: 100, unitPriceHt: 1.1, taxRatePct: 5.5, position: 0 },
+            { label: 'Croissant', quantity: 50, unitPriceHt: 1.2, taxRatePct: 5.5, position: 1 },
+          ],
+        },
+      },
+    });
+  }
 
   // ── Référentiels : numérotation des pièces (par société) ──
   const seqs: [string, string][] = [['facture', 'FA-'], ['devis', 'DE-'], ['avoir', 'AV-'], ['commande', 'CM-']];
