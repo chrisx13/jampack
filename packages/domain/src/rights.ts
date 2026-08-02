@@ -26,6 +26,10 @@ export const RIGHTS_TREE: ModuleDef[] = [
     { key: 'numerotation', label: 'Numérotation', actions: ['voir', 'modifier'] },
     { key: 'modeles', label: 'Modèles de documents', actions: CRUD },
   ] },
+  { key: 'ia', label: 'Assistance IA', domaines: [
+    { key: 'assistant', label: 'Assistant IA', actions: ['utiliser'] },
+    { key: 'credits', label: 'Crédits IA', actions: ['voir', 'gerer'] },
+  ] },
   { key: 'crm', label: 'CRM', domaines: [
     { key: 'clients', label: 'Clients', actions: CRUD },
     { key: 'contacts', label: 'Contacts', actions: CRUD },
@@ -118,10 +122,10 @@ export function leavesByAction(action: Action, tree: ModuleDef[] = RIGHTS_TREE):
 /** Rôles prédéfinis (grants). Duplicables/personnalisables par compte. */
 export const PREDEFINED_ROLES: Record<string, string[]> = {
   Administrateur: ['*'],
-  Commercial: ['crm.*', 'catalogue.articles.voir', 'ventes.devis.*', 'ventes.factures.voir'],
-  Facturation: ['crm.clients.voir', 'catalogue.articles.voir', 'ventes.*'],
-  Stock: ['catalogue.articles.*', 'stock.*', 'achats.receptions.*'],
-  Comptable: ['compta.*', 'parametres.tva.voir',
+  Commercial: ['crm.*', 'catalogue.articles.voir', 'ventes.devis.*', 'ventes.factures.voir', 'ia.assistant.utiliser'],
+  Facturation: ['crm.clients.voir', 'catalogue.articles.voir', 'ventes.*', 'ia.assistant.utiliser'],
+  Stock: ['catalogue.articles.*', 'stock.*', 'achats.receptions.*', 'ia.assistant.utiliser'],
+  Comptable: ['compta.*', 'parametres.tva.voir', 'ia.assistant.utiliser',
     ...leavesByAction('voir').filter((l) => l.startsWith('ventes.') || l.startsWith('achats.'))],
   'Lecture seule': leavesByAction('voir'),
 };
