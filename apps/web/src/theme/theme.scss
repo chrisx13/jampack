@@ -31,6 +31,9 @@ $headings-font-weight: 600;
 // ── Variables de layout Jampack (hk-*) ──
 :root {
   --hk-navbar-height: 65px;
+  --hk-activity-width: 64px;
+  --hk-subnav-width: 244px;
+  --hk-tabbar-height: 44px;
   --hk-menu-width: 270px;
   --hk-menu-bg: #{$white};
   --hk-menu-text: #{$black-2};
@@ -101,4 +104,94 @@ body { background: var(--bs-tertiary-bg); }
   .hk-menu { transform: translateX(-100%); }
   .hk-wrapper.is-open .hk-menu { transform: none; }
   .hk-pg-wrapper { padding-left: 1.5rem; }
+}
+
+// ──────────────────────────────────────────────────────────────
+// Shell type VS Code : barre d'activité + panneau sous-domaines + onglets
+// ──────────────────────────────────────────────────────────────
+
+// Barre d'activité (grands domaines)
+.hk-activity {
+  position: fixed; top: var(--hk-navbar-height); bottom: 0; left: 0; z-index: 1028;
+  width: var(--hk-activity-width);
+  display: flex; flex-direction: column; align-items: center; gap: .15rem;
+  padding: .6rem 0;
+  background: var(--hk-menu-bg); border-right: 1px solid var(--hk-menu-border);
+}
+.hk-activity .act {
+  position: relative; width: 44px; height: 44px; border: 0; border-radius: .6rem;
+  display: grid; place-items: center; font-size: 1.25rem;
+  color: var(--bs-secondary-color); background: transparent;
+}
+.hk-activity .act:hover { background: rgba(var(--bs-primary-rgb), .08); color: var(--bs-primary); }
+.hk-activity .act.active { color: var(--bs-primary); background: rgba(var(--bs-primary-rgb), .10); }
+.hk-activity .act.active::before {
+  content: ''; position: absolute; left: -.6rem; top: 9px; bottom: 9px; width: 3px;
+  border-radius: 0 3px 3px 0; background: var(--bs-primary);
+}
+
+// Panneau secondaire (sous-domaines)
+.hk-subnav {
+  position: fixed; top: var(--hk-navbar-height); bottom: 0; left: var(--hk-activity-width); z-index: 1027;
+  width: var(--hk-subnav-width);
+  padding: .85rem .6rem; overflow-y: auto;
+  background: var(--hk-menu-bg); border-right: 1px solid var(--hk-menu-border);
+  transition: transform .2s ease;
+}
+.hk-subnav .subnav-title {
+  font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--bs-secondary-color); padding: .35rem .75rem 1rem;
+}
+.hk-subnav .nav-link {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .5rem .8rem; margin-bottom: .1rem; border-radius: .5rem;
+  font-weight: 500; color: var(--hk-menu-text); cursor: pointer;
+}
+.hk-subnav .nav-link i { font-size: 1.05rem; width: 1.2rem; text-align: center; }
+.hk-subnav .nav-link:hover { background: rgba(var(--bs-primary-rgb), .07); color: var(--hk-menu-item-active-text); }
+.hk-subnav .nav-link.active { background: var(--hk-menu-item-active-bg); color: var(--hk-menu-item-active-text); font-weight: 600; }
+
+// Barre d'onglets
+.hk-tabbar {
+  position: fixed; top: var(--hk-navbar-height); right: 0;
+  left: calc(var(--hk-activity-width) + var(--hk-subnav-width)); z-index: 1026;
+  height: var(--hk-tabbar-height);
+  display: flex; align-items: stretch; overflow-x: auto;
+  background: var(--bs-tertiary-bg); border-bottom: 1px solid var(--hk-menu-border);
+  transition: left .2s ease;
+}
+.hk-tab {
+  display: inline-flex; align-items: center; gap: .45rem; padding: 0 .8rem;
+  border: 0; border-right: 1px solid var(--hk-menu-border); background: transparent;
+  color: var(--bs-secondary-color); font-size: .88rem; white-space: nowrap; cursor: pointer;
+}
+.hk-tab i { font-size: .95rem; }
+.hk-tab:hover { background: rgba(var(--bs-primary-rgb), .06); }
+.hk-tab.active {
+  background: var(--hk-menu-bg); color: var(--bs-body-color); font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--bs-primary);
+}
+.hk-tab .tab-close {
+  border: 0; background: transparent; color: inherit; opacity: .55;
+  line-height: 1; padding: .05rem .15rem; border-radius: .3rem; margin-left: .15rem;
+}
+.hk-tab .tab-close:hover { opacity: 1; background: rgba(var(--bs-primary-rgb), .18); }
+
+// Zone de contenu
+.hk-content {
+  min-height: 100vh;
+  padding: calc(var(--hk-navbar-height) + var(--hk-tabbar-height) + 1.5rem) 1.5rem 2rem
+           calc(var(--hk-activity-width) + var(--hk-subnav-width) + 1.5rem);
+  transition: padding-left .2s ease;
+}
+
+// Panneau secondaire replié
+.hk-wrapper.subnav-collapsed .hk-subnav { transform: translateX(-100%); }
+.hk-wrapper.subnav-collapsed .hk-tabbar { left: var(--hk-activity-width); }
+.hk-wrapper.subnav-collapsed .hk-content { padding-left: calc(var(--hk-activity-width) + 1.5rem); }
+
+@media (max-width: 991.98px) {
+  .hk-subnav { transform: translateX(-100%); }
+  .hk-tabbar { left: var(--hk-activity-width); }
+  .hk-content { padding-left: calc(var(--hk-activity-width) + 1rem); padding-right: 1rem; }
 }
