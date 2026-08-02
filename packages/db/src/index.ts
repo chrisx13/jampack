@@ -8,12 +8,30 @@ export const prisma = new PrismaClient();
  * Exécute `fn` dans une transaction où le contexte tenant (RLS) est positionné.
  * La valeur est passée en paramètre lié (set_config) : pas d'injection SQL.
  */
-export async function withTenant<T>(
+export function withTenant<T>(
   organizationId: string,
   fn: (tx: PrismaClient) => Promise<T>
+): Promise<T>;
+export function withTenant<T>(
+  organizationId: string,
+  societeId: string | null,
+  fn: (tx: PrismaClient) => Promise<T>
+): Promise<T>;
+export function withTenant<T>(
+  organizationId: string,
+  arg2: (string | null) | ((tx: PrismaClient) => Promise<T>),
+  arg3?: (tx: PrismaClient) => Promise<T>
 ): Promise<T> {
+  const societeId = typeof arg2 === 'function' ? null : arg2;
+  const fn = (typeof arg2 === 'function' ? arg2 : arg3) as (tx: PrismaClient) => Promise<T>;
   return prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT set_config('app.current_org', ${organizationId}, true)`;
+    // Isolation SOCIÉTÉ (indépendance renforcée) : si une société active est fournie,
+    // la policy RLS restrictive `societe_isolation` limite l'accès à cette société.
+    // societeId null/absent = vue consolidée (toutes les sociétés du compte).
+    if (societeId != null && societeId !== '') {
+      await tx.$executeRaw`SELECT set_config('app.current_societe', ${societeId}, true)`;
+    }
     return fn(tx as unknown as PrismaClient);
   });
 }

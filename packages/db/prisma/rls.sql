@@ -1,6 +1,13 @@
 -- Isolation multi-tenant par Row-Level Security.
 -- A exécuter APRÈS `prisma migrate`.
+-- Deux niveaux d'isolation :
+--   * COMPTE  : policy permissive `org_isolation` sur "organizationId" = app.current_org.
+--   * SOCIÉTÉ : policy RESTRICTIVE `societe_isolation` sur "societeId" = app.current_societe
+--               (indépendance renforcée entre sociétés d'un même compte). Restrictive = ANDée
+--               avec org_isolation. app.current_societe absent/vide → vue consolidée (toutes
+--               les sociétés du compte, sous réserve de l'isolation compte).
 -- Chaque requête applicative positionne : SELECT set_config('app.current_org', '<id>', true);
+-- et, pour une société active : SELECT set_config('app.current_societe', '<id>', true);
 --
 -- IMPORTANT : le propriétaire des tables contourne le RLS. Pour une isolation réelle,
 -- l'application doit se connecter avec un rôle dédié NON-propriétaire, p. ex. :
@@ -31,6 +38,29 @@ BEGIN
     EXECUTE format('DROP POLICY IF EXISTS org_isolation ON %I;', t);
     EXECUTE format(
       'CREATE POLICY org_isolation ON %I USING ("organizationId" = current_setting(''app.current_org'', true)) WITH CHECK ("organizationId" = current_setting(''app.current_org'', true));',
+      t
+    );
+  END LOOP;
+END $$;
+
+-- Isolation SOCIÉTÉ : policies RESTRICTIVES sur les tables portant "societeId".
+-- (ANDées avec org_isolation.) NB : TaxRate, PipelineStage, Role, Membership, SocieteRole
+-- et Societe restent au niveau COMPTE (référentiels/annuaire mutualisés — choix « indépendance renforcée »).
+-- TODO Jalon A : ajouter "societeId" + RLS sur InvoiceLine (aujourd'hui joignable via Invoice).
+DO $$
+DECLARE t text;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['Establishment','Company','Contact','Opportunity','Activity','Product','NumberSequence','Invoice']
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS societe_isolation ON %I;', t);
+    EXECUTE format(
+      'CREATE POLICY societe_isolation ON %I AS RESTRICTIVE '
+      'USING (current_setting(''app.current_societe'', true) IS NULL '
+      '       OR current_setting(''app.current_societe'', true) = '''' '
+      '       OR "societeId" = current_setting(''app.current_societe'', true)) '
+      'WITH CHECK (current_setting(''app.current_societe'', true) IS NULL '
+      '       OR current_setting(''app.current_societe'', true) = '''' '
+      '       OR "societeId" = current_setting(''app.current_societe'', true));',
       t
     );
   END LOOP;
