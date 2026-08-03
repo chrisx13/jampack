@@ -15,6 +15,9 @@ import StockLevels from './pages/StockLevels';
 import StockValuation from './pages/StockValuation';
 import StockMovements from './pages/StockMovements';
 import Warehouses from './pages/Warehouses';
+import ChartOfAccounts from './pages/ChartOfAccounts';
+import JournalEntries from './pages/JournalEntries';
+import TrialBalance from './pages/TrialBalance';
 import Settings from './pages/Settings';
 import Appearance from './pages/Appearance';
 import SocieteSettings from './pages/SocieteSettings';
@@ -80,6 +83,16 @@ export const DOMAINS: Domain[] = [
       { id: 'stock-valuation', label: 'Valorisation', icon: 'bi-cash-stack', element: <StockValuation />, can: ['read', 'StockMovement'] },
       { id: 'stock-movements', label: 'Mouvements', icon: 'bi-arrow-left-right', element: <StockMovements />, can: ['read', 'StockMovement'] },
       { id: 'warehouses', label: 'Entrepôts', icon: 'bi-building', element: <Warehouses />, can: ['read', 'Warehouse'] },
+    ],
+  },
+  {
+    id: 'compta',
+    label: 'Comptabilité',
+    icon: 'bi-journal-bookmark-fill',
+    views: [
+      { id: 'chart-of-accounts', label: 'Plan comptable', icon: 'bi-list-ol', element: <ChartOfAccounts />, can: ['read', 'Accounting'] },
+      { id: 'journal-entries', label: 'Écritures', icon: 'bi-pencil-square', element: <JournalEntries />, can: ['read', 'Accounting'] },
+      { id: 'trial-balance', label: 'Balance', icon: 'bi-bar-chart-steps', element: <TrialBalance />, can: ['read', 'Accounting'] },
     ],
   },
   {

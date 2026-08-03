@@ -42,6 +42,9 @@ model Organization {
   stockMovements  StockMovement[]
   purchaseOrders  PurchaseOrder[]
   supplierInvoices SupplierInvoice[]
+  accounts        Account[]
+  journals        Journal[]
+  journalEntries  JournalEntry[]
 }
 
 // ── Société gérée dans le compte (entité juridique : compta/factu séparées) ──
@@ -89,6 +92,9 @@ model Societe {
   stockMovements  StockMovement[]
   purchaseOrders  PurchaseOrder[]
   supplierInvoices SupplierInvoice[]
+  accounts        Account[]
+  journals        Journal[]
+  journalEntries  JournalEntry[]
   @@unique([organizationId, name])
   @@index([organizationId])
 }
@@ -646,4 +652,73 @@ model NumberSequence {
   updatedAt      DateTime     @updatedAt
   @@unique([societeId, docType])
   @@index([organizationId])
+}
+
+// ── Comptabilité : plan comptable, journaux, écritures (par société) ──
+model Account {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  code           String       // n° de compte PCG (ex. 411000, 707000)
+  name           String
+  class          Int          // classe PCG (1..7), dérivée du 1er chiffre du code
+  isActive       Boolean      @default(true)
+  lines          JournalEntryLine[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@unique([societeId, code])
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+model Journal {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  code           String       // VT, AC, BQ, OD
+  name           String
+  type           String       // vente | achat | banque | od
+  entries        JournalEntry[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@unique([societeId, code])
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+model JournalEntry {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  journal        Journal      @relation(fields: [journalId], references: [id])
+  journalId      String
+  date           DateTime
+  reference      String?      // pièce liée (ex. n° de facture)
+  label          String
+  lines          JournalEntryLine[]
+  createdById    String?
+  createdAt      DateTime     @default(now())
+  @@index([organizationId])
+  @@index([societeId])
+  @@index([journalId])
+}
+
+model JournalEntryLine {
+  id        String       @id @default(cuid())
+  entry     JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  entryId   String
+  account   Account      @relation(fields: [accountId], references: [id])
+  accountId String
+  label     String?
+  debit     Decimal      @db.Decimal(14, 2) @default(0)
+  credit    Decimal      @db.Decimal(14, 2) @default(0)
+  position  Int          @default(0)
+  @@index([entryId])
+  @@index([accountId])
 }

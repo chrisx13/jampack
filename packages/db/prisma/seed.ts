@@ -48,6 +48,7 @@ async function main() {
     ['read', 'StockMovement'], ['create', 'StockMovement'], ['delete', 'StockMovement'],
     ['read', 'PurchaseOrder'], ['create', 'PurchaseOrder'], ['update', 'PurchaseOrder'],
     ['read', 'SupplierInvoice'], ['create', 'SupplierInvoice'], ['update', 'SupplierInvoice'],
+    ['read', 'Accounting'], ['create', 'Accounting'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -85,6 +86,7 @@ async function main() {
     'read:Quote', 'read:Invoice', 'read:CreditNote',
     'read:Payment', 'create:Payment', 'delete:Payment',
     'read:PurchaseOrder', 'read:SupplierInvoice', 'create:SupplierInvoice', 'update:SupplierInvoice',
+    'read:Accounting', 'create:Accounting',
   ]);
 
   // ── Utilisateurs ──
@@ -325,6 +327,32 @@ async function main() {
         },
       },
     });
+  }
+
+  // ── Comptabilité : plan comptable minimal + journaux (par société) ──
+  const PCG: [string, string][] = [
+    ['401000', 'Fournisseurs'], ['411000', 'Clients'], ['445660', 'TVA déductible'], ['445710', 'TVA collectée'],
+    ['512000', 'Banque'], ['530000', 'Caisse'], ['607000', 'Achats de marchandises'], ['627000', 'Services bancaires'],
+    ['707000', 'Ventes de marchandises'], ['706000', 'Prestations de services'],
+  ];
+  const JOURNALS: [string, string, string][] = [
+    ['VT', 'Ventes', 'vente'], ['AC', 'Achats', 'achat'], ['BQ', 'Banque', 'banque'], ['OD', 'Opérations diverses', 'od'],
+  ];
+  for (const s of [boulangerie, studio]) {
+    for (const [code, name] of PCG) {
+      await prisma.account.upsert({
+        where: { societeId_code: { societeId: s.id, code } },
+        update: {},
+        create: { organizationId: org.id, societeId: s.id, code, name, class: Number(code[0]) },
+      });
+    }
+    for (const [code, name, type] of JOURNALS) {
+      await prisma.journal.upsert({
+        where: { societeId_code: { societeId: s.id, code } },
+        update: {},
+        create: { organizationId: org.id, societeId: s.id, code, name, type },
+      });
+    }
   }
 
   console.log('Seed OK — compte=%s ; sociétés=[Boulangerie, Studio] ; users: admin@demo.fr (Admin+Comptable@Boulangerie, Commercial@Studio), compta@demo.fr (Comptable@Boulangerie)', org.name);

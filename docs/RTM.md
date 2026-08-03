@@ -59,6 +59,14 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-STK-4 | `stock.router.ts` (`valuation`), `StockMovement.unitCost` | e2e : PMP démo = 390 (225+165) | ✅ |
 | FR-STK-5 | inventaires / lots / seuils | — | ⏳ |
 
+## Comptabilité
+| Exigence | Code | Test / Preuve | État |
+|---|---|---|---|
+| FR-CPT-1 | `accounting.router.ts` (`accounts`, `journals`, `initPcg`) | seed : 10 comptes + 4 journaux/société | ✅ |
+| FR-CPT-2 | `accounting.entries.create` + refine Zod `journalEntryCreate` | e2e : écriture équilibrée OK, déséquilibrée **rejetée** | ✅ |
+| FR-CPT-3 | `accounting.balance` (groupBy) | e2e : 411 débit 120, D=C | ✅ |
+| FR-CPT-4/5/6 | auto-posting / TVA / FEC | — | ⏳ |
+
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |
 |---|---|---|---|

@@ -417,6 +417,54 @@ export const supplierInvoiceUpdate = z.object({
 });
 export type SupplierInvoiceUpdate = z.infer<typeof supplierInvoiceUpdate>;
 
+// ── Comptabilité : plan comptable, journaux, écritures ──
+export const JOURNAL_TYPES = ['vente', 'achat', 'banque', 'od'] as const;
+export type JournalType = (typeof JOURNAL_TYPES)[number];
+export const JOURNAL_TYPE_LABELS: Record<JournalType, string> = { vente: 'Ventes', achat: 'Achats', banque: 'Banque', od: 'Opérations diverses' };
+
+export const accountCreate = z.object({ code: z.string().min(1), name: z.string().min(1) });
+export const accountUpdate = z.object({ id: z.string().min(1), code: z.string().min(1).optional(), name: z.string().min(1).optional(), isActive: z.boolean().optional() });
+export type AccountCreate = z.infer<typeof accountCreate>;
+
+export const journalCreate = z.object({ code: z.string().min(1), name: z.string().min(1), type: z.enum(JOURNAL_TYPES) });
+export type JournalCreate = z.infer<typeof journalCreate>;
+
+export const journalEntryLineInput = z.object({
+  accountId: z.string().min(1),
+  label: z.string().optional(),
+  debit: z.number().nonnegative().default(0),
+  credit: z.number().nonnegative().default(0),
+});
+export const journalEntryCreate = z
+  .object({
+    journalId: z.string().min(1),
+    date: z.string(),
+    reference: z.string().optional(),
+    label: z.string().min(1),
+    lines: z.array(journalEntryLineInput).min(2),
+  })
+  .refine((e) => {
+    const d = e.lines.reduce((s, l) => s + (l.debit || 0), 0);
+    const c = e.lines.reduce((s, l) => s + (l.credit || 0), 0);
+    return Math.abs(d - c) < 0.005 && d > 0;
+  }, { message: "L'écriture doit être équilibrée (débit = crédit) et non nulle." });
+export type JournalEntryCreate = z.infer<typeof journalEntryCreate>;
+
+/** Plan comptable minimal (PCG) proposé par défaut à une société. */
+export const PCG_MINIMAL: { code: string; name: string }[] = [
+  { code: '401000', name: 'Fournisseurs' },
+  { code: '411000', name: 'Clients' },
+  { code: '445660', name: 'TVA déductible' },
+  { code: '445710', name: 'TVA collectée' },
+  { code: '512000', name: 'Banque' },
+  { code: '530000', name: 'Caisse' },
+  { code: '607000', name: 'Achats de marchandises' },
+  { code: '627000', name: 'Services bancaires' },
+  { code: '707000', name: 'Ventes de marchandises' },
+  { code: '706000', name: 'Prestations de services' },
+];
+
+
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
 export function computeInvoiceTotals(
   lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[]

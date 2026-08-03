@@ -1,0 +1,126 @@
+import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
+import { withTenant } from '@jampack/db';
+import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, byId, PCG_MINIMAL, JOURNAL_TYPES } from '@jampack/domain';
+import { router, protectedProcedure, authed } from '../trpc/trpc';
+
+const scope = (s: string | null) => (s ? { societeId: s } : {});
+function req(s: string | null): string {
+  if (!s) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Sélectionnez une société.' });
+  return s;
+}
+const n = (v: unknown) => Number(v as never);
+const classOf = (code: string) => Number(code[0]) || 0;
+
+const DEFAULT_JOURNALS: { code: string; name: string; type: (typeof JOURNAL_TYPES)[number] }[] = [
+  { code: 'VT', name: 'Ventes', type: 'vente' },
+  { code: 'AC', name: 'Achats', type: 'achat' },
+  { code: 'BQ', name: 'Banque', type: 'banque' },
+  { code: 'OD', name: 'Opérations diverses', type: 'od' },
+];
+
+export const accountingRouter = router({
+  // ── Plan comptable ──
+  accounts: router({
+    list: authed('read', 'Accounting').query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.account.findMany({ where: scope(ctx.societeId), orderBy: { code: 'asc' } }))
+    ),
+    create: authed('manage', 'all').input(accountCreate).mutation(({ ctx, input }) => {
+      const societeId = req(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.account.create({ data: { ...input, class: classOf(input.code), organizationId: ctx.user.organizationId, societeId } })
+      );
+    }),
+    update: authed('manage', 'all').input(accountUpdate).mutation(({ ctx, input }) => {
+      const { id, ...data } = input;
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.account.update({ where: { id }, data: { ...data, ...(data.code ? { class: classOf(data.code) } : {}) } })
+      );
+    }),
+    /** Amorce le plan comptable minimal (PCG) si la société n'en a pas encore. */
+    initPcg: authed('manage', 'all').mutation(({ ctx }) => {
+      const societeId = req(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const count = await tx.account.count({ where: scope(ctx.societeId) });
+        if (count > 0) return { created: 0 };
+        await tx.account.createMany({ data: PCG_MINIMAL.map((a) => ({ ...a, class: classOf(a.code), organizationId: ctx.user.organizationId, societeId })) });
+        return { created: PCG_MINIMAL.length };
+      });
+    }),
+  }),
+
+  // ── Journaux ──
+  journals: router({
+    list: authed('read', 'Accounting').query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.journal.findMany({ where: scope(ctx.societeId), orderBy: { code: 'asc' } }))
+    ),
+    create: authed('manage', 'all').input(journalCreate).mutation(({ ctx, input }) => {
+      const societeId = req(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.journal.create({ data: { ...input, organizationId: ctx.user.organizationId, societeId } }));
+    }),
+    initDefaults: authed('manage', 'all').mutation(({ ctx }) => {
+      const societeId = req(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const count = await tx.journal.count({ where: scope(ctx.societeId) });
+        if (count > 0) return { created: 0 };
+        await tx.journal.createMany({ data: DEFAULT_JOURNALS.map((j) => ({ ...j, organizationId: ctx.user.organizationId, societeId })) });
+        return { created: DEFAULT_JOURNALS.length };
+      });
+    }),
+  }),
+
+  // ── Écritures ──
+  entries: router({
+    list: authed('read', 'Accounting').input(z.object({ journalId: z.string().optional() }).optional()).query(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.journalEntry.findMany({
+          where: { ...scope(ctx.societeId), ...(input?.journalId ? { journalId: input.journalId } : {}) },
+          include: { journal: { select: { code: true } }, lines: { select: { debit: true, credit: true } } },
+          orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+          take: 200,
+        })
+      ).then((rows) =>
+        rows.map((r) => ({ id: r.id, date: r.date, reference: r.reference, label: r.label, journal: r.journal, total: Math.round(r.lines.reduce((s, l) => s + n(l.debit), 0) * 100) / 100 }))
+      )
+    ),
+    get: authed('read', 'Accounting').input(byId).query(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.journalEntry.findUniqueOrThrow({ where: { id: input.id }, include: { journal: true, lines: { include: { account: { select: { code: true, name: true } } }, orderBy: { position: 'asc' } } } })
+      )
+    ),
+    create: authed('create', 'Accounting').input(journalEntryCreate).mutation(({ ctx, input }) => {
+      const societeId = req(ctx.societeId);
+      const { lines, date, ...rest } = input;
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.journalEntry.create({
+          data: {
+            ...rest, organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id, date: new Date(date),
+            lines: { create: lines.map((l, i) => ({ accountId: l.accountId, label: l.label, debit: l.debit ?? 0, credit: l.credit ?? 0, position: i })) },
+          },
+          include: { lines: true },
+        })
+      );
+    }),
+    remove: authed('manage', 'all').input(byId).mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.journalEntry.delete({ where: { id: input.id } }))
+    ),
+  }),
+
+  /** Balance générale : total débit/crédit et solde par compte. */
+  balance: authed('read', 'Accounting').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const grouped = await tx.journalEntryLine.groupBy({ by: ['accountId'], where: { entry: { is: scope(ctx.societeId) } }, _sum: { debit: true, credit: true } });
+      if (grouped.length === 0) return { rows: [], totalDebit: 0, totalCredit: 0 };
+      const accounts = await tx.account.findMany({ where: scope(ctx.societeId), select: { id: true, code: true, name: true } });
+      const aById = new Map(accounts.map((a) => [a.id, a]));
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      const rows = grouped
+        .map((g) => {
+          const debit = n(g._sum.debit), credit = n(g._sum.credit);
+          return { accountId: g.accountId, code: aById.get(g.accountId)?.code ?? '—', name: aById.get(g.accountId)?.name ?? '—', debit: r2(debit), credit: r2(credit), solde: r2(debit - credit) };
+        })
+        .sort((a, b) => a.code.localeCompare(b.code));
+      return { rows, totalDebit: r2(rows.reduce((s, r) => s + r.debit, 0)), totalCredit: r2(rows.reduce((s, r) => s + r.credit, 0)) };
+    })
+  ),
+});

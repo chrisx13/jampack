@@ -134,9 +134,12 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 ### 3.7 Comptabilité (Jalon 4)
 | ID | Exigence | Prio | Statut |
 |---|---|---|---|
-| FR-CPT-1 | Écritures comptables générées depuis ventes/achats. | M | ⏳ |
-| FR-CPT-2 | TVA (CA3), journaux, lettrage, rapprochement bancaire. | M | ⏳ |
-| FR-CPT-3 | Export **FEC** conforme. | M | ⏳ |
+| FR-CPT-1 | **Plan comptable** (PCG) et **journaux** par société (init PCG minimal). | M | ✅ |
+| FR-CPT-2 | **Écritures** manuelles multi-lignes, contrôle d'**équilibre** (débit = crédit). | M | ✅ |
+| FR-CPT-3 | **Balance générale** (totaux/soldes par compte). | M | ✅ |
+| FR-CPT-4 | Écritures **générées automatiquement** depuis ventes/achats/règlements. | M | ⏳ |
+| FR-CPT-5 | TVA (CA3), lettrage, rapprochement bancaire. | M | ⏳ |
+| FR-CPT-6 | Export **FEC** conforme. | M | ⏳ |
 
 ### 3.8 Transverse
 | ID | Exigence | Prio | Statut |
