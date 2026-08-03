@@ -71,7 +71,8 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-CPT-4b | `accounting.postPayment` (BQ), `accounting.postSupplierInvoice` (AC) | e2e int : 512↔411 ; 607+44566↔401 équilibrées, idempotentes | ✅ |
 | FR-CPT-6 | `accounting.fec` (18 colonnes normées, tabulé) | e2e int : entête FEC + lignes 411000, filename .txt | ✅ |
 | FR-CPT-5 | `accounting.vatReturn` (44571 − 44566) | e2e int : Δ collectée +20 / déductible +40 | ✅ |
-| FR-CPT-5b | lettrage, rapprochement, clôture TVA | — | ⏳ |
+| FR-CPT-5b | `accounting.accountLines`/`letter`/`unletter`, `Lettrage.tsx` | e2e int : lettrage équilibré, rejet déséquilibre, délettrage | ✅ |
+| FR-CPT-5c | rapprochement bancaire, clôture TVA | — | ⏳ |
 
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |

@@ -743,6 +743,7 @@ model JournalEntryLine {
   label     String?
   debit     Decimal      @db.Decimal(14, 2) @default(0)
   credit    Decimal      @db.Decimal(14, 2) @default(0)
+  letter    String?      // code de lettrage (rapprochement débit/crédit)
   position  Int          @default(0)
   @@index([entryId])
   @@index([accountId])

@@ -11,6 +11,12 @@ function req(s: string | null): string {
 }
 const n = (v: unknown) => Number(v as never);
 const classOf = (code: string) => Number(code[0]) || 0;
+/** Code de lettrage à partir d'un index 0-based : 0→A, 25→Z, 26→AA… */
+function toLetters(idx: number): string {
+  let s = '', i = idx + 1;
+  while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); }
+  return s;
+}
 
 const DEFAULT_JOURNALS: { code: string; name: string; type: (typeof JOURNAL_TYPES)[number] }[] = [
   { code: 'VT', name: 'Ventes', type: 'vente' },
@@ -268,4 +274,38 @@ export const accountingRouter = router({
       return { collectee, deductible, aPayer: net >= 0 ? net : 0, creditTva: net < 0 ? -net : 0 };
     });
   }),
+
+  /** Lignes d'un compte (pour le lettrage) : date, pièce, débit/crédit, code de lettrage. */
+  accountLines: authed('read', 'Accounting').input(z.object({ accountId: z.string().min(1), onlyUnlettered: z.boolean().optional() })).query(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const lines = await tx.journalEntryLine.findMany({
+        where: { accountId: input.accountId, ...(input.onlyUnlettered ? { letter: null } : {}), entry: { is: scope(ctx.societeId) } },
+        include: { entry: { select: { date: true, reference: true, label: true } } },
+        orderBy: [{ entry: { date: 'asc' } }],
+      });
+      return lines.map((l) => ({ id: l.id, date: l.entry.date, reference: l.entry.reference, label: l.label ?? l.entry.label, debit: n(l.debit), credit: n(l.credit), letter: l.letter }));
+    })
+  ),
+
+  /** Lettre un ensemble de lignes équilibrées (même compte) : leur affecte un code de lettrage. */
+  letter: authed('manage', 'all').input(z.object({ lineIds: z.array(z.string().min(1)).min(2) })).mutation(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const lines = await tx.journalEntryLine.findMany({ where: { id: { in: input.lineIds } }, select: { id: true, accountId: true, debit: true, credit: true, entry: { select: { societeId: true } } } });
+      if (lines.length !== input.lineIds.length) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Lignes introuvables.' });
+      if (!lines.every((l) => l.entry.societeId === societeId)) throw new TRPCError({ code: 'FORBIDDEN', message: 'Lignes hors société.' });
+      if (new Set(lines.map((l) => l.accountId)).size !== 1) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Le lettrage porte sur un seul compte.' });
+      const debit = lines.reduce((s, l) => s + n(l.debit), 0), credit = lines.reduce((s, l) => s + n(l.credit), 0);
+      if (Math.abs(debit - credit) > 0.005) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Les lignes sélectionnées doivent s’équilibrer.' });
+      const distinct = await tx.journalEntryLine.findMany({ where: { letter: { not: null }, entry: { is: scope(ctx.societeId) } }, select: { letter: true }, distinct: ['letter'] });
+      const code = toLetters(distinct.length);
+      await tx.journalEntryLine.updateMany({ where: { id: { in: input.lineIds } }, data: { letter: code } });
+      return { letter: code };
+    });
+  }),
+
+  /** Délettre (retire un code de lettrage). */
+  unletter: authed('manage', 'all').input(z.object({ letter: z.string().min(1) })).mutation(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.journalEntryLine.updateMany({ where: { letter: input.letter, entry: { is: scope(ctx.societeId) } }, data: { letter: null } }))
+  ),
 });

@@ -166,3 +166,33 @@ describe('Analytics — synthèse financière', () => {
     expect(after.encoursClients - before.encoursClients).toBeCloseTo(120, 2);
   });
 });
+
+describe('Comptabilité — lettrage', () => {
+  it('lettre une facture et son règlement sur le compte client, puis délettre', async () => {
+    const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    // Montant distinctif (TTC 164,40) pour isoler les lignes.
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'L', quantity: 1, unitPriceHt: 137, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    await caller.accounting.postSalesInvoice({ id: inv.id });
+    const pay = await caller.payments.create({ invoiceId: inv.id, amount: 164.4, method: 'virement' });
+    await caller.accounting.postPayment({ id: pay.id });
+
+    const acc411 = (await C.prisma.account.findFirstOrThrow({ where: { societeId: C.soc.id, code: '411000' } })).id;
+    const lines = await caller.accounting.accountLines({ accountId: acc411, onlyUnlettered: true });
+    const debitLine = lines.find((l: { debit: number; letter: string | null }) => Math.abs(l.debit - 164.4) < 0.005 && !l.letter);
+    const creditLine = lines.find((l: { credit: number; letter: string | null }) => Math.abs(l.credit - 164.4) < 0.005 && !l.letter);
+    expect(debitLine && creditLine).toBeTruthy();
+
+    const res = await caller.accounting.letter({ lineIds: [debitLine.id, creditLine.id] });
+    expect(res.letter).toMatch(/^[A-Z]+$/);
+    const afterL = await caller.accounting.accountLines({ accountId: acc411 });
+    expect(afterL.find((l: { id: string }) => l.id === debitLine.id)?.letter).toBe(res.letter);
+
+    // Refuse un lettrage déséquilibré
+    await expect(caller.accounting.letter({ lineIds: [debitLine.id] })).rejects.toThrow();
+
+    await caller.accounting.unletter({ letter: res.letter });
+    const afterU = await caller.accounting.accountLines({ accountId: acc411 });
+    expect(afterU.find((l: { id: string }) => l.id === debitLine.id)?.letter).toBeNull();
+  });
+});
