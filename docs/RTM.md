@@ -68,7 +68,8 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-CPT-4 | `accounting.postSalesInvoice`, `Invoice.journalEntryId` | e2e : facture→écriture 411/707/44571 équilibrée, idempotent | ✅ |
 | FR-CPT-4b | `accounting.postPayment` (BQ), `accounting.postSupplierInvoice` (AC) | e2e int : 512↔411 ; 607+44566↔401 équilibrées, idempotentes | ✅ |
 | FR-CPT-6 | `accounting.fec` (18 colonnes normées, tabulé) | e2e int : entête FEC + lignes 411000, filename .txt | ✅ |
-| FR-CPT-5 | TVA (CA3), lettrage, rapprochement | — | ⏳ |
+| FR-CPT-5 | `accounting.vatReturn` (44571 − 44566) | e2e int : Δ collectée +20 / déductible +40 | ✅ |
+| FR-CPT-5b | lettrage, rapprochement, clôture TVA | — | ⏳ |
 
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |

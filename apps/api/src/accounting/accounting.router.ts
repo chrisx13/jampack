@@ -246,4 +246,26 @@ export const accountingRouter = router({
       return { filename: `${soc.siren ?? 'SIREN'}FEC${d(input?.to ? new Date(input.to) : null)}.txt`, content, entries: entries.length, lines: lineCount };
     });
   }),
+
+  /** Déclaration de TVA (CA3) : TVA collectée (44571) − TVA déductible (44566) sur la période. */
+  vatReturn: authed('read', 'Accounting').input(z.object({ from: z.string().optional(), to: z.string().optional() }).optional()).query(({ ctx, input }) => {
+    req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const dateFilter = input?.from || input?.to ? { date: { gte: input?.from ? new Date(input.from) : undefined, lte: input?.to ? new Date(input.to) : undefined } } : {};
+      const accs = await tx.account.findMany({ where: { ...scope(ctx.societeId), code: { in: ['445710', '445660'] } }, select: { id: true, code: true } });
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      const sumFor = async (code: string) => {
+        const a = accs.find((x) => x.code === code);
+        if (!a) return { debit: 0, credit: 0 };
+        const g = await tx.journalEntryLine.aggregate({ where: { accountId: a.id, entry: { is: { ...scope(ctx.societeId), ...dateFilter } } }, _sum: { debit: true, credit: true } });
+        return { debit: n(g._sum.debit), credit: n(g._sum.credit) };
+      };
+      const c = await sumFor('445710'); // collectée : au crédit
+      const d = await sumFor('445660'); // déductible : au débit
+      const collectee = r2(c.credit - c.debit);
+      const deductible = r2(d.debit - d.credit);
+      const net = r2(collectee - deductible);
+      return { collectee, deductible, aPayer: net >= 0 ? net : 0, creditTva: net < 0 ? -net : 0 };
+    });
+  }),
 });

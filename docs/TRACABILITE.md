@@ -124,7 +124,8 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **4 Compta** | Plan comptable + journaux + écritures équilibrées + balance | ✅ | `accounting.router.ts` (`accounts`/`journals`/`entries`/`balance`), contrôle débit=crédit |
 | **4 Compta** | **Comptabilisation auto** : ventes (411/707/44571), règlements (512/411), factures fournisseurs (607/44566/401) | ✅ | `accounting.postSalesInvoice`/`postPayment`/`postSupplierInvoice`, liens `journalEntryId` |
 | **4 Compta** | **Export FEC** (Fichier des Écritures Comptables, tabulé normé) | ✅ | `accounting.fec` — bouton « Exporter le FEC » (Balance) |
-| **4 Compta** | TVA/CA3, lettrage, rapprochement bancaire | ❌ | phase future |
+| **4 Compta** | **Déclaration de TVA (CA3)** | ✅ | `accounting.vatReturn` — collectée (44571) − déductible (44566) |
+| **4 Compta** | Lettrage, rapprochement bancaire, clôture TVA | ❌ | phase future |
 | **5** | Trésorerie & BI | ❌ | phase future |
 | transverse | Administration in-app (inviter users, gérer sociétés/rôles) | ⚠️ | lecture seule (`iam.members`) ; pas d'invitation ni d'édition de rôles |
 

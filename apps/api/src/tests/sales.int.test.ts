@@ -114,3 +114,28 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
     expect(fec.content).toContain('411000');
   });
 });
+
+describe('Comptabilité — déclaration de TVA (CA3)', () => {
+  it('collectée/déductible reflètent les comptabilisations (Δ +20 / +40)', async () => {
+    const before = await caller.accounting.vatReturn({});
+    // Vente : TVA 20 collectée
+    const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'V', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    await caller.accounting.postSalesInvoice({ id: inv.id });
+    // Achat : TVA 40 déductible
+    const sid = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isSupplier: true } })).id;
+    const si = await caller.supplierInvoices.create({ supplierId: sid, reference: '[INT] TVA', notes: '[INT]', lines: [{ label: 'A', quantity: 1, unitPriceHt: 200, taxRatePct: 20 }] });
+    await caller.supplierInvoices.validate({ id: si.id });
+    await caller.accounting.postSupplierInvoice({ id: si.id });
+
+    const after = await caller.accounting.vatReturn({});
+    expect(after.collectee - before.collectee).toBeCloseTo(20, 2);
+    expect(after.deductible - before.deductible).toBeCloseTo(40, 2);
+
+    // Nettoyage de la facture fournisseur + son écriture (hors périmètre de l'afterAll ventes).
+    const siRow = await C.prisma.supplierInvoice.findUniqueOrThrow({ where: { id: si.id } });
+    await C.prisma.supplierInvoice.delete({ where: { id: si.id } });
+    if (siRow.journalEntryId) await C.prisma.journalEntry.delete({ where: { id: siRow.journalEntryId } });
+  });
+});

@@ -96,7 +96,7 @@ Fait :
 - [x] **Règlements & échéancier** : encaissements rattachés aux factures, statut *payée* automatique, échéancier des factures non soldées.
 - [x] **Stock** (Jalon 3) : entrepôts, mouvements (entrée/sortie/ajustement), niveaux calculés, **valorisation PMP**.
 - [x] **Achats** (Jalon 3) : commandes fournisseurs (fournisseur = tiers `isSupplier`) → **réception** qui alimente automatiquement le stock ; **factures fournisseurs** + échéancier fournisseur (comptes à payer).
-- [x] **Comptabilité** (Jalon 4) : PCG + journaux, écritures équilibrées, balance, **comptabilisation auto** (ventes 411/707/44571, règlements 512/411, achats 607/44566/401) et **export FEC**.
+- [x] **Comptabilité** (Jalon 4) : PCG + journaux, écritures équilibrées, balance, **comptabilisation auto** (ventes 411/707/44571, règlements 512/411, achats 607/44566/401), **déclaration TVA (CA3)** et **export FEC**.
 - [x] Personnalisation du thème (couleurs de marque) au niveau du compte.
 
 En cours / à venir (Jalon 2 — Ventes) :

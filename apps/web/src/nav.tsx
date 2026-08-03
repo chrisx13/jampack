@@ -18,6 +18,7 @@ import Warehouses from './pages/Warehouses';
 import ChartOfAccounts from './pages/ChartOfAccounts';
 import JournalEntries from './pages/JournalEntries';
 import TrialBalance from './pages/TrialBalance';
+import VatReturn from './pages/VatReturn';
 import Settings from './pages/Settings';
 import Appearance from './pages/Appearance';
 import SocieteSettings from './pages/SocieteSettings';
@@ -93,6 +94,7 @@ export const DOMAINS: Domain[] = [
       { id: 'chart-of-accounts', label: 'Plan comptable', icon: 'bi-list-ol', element: <ChartOfAccounts />, can: ['read', 'Accounting'] },
       { id: 'journal-entries', label: 'Écritures', icon: 'bi-pencil-square', element: <JournalEntries />, can: ['read', 'Accounting'] },
       { id: 'trial-balance', label: 'Balance', icon: 'bi-bar-chart-steps', element: <TrialBalance />, can: ['read', 'Accounting'] },
+      { id: 'vat-return', label: 'Déclaration TVA', icon: 'bi-percent', element: <VatReturn />, can: ['read', 'Accounting'] },
     ],
   },
   {
