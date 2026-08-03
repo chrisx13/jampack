@@ -20,6 +20,35 @@ const lineData = (l: { productId?: string; label: string; quantity: number; unit
   position: l.position ?? i,
 });
 
+/**
+ * Résout l'affactureur / le compte bancaire / la condition de paiement d'une facture :
+ * - factor : imposé si le client l'exige (factorMandatory), sinon valeur fournie ou défaut du client ;
+ * - condition de paiement : valeur fournie, sinon spécifique au client, sinon défaut société ;
+ * - compte bancaire : valeur fournie, sinon compte par défaut de la société.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function resolveBilling(tx: any, societeId: string, companyId: string, input: { factorId?: string | null; bankAccountId?: string | null; paymentTermId?: string | null }) {
+  const company = await tx.company.findUniqueOrThrow({ where: { id: companyId }, select: { factorId: true, factorMandatory: true, paymentTermId: true } });
+  const [defTerm, defBank] = await Promise.all([
+    tx.paymentTerm.findFirst({ where: { societeId, isDefault: true, isActive: true }, select: { id: true } }),
+    tx.bankAccount.findFirst({ where: { societeId, isDefault: true, isActive: true }, select: { id: true } }),
+  ]);
+  const pick = (given: string | null | undefined, fallback: string | null) => (given !== undefined ? given : fallback);
+  const factorId = company.factorMandatory ? (company.factorId ?? null) : pick(input.factorId, company.factorId ?? null);
+  const paymentTermId = pick(input.paymentTermId, company.paymentTermId ?? defTerm?.id ?? null);
+  const bankAccountId = pick(input.bankAccountId, defBank?.id ?? null);
+  return { factorId, paymentTermId, bankAccountId };
+}
+
+const fullInclude = {
+  lines: { orderBy: { position: 'asc' as const } },
+  company: { select: { name: true } },
+  establishment: true,
+  factor: true,
+  bankAccount: true,
+  paymentTerm: true,
+};
+
 export const invoiceRouter = router({
   list: authed('read', 'Invoice').query(({ ctx }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
@@ -37,19 +66,15 @@ export const invoiceRouter = router({
   ),
 
   get: authed('read', 'Invoice').input(byId).query(({ ctx, input }) =>
-    withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
-      tx.invoice.findUniqueOrThrow({
-        where: { id: input.id },
-        include: { lines: { orderBy: { position: 'asc' } }, company: { select: { name: true } }, establishment: true },
-      })
-    )
+    withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: fullInclude }))
   ),
 
-  create: authed('create', 'Invoice').input(invoiceCreate).mutation(({ ctx, input }) => {
+  create: authed('create', 'Invoice').input(invoiceCreate).mutation(async ({ ctx, input }) => {
     const societeId = requireSociete(ctx.societeId);
-    const { lines, issueDate, dueDate, ...rest } = input;
-    return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
-      tx.invoice.create({
+    const { lines, issueDate, dueDate, factorId, bankAccountId, paymentTermId, ...rest } = input;
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const b = await resolveBilling(tx, societeId, rest.companyId, { factorId, bankAccountId, paymentTermId });
+      return tx.invoice.create({
         data: {
           ...rest,
           organizationId: ctx.user.organizationId,
@@ -57,19 +82,24 @@ export const invoiceRouter = router({
           createdById: ctx.user.id,
           issueDate: issueDate ? new Date(issueDate) : undefined,
           dueDate: dueDate ? new Date(dueDate) : undefined,
+          factorId: b.factorId,
+          bankAccountId: b.bankAccountId,
+          paymentTermId: b.paymentTermId,
           lines: { create: lines.map(lineData) },
         },
         include: { lines: true },
-      })
-    );
+      });
+    });
   }),
 
-  update: authed('update', 'Invoice').input(invoiceUpdate).mutation(({ ctx, input }) => {
-    const { id, lines, issueDate, dueDate, establishmentId, ...rest } = input;
+  update: authed('update', 'Invoice').input(invoiceUpdate).mutation(async ({ ctx, input }) => {
+    const { id, lines, issueDate, dueDate, establishmentId, factorId, bankAccountId, paymentTermId, ...rest } = input;
+    const societeId = requireSociete(ctx.societeId);
     return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
-      const inv = await tx.invoice.findUniqueOrThrow({ where: { id }, select: { status: true } });
-      if (inv.status !== 'draft') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Une facture validée n\'est plus modifiable.' });
+      const inv = await tx.invoice.findUniqueOrThrow({ where: { id }, select: { status: true, companyId: true } });
+      if (inv.status !== 'draft') throw new TRPCError({ code: 'BAD_REQUEST', message: "Une facture validée n'est plus modifiable." });
       if (lines) await tx.invoiceLine.deleteMany({ where: { invoiceId: id } });
+      const b = await resolveBilling(tx, societeId, rest.companyId ?? inv.companyId, { factorId, bankAccountId, paymentTermId });
       return tx.invoice.update({
         where: { id },
         data: {
@@ -77,6 +107,9 @@ export const invoiceRouter = router({
           ...(establishmentId !== undefined ? { establishmentId } : {}),
           ...(issueDate !== undefined ? { issueDate: issueDate ? new Date(issueDate) : null } : {}),
           ...(dueDate !== undefined ? { dueDate: dueDate ? new Date(dueDate) : null } : {}),
+          factorId: b.factorId,
+          bankAccountId: b.bankAccountId,
+          paymentTermId: b.paymentTermId,
           ...(lines ? { lines: { create: lines.map(lineData) } } : {}),
         },
         include: { lines: true },
@@ -84,37 +117,33 @@ export const invoiceRouter = router({
     });
   }),
 
-  /** Validation : attribue le numéro de façon atomique, fige le statut. */
+  /** Validation : numéro atomique, échéance calculée depuis la condition de paiement. */
   validate: authed('update', 'Invoice').input(byId).mutation(({ ctx, input }) => {
     const societeId = requireSociete(ctx.societeId);
     return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
-      const inv = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: { lines: true } });
+      const inv = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: { lines: true, paymentTerm: true } });
       if (inv.status !== 'draft') return inv;
       if (inv.lines.length === 0) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Ajoutez au moins une ligne avant de valider.' });
       const number = inv.number ?? (await nextDocumentNumber(tx, societeId, 'facture'));
+      const issue = inv.issueDate ?? new Date();
+      const due = inv.dueDate ?? (inv.paymentTerm ? new Date(issue.getTime() + inv.paymentTerm.days * 86400000) : null);
       return tx.invoice.update({
         where: { id: input.id },
-        data: { status: 'validated', number, issueDate: inv.issueDate ?? new Date() },
+        data: { status: 'validated', number, issueDate: issue, dueDate: due ?? undefined },
         include: { lines: true },
       });
     });
   }),
 
-  /** Pas de suppression physique : on annule (statut cancelled). */
   cancel: authed('update', 'Invoice').input(byId).mutation(({ ctx, input }) =>
-    withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
-      tx.invoice.update({ where: { id: input.id }, data: { status: 'cancelled' } })
-    )
+    withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.invoice.update({ where: { id: input.id }, data: { status: 'cancelled' } }))
   ),
 
   /** PDF de la facture (template HTML à champs de fusion → PDF via Chromium). */
   pdf: authed('read', 'Invoice').input(byId).mutation(async ({ ctx, input }) => {
     const societeId = requireSociete(ctx.societeId);
     const { html, filename } = await withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
-      const inv = await tx.invoice.findUniqueOrThrow({
-        where: { id: input.id },
-        include: { lines: { orderBy: { position: 'asc' } }, company: { select: { name: true } }, establishment: true },
-      });
+      const inv = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: fullInclude });
       const soc = await tx.societe.findUniqueOrThrow({ where: { id: societeId } });
       const totals = computeInvoiceTotals(inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
       return { html: renderInvoiceHtml(inv, soc, totals), filename: `${inv.number ?? 'brouillon'}.pdf` };

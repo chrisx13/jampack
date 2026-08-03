@@ -29,8 +29,6 @@ async function main() {
       legalForm: 'SARL', capital: '10 000 €', siren: '800123456', rcs: 'Lyon B 800 123 456', ape: '1071C',
       addressLine1: '12 rue de la République', postalCode: '69002', city: 'Lyon',
       phone: '04 78 00 00 00', email: 'contact@boulangerie-martin.fr', website: 'boulangerie-martin.fr',
-      iban: 'FR76 3000 4000 0100 0001 2345 678', bic: 'AGRIFRPPXXX',
-      paymentTerms: 'Paiement à 30 jours à réception de facture.',
       legalMentions: "Pénalités de retard : 3× le taux d'intérêt légal. Indemnité forfaitaire de recouvrement des frais : 40 €.",
     },
   });
@@ -184,6 +182,31 @@ async function main() {
   await ensureProduct(studio.id, 'Création logo', { reference: 'SRV-LOGO', kind: 'service', unit: 'forfait', priceHt: 900, taxRateId: tr['TVA 20 %'].id, categoryId: catDesign.id });
   await ensureProduct(studio.id, 'Journée de développement', { reference: 'SRV-DEV', kind: 'service', unit: 'jour', priceHt: 650, taxRateId: tr['TVA 20 %'].id, categoryId: catDev.id });
 
+  // ── Facturation : adresses, comptes bancaires, conditions de paiement, affactureurs (Boulangerie) ──
+  const first = async <T,>(p: Promise<T | null>, create: () => Promise<T>) => (await p) ?? (await create());
+  const bank = await first(
+    prisma.bankAccount.findFirst({ where: { societeId: boulangerie.id } }),
+    () => prisma.bankAccount.create({ data: { organizationId: org.id, societeId: boulangerie.id, label: 'Crédit Agricole', iban: 'FR76 3000 4000 0100 0001 2345 678', bic: 'AGRIFRPPXXX', isDefault: true } })
+  );
+  const term30 = await first(
+    prisma.paymentTerm.findFirst({ where: { societeId: boulangerie.id, label: '30 jours' } }),
+    () => prisma.paymentTerm.create({ data: { organizationId: org.id, societeId: boulangerie.id, label: '30 jours', days: 30, isDefault: true } })
+  );
+  await first(
+    prisma.paymentTerm.findFirst({ where: { societeId: boulangerie.id, label: 'Comptant' } }),
+    () => prisma.paymentTerm.create({ data: { organizationId: org.id, societeId: boulangerie.id, label: 'Comptant', days: 0 } })
+  );
+  const factor = await first(
+    prisma.factor.findFirst({ where: { societeId: boulangerie.id, name: 'BNP Factor' } }),
+    () => prisma.factor.create({ data: { organizationId: org.id, societeId: boulangerie.id, name: 'BNP Factor', iban: 'FR76 3000 1000 0400 0000 9999 111', bic: 'BNPAFRPPXXX' } })
+  );
+  await first(
+    prisma.societeAddress.findFirst({ where: { societeId: boulangerie.id } }),
+    () => prisma.societeAddress.create({ data: { organizationId: org.id, societeId: boulangerie.id, label: 'Siège', addressLine1: '12 rue de la République', postalCode: '69002', city: 'Lyon', isHeadquarters: true, isBilling: true, isDefault: true } })
+  );
+  // Client Fournil Central : condition par défaut + affactureur OBLIGATOIRE
+  await prisma.company.update({ where: { id: c1.id }, data: { paymentTermId: term30.id, factorId: factor.id, factorMandatory: true } });
+
   // ── Facture de démonstration (brouillon) ──
   const existingInvoice = await prisma.invoice.findFirst({ where: { societeId: boulangerie.id } });
   if (!existingInvoice) {
@@ -191,6 +214,7 @@ async function main() {
       data: {
         organizationId: org.id, societeId: boulangerie.id, companyId: c1.id, status: 'draft',
         notes: 'Facture de démonstration',
+        factorId: factor.id, bankAccountId: bank.id, paymentTermId: term30.id,
         lines: {
           create: [
             { label: 'Baguette tradition', quantity: 100, unitPriceHt: 1.1, taxRatePct: 5.5, position: 0 },

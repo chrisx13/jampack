@@ -7,6 +7,9 @@ type Invoice = {
   notes: string | null;
   company: { name: string } | null;
   establishment: { name?: string | null; addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
+  factor?: { name: string; iban?: string | null } | null;
+  bankAccount?: { iban: string; bic?: string | null } | null;
+  paymentTerm?: { label: string } | null;
   lines: Line[];
 };
 type Societe = Record<string, unknown> & { name: string };
@@ -34,8 +37,8 @@ export function renderInvoiceHtml(inv: Invoice, soc: Societe, totals: Totals): s
     s(soc, 'ape') && `APE ${s(soc, 'ape')}`,
   ].filter(Boolean).join(' · ');
 
-  const subrogation = soc.subrogation && s(soc, 'factorName')
-    ? `<div class="subro"><strong>Subrogation — affacturage.</strong> Le règlement de cette facture doit être effectué à <strong>${esc(s(soc, 'factorName'))}</strong>${s(soc, 'factorIban') ? `, IBAN <strong>${esc(s(soc, 'factorIban'))}</strong>` : ''}, subrogé dans nos droits, à qui vous devez payer valablement.</div>`
+  const subrogation = inv.factor
+    ? `<div class="subro"><strong>Subrogation — affacturage.</strong> Le règlement de cette facture doit être effectué à <strong>${esc(inv.factor.name)}</strong>${inv.factor.iban ? `, IBAN <strong>${esc(inv.factor.iban)}</strong>` : ''}, subrogé dans nos droits, à qui vous devez payer valablement.</div>`
     : '';
 
   const rows = inv.lines.map((l) => {
@@ -112,8 +115,8 @@ export function renderInvoiceHtml(inv: Invoice, soc: Societe, totals: Totals): s
   ${subrogation}
 
   <div class="pay">
-    ${s(soc, 'paymentTerms') ? `<div><strong>Conditions de paiement :</strong> ${esc(s(soc, 'paymentTerms'))}</div>` : ''}
-    ${s(soc, 'iban') ? `<div class="muted">IBAN ${esc(s(soc, 'iban'))}${s(soc, 'bic') ? ` · BIC ${esc(s(soc, 'bic'))}` : ''}</div>` : ''}
+    ${inv.paymentTerm ? `<div><strong>Conditions de paiement :</strong> ${esc(inv.paymentTerm.label)}</div>` : ''}
+    ${inv.bankAccount ? `<div class="muted">IBAN ${esc(inv.bankAccount.iban)}${inv.bankAccount.bic ? ` · BIC ${esc(inv.bankAccount.bic)}` : ''}</div>` : ''}
     ${inv.notes ? `<div class="muted" style="margin-top:6px">${esc(inv.notes)}</div>` : ''}
     ${s(soc, 'legalMentions') ? `<div class="muted" style="margin-top:6px">${esc(s(soc, 'legalMentions'))}</div>` : ''}
   </div>

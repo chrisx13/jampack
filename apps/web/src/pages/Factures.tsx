@@ -28,6 +28,9 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
   const products = trpc.catalog.products.list.useQuery();
   const taxRates = trpc.catalog.taxRates.list.useQuery();
   const existing = trpc.invoices.get.useQuery({ id: id as string }, { enabled: id !== 'new' });
+  const paymentTerms = trpc.billing.paymentTerms.list.useQuery();
+  const bankAccounts = trpc.billing.bankAccounts.list.useQuery();
+  const factors = trpc.billing.factors.list.useQuery();
 
   const [companyId, setCompanyId] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -35,6 +38,9 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
   const [lines, setLines] = useState<Line[]>([]);
   const [status, setStatus] = useState('draft');
   const [number, setNumber] = useState<string | null>(null);
+  const [paymentTermId, setPaymentTermId] = useState('');
+  const [bankAccountId, setBankAccountId] = useState('');
+  const [factorId, setFactorId] = useState('');
 
   useEffect(() => {
     const inv = existing.data;
@@ -45,6 +51,9 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
     setStatus(inv.status);
     setNumber(inv.number ?? null);
     setLines(inv.lines.map((l) => ({ productId: l.productId ?? undefined, label: l.label, quantity: num(l.quantity), unitPriceHt: num(l.unitPriceHt), taxRatePct: num(l.taxRatePct) })));
+    setPaymentTermId(inv.paymentTermId ?? '');
+    setBankAccountId(inv.bankAccountId ?? '');
+    setFactorId(inv.factorId ?? '');
   }, [existing.data]);
 
   const create = trpc.invoices.create.useMutation();
@@ -53,6 +62,17 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
   const busy = create.isPending || update.isPending || validate.isPending;
   const readOnly = status !== 'draft';
   const pdf = useInvoicePdf();
+
+  const company = companies.data?.find((c) => c.id === companyId);
+  const factorForced = !!(company?.factorMandatory && company?.factorId);
+  const onClient = (cid: string) => {
+    setCompanyId(cid);
+    const c = companies.data?.find((x) => x.id === cid);
+    if (!c) return;
+    setFactorId(c.factorId ?? '');
+    setPaymentTermId(c.paymentTermId ?? (paymentTerms.data?.find((t) => t.isDefault)?.id ?? ''));
+    setBankAccountId(bankAccounts.data?.find((b) => b.isDefault)?.id ?? '');
+  };
 
   const totals = useMemo(() => computeInvoiceTotals(lines), [lines]);
 
@@ -70,6 +90,9 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
     companyId,
     dueDate: dueDate || undefined,
     notes: notes || undefined,
+    factorId: factorForced ? (company?.factorId ?? null) : (factorId || null),
+    bankAccountId: bankAccountId || null,
+    paymentTermId: paymentTermId || null,
     lines: lines.map((l, i) => ({ productId: l.productId, label: l.label || 'Ligne', quantity: l.quantity, unitPriceHt: l.unitPriceHt, taxRatePct: l.taxRatePct, position: i })),
   });
   const persist = async () => {
@@ -112,7 +135,7 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
           <div className="row g-3">
             <div className="col-md-6">
               <Form.Label>Client</Form.Label>
-              <Form.Select value={companyId} onChange={(e) => setCompanyId(e.target.value)} disabled={readOnly}>
+              <Form.Select value={companyId} onChange={(e) => onClient(e.target.value)} disabled={readOnly}>
                 <option value="">— Sélectionner —</option>
                 {companies.data?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Form.Select>
@@ -120,6 +143,30 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
             <div className="col-md-3">
               <Form.Label>Échéance</Form.Label>
               <Form.Control type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} disabled={readOnly} />
+            </div>
+          </div>
+          <div className="row g-3 mt-1">
+            <div className="col-md-4">
+              <Form.Label>Condition de paiement</Form.Label>
+              <Form.Select value={paymentTermId} onChange={(e) => setPaymentTermId(e.target.value)} disabled={readOnly}>
+                <option value="">— Aucune —</option>
+                {(paymentTerms.data ?? []).filter((t) => t.isActive).map((t) => <option key={t.id} value={t.id}>{t.label} ({t.days} j)</option>)}
+              </Form.Select>
+            </div>
+            <div className="col-md-4">
+              <Form.Label>Compte bancaire</Form.Label>
+              <Form.Select value={bankAccountId} onChange={(e) => setBankAccountId(e.target.value)} disabled={readOnly}>
+                <option value="">— Aucun —</option>
+                {(bankAccounts.data ?? []).filter((b) => b.isActive).map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
+              </Form.Select>
+            </div>
+            <div className="col-md-4">
+              <Form.Label>Affactureur (subrogation)</Form.Label>
+              <Form.Select value={factorForced ? (company?.factorId ?? '') : factorId} onChange={(e) => setFactorId(e.target.value)} disabled={readOnly || factorForced}>
+                <option value="">— Aucun —</option>
+                {(factors.data ?? []).filter((f) => f.isActive).map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </Form.Select>
+              {factorForced && <div className="text-secondary small mt-1"><i className="bi bi-lock me-1" />Imposé par le client</div>}
             </div>
           </div>
         </Card.Body>

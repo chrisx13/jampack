@@ -9,6 +9,9 @@ export const companyCreate = z.object({
   siren: z.string().optional(),
   isCustomer: z.boolean().optional(),
   isSupplier: z.boolean().optional(),
+  factorId: z.string().optional(),
+  factorMandatory: z.boolean().optional(),
+  paymentTermId: z.string().optional(),
 });
 export type CompanyCreate = z.infer<typeof companyCreate>;
 
@@ -18,6 +21,9 @@ export const companyUpdate = z.object({
   siren: z.string().nullable().optional(),
   isCustomer: z.boolean().optional(),
   isSupplier: z.boolean().optional(),
+  factorId: z.string().nullable().optional(),
+  factorMandatory: z.boolean().optional(),
+  paymentTermId: z.string().nullable().optional(),
 });
 export type CompanyUpdate = z.infer<typeof companyUpdate>;
 
@@ -198,11 +204,37 @@ export const societeSettingsUpdate = z.object({
   legalForm: optStr, capital: optStr, rcs: optStr, ape: optStr,
   addressLine1: optStr, addressLine2: optStr, postalCode: optStr, city: optStr,
   phone: optStr, email: optStr, website: optStr, logoUrl: optStr,
-  iban: optStr, bic: optStr,
-  paymentTerms: optStr, legalMentions: optStr, cgv: optStr,
-  factorName: optStr, factorIban: optStr, subrogation: z.boolean().optional(),
+  legalMentions: optStr, cgv: optStr,
 });
 export type SocieteSettingsUpdate = z.infer<typeof societeSettingsUpdate>;
+
+// ── Adresses de la société (plusieurs) ──
+export const societeAddressCreate = z.object({
+  label: z.string().min(1),
+  addressLine1: z.string().optional(), addressLine2: z.string().optional(),
+  postalCode: z.string().optional(), city: z.string().optional(), country: z.string().optional(),
+  isHeadquarters: z.boolean().optional(), isBilling: z.boolean().optional(), isDefault: z.boolean().optional(),
+});
+export const societeAddressUpdate = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1).optional(),
+  addressLine1: optStr, addressLine2: optStr, postalCode: optStr, city: optStr, country: optStr,
+  isHeadquarters: z.boolean().optional(), isBilling: z.boolean().optional(), isDefault: z.boolean().optional(), isActive: z.boolean().optional(),
+});
+export type SocieteAddressCreate = z.infer<typeof societeAddressCreate>;
+
+// ── Facturation : affactureurs / comptes bancaires / conditions de paiement ──
+export const factorCreate = z.object({ name: z.string().min(1), iban: z.string().optional(), bic: z.string().optional() });
+export const factorUpdate = z.object({ id: z.string().min(1), name: z.string().min(1).optional(), iban: optStr, bic: optStr, isActive: z.boolean().optional() });
+export type FactorCreate = z.infer<typeof factorCreate>;
+
+export const bankAccountCreate = z.object({ label: z.string().min(1), iban: z.string().min(1), bic: z.string().optional(), isDefault: z.boolean().optional() });
+export const bankAccountUpdate = z.object({ id: z.string().min(1), label: z.string().min(1).optional(), iban: z.string().min(1).optional(), bic: optStr, isDefault: z.boolean().optional(), isActive: z.boolean().optional() });
+export type BankAccountCreate = z.infer<typeof bankAccountCreate>;
+
+export const paymentTermCreate = z.object({ label: z.string().min(1), days: z.number().int().min(0).optional(), isDefault: z.boolean().optional() });
+export const paymentTermUpdate = z.object({ id: z.string().min(1), label: z.string().min(1).optional(), days: z.number().int().min(0).optional(), isDefault: z.boolean().optional(), isActive: z.boolean().optional() });
+export type PaymentTermCreate = z.infer<typeof paymentTermCreate>;
 
 // ── Facturation ──
 export const invoiceLineInput = z.object({
@@ -221,6 +253,9 @@ export const invoiceCreate = z.object({
   issueDate: z.string().optional(),
   dueDate: z.string().optional(),
   notes: z.string().optional(),
+  factorId: z.string().nullable().optional(),
+  bankAccountId: z.string().nullable().optional(),
+  paymentTermId: z.string().nullable().optional(),
   lines: z.array(invoiceLineInput).default([]),
 });
 export type InvoiceCreate = z.infer<typeof invoiceCreate>;
@@ -232,6 +267,9 @@ export const invoiceUpdate = z.object({
   issueDate: z.string().nullable().optional(),
   dueDate: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
+  factorId: z.string().nullable().optional(),
+  bankAccountId: z.string().nullable().optional(),
+  paymentTermId: z.string().nullable().optional(),
   lines: z.array(invoiceLineInput).optional(),
 });
 export type InvoiceUpdate = z.infer<typeof invoiceUpdate>;

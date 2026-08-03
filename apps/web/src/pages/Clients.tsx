@@ -5,6 +5,7 @@ import { useCan } from '../ability';
 
 type Company = {
   id: string; name: string; siren: string | null;
+  factorId?: string | null; factorMandatory?: boolean; paymentTermId?: string | null;
   societe?: { name: string } | null;
   _count?: { establishments: number; contacts: number };
 };
@@ -96,23 +97,26 @@ function EstablishmentsModal({ company, onClose }: { company: Company; onClose: 
 export default function Clients() {
   const utils = trpc.useUtils();
   const list = trpc.crm.companies.list.useQuery();
+  const factors = trpc.billing.factors.list.useQuery();
+  const paymentTerms = trpc.billing.paymentTerms.list.useQuery();
   const can = useCan();
 
   const [edit, setEdit] = useState<null | Partial<Company>>(null);
   const [del, setDel] = useState<Company | null>(null);
   const [estab, setEstab] = useState<Company | null>(null);
-  const [form, setForm] = useState({ name: '', siren: '' });
+  const [form, setForm] = useState({ name: '', siren: '', factorId: '', factorMandatory: false, paymentTermId: '' });
 
   const invalidate = () => utils.crm.companies.list.invalidate();
   const create = trpc.crm.companies.create.useMutation({ onSuccess: () => { invalidate(); setEdit(null); } });
   const update = trpc.crm.companies.update.useMutation({ onSuccess: () => { invalidate(); setEdit(null); } });
   const remove = trpc.crm.companies.remove.useMutation({ onSuccess: () => { invalidate(); setDel(null); } });
 
-  const open = (row?: Company) => { setForm({ name: row?.name ?? '', siren: row?.siren ?? '' }); setEdit(row ?? {}); };
+  const open = (row?: Company) => { setForm({ name: row?.name ?? '', siren: row?.siren ?? '', factorId: row?.factorId ?? '', factorMandatory: !!row?.factorMandatory, paymentTermId: row?.paymentTermId ?? '' }); setEdit(row ?? {}); };
   const submit = () => {
     if (!form.name.trim()) return;
-    if (edit && 'id' in edit && edit.id) update.mutate({ id: edit.id, name: form.name.trim(), siren: form.siren || null });
-    else create.mutate({ name: form.name.trim(), siren: form.siren || undefined });
+    const billing = { factorMandatory: form.factorMandatory };
+    if (edit && 'id' in edit && edit.id) update.mutate({ id: edit.id, name: form.name.trim(), siren: form.siren || null, factorId: form.factorId || null, paymentTermId: form.paymentTermId || null, ...billing });
+    else create.mutate({ name: form.name.trim(), siren: form.siren || undefined, factorId: form.factorId || undefined, paymentTermId: form.paymentTermId || undefined, ...billing });
   };
   const busy = create.isPending || update.isPending;
 
@@ -156,7 +160,22 @@ export default function Clients() {
         <Modal.Header closeButton><Modal.Title>{edit && 'id' in edit ? 'Modifier le client' : 'Nouveau client'}</Modal.Title></Modal.Header>
         <Modal.Body>
           <Form.Group className="mb-3"><Form.Label>Nom</Form.Label><Form.Control autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Form.Group>
-          <Form.Group><Form.Label>SIREN</Form.Label><Form.Control value={form.siren} onChange={(e) => setForm({ ...form, siren: e.target.value })} placeholder="9 chiffres" /></Form.Group>
+          <Form.Group className="mb-3"><Form.Label>SIREN</Form.Label><Form.Control value={form.siren} onChange={(e) => setForm({ ...form, siren: e.target.value })} placeholder="9 chiffres" /></Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Condition de paiement (défaut pour ce client)</Form.Label>
+            <Form.Select value={form.paymentTermId} onChange={(e) => setForm({ ...form, paymentTermId: e.target.value })}>
+              <option value="">— Défaut société —</option>
+              {(paymentTerms.data ?? []).filter((t) => t.isActive).map((t) => <option key={t.id} value={t.id}>{t.label} ({t.days} j)</option>)}
+            </Form.Select>
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Affactureur (subrogation)</Form.Label>
+            <Form.Select value={form.factorId} onChange={(e) => setForm({ ...form, factorId: e.target.value, factorMandatory: e.target.value ? form.factorMandatory : false })}>
+              <option value="">— Aucun —</option>
+              {(factors.data ?? []).filter((f) => f.isActive).map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+            </Form.Select>
+          </Form.Group>
+          <Form.Check type="switch" id="factorMandatory" label="Subrogation obligatoire pour ce client" checked={form.factorMandatory} disabled={!form.factorId} onChange={(e) => setForm({ ...form, factorMandatory: e.target.checked })} />
           {(create.error || update.error) && <div className="text-danger small mt-2">{(create.error || update.error)?.message}</div>}
         </Modal.Body>
         <Modal.Footer>

@@ -22,8 +22,8 @@ export default function SocieteSettings() {
   const val = (k: string) => (form[k] == null ? '' : String(form[k]));
 
   const submit = () => {
-    const keys = ['name', 'legalForm', 'capital', 'siren', 'siret', 'tvaNumber', 'rcs', 'ape', 'addressLine1', 'addressLine2', 'postalCode', 'city', 'phone', 'email', 'website', 'logoUrl', 'iban', 'bic', 'paymentTerms', 'legalMentions', 'cgv', 'factorName', 'factorIban'];
-    const payload: Settings = { subrogation: !!form.subrogation };
+    const keys = ['name', 'legalForm', 'capital', 'siren', 'siret', 'tvaNumber', 'rcs', 'ape', 'addressLine1', 'addressLine2', 'postalCode', 'city', 'phone', 'email', 'website', 'logoUrl', 'legalMentions', 'cgv'];
+    const payload: Settings = {};
     for (const k of keys) payload[k] = (form[k] as string) ?? '';
     save.mutate(payload as never);
   };
@@ -68,20 +68,13 @@ export default function SocieteSettings() {
         </Col>
 
         <Col lg={6}>
-          <Card className="mb-3"><Card.Header className="fw-semibold">Coordonnées bancaires</Card.Header><Card.Body>
-            <Row><Col md={7}><Text k="iban" label="IBAN" /></Col><Col md={5}><Text k="bic" label="BIC" /></Col></Row>
-          </Card.Body></Card>
-
-          <Card className="mb-3"><Card.Header className="fw-semibold">Paiement & mentions</Card.Header><Card.Body>
-            <Text k="paymentTerms" label="Conditions & échéances de paiement" as="textarea" />
+          <Card className="mb-3"><Card.Header className="fw-semibold">Mentions légales</Card.Header><Card.Body>
             <Text k="legalMentions" label="Mentions légales / pénalités de retard" as="textarea" />
             <Text k="cgv" label="CGV (référence ou texte)" as="textarea" />
           </Card.Body></Card>
-
-          <Card><Card.Header className="fw-semibold">Affacturage (subrogation)</Card.Header><Card.Body>
-            <Form.Check type="switch" id="subro" label="Activer la mention de subrogation sur les factures" checked={!!form.subrogation} onChange={(e) => set('subrogation', e.target.checked)} disabled={!editable} className="mb-3" />
-            <Row><Col md={6}><Text k="factorName" label="Affactureur (factor)" /></Col><Col md={6}><Text k="factorIban" label="IBAN du factor" /></Col></Row>
-          </Card.Body></Card>
+          <Alert variant="light" className="border small mb-0">
+            Les <strong>comptes bancaires</strong>, <strong>conditions de paiement</strong>, <strong>affactureurs</strong> et <strong>adresses</strong> (multiples) se gèrent dans <strong>Administration ▸ Facturation</strong>.
+          </Alert>
         </Col>
       </Row>
       {save.error && <div className="text-danger small mt-2">{save.error.message}</div>}

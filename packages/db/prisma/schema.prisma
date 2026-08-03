@@ -31,6 +31,10 @@ model Organization {
   taxRates        TaxRate[]
   products        Product[]
   productCategories ProductCategory[]
+  societeAddresses  SocieteAddress[]
+  factors           Factor[]
+  bankAccounts      BankAccount[]
+  paymentTerms      PaymentTerm[]
   numberSequences NumberSequence[]
   invoices        Invoice[]
 }
@@ -57,14 +61,8 @@ model Societe {
   email          String?
   website        String?
   logoUrl        String?   // URL ou data: URL du logo
-  iban           String?
-  bic            String?
-  paymentTerms   String?   // conditions & échéances de paiement (texte)
   legalMentions  String?   // mentions légales / pénalités de retard
   cgv            String?   // conditions générales de vente
-  factorName     String?   // affactureur (subrogation)
-  factorIban     String?
-  subrogation    Boolean   @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   companies      Company[]
@@ -75,6 +73,10 @@ model Societe {
   establishments Establishment[]
   products        Product[]
   productCategories ProductCategory[]
+  societeAddresses  SocieteAddress[]
+  factors           Factor[]
+  bankAccounts      BankAccount[]
+  paymentTerms      PaymentTerm[]
   numberSequences NumberSequence[]
   invoices        Invoice[]
   @@unique([organizationId, name])
@@ -154,11 +156,17 @@ model Company {
   opportunities  Opportunity[]
   establishments Establishment[]
   invoices       Invoice[]
+  factor          Factor?      @relation(fields: [factorId], references: [id])
+  factorId        String?
+  factorMandatory Boolean      @default(false)
+  paymentTerm     PaymentTerm? @relation(fields: [paymentTermId], references: [id])
+  paymentTermId   String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   createdById    String?
   @@index([organizationId])
   @@index([societeId])
+  @@index([factorId])
 }
 
 model Contact {
@@ -324,6 +332,86 @@ model ProductCategory {
   @@index([parentId])
 }
 
+// ── Adresses de la société — plusieurs par société (siège, facturation…) ──
+model SocieteAddress {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  label          String       // ex. "Siège", "Facturation"
+  addressLine1   String?
+  addressLine2   String?
+  postalCode     String?
+  city           String?
+  country        String?
+  isHeadquarters Boolean      @default(false)
+  isBilling      Boolean      @default(false)
+  isDefault      Boolean      @default(false)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+// ── Affactureurs (subrogation) — plusieurs par société ──
+model Factor {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  name           String
+  iban           String?
+  bic            String?
+  isActive       Boolean      @default(true)
+  companies      Company[]
+  invoices       Invoice[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+// ── Coordonnées bancaires — plusieurs par société ──
+model BankAccount {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  label          String       // ex. "Compte courant", "Crédit Agricole"
+  iban           String
+  bic            String?
+  isDefault      Boolean      @default(false)
+  isActive       Boolean      @default(true)
+  invoices       Invoice[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
+}
+
+// ── Conditions de paiement — plusieurs par société ──
+model PaymentTerm {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  label          String       // ex. "30 jours", "Comptant"
+  days           Int          @default(30) // délai d'échéance en jours
+  isDefault      Boolean      @default(false)
+  isActive       Boolean      @default(true)
+  companies      Company[]
+  invoices       Invoice[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
+}
+
 // ── Facturation ──
 model Invoice {
   id              String         @id @default(cuid())
@@ -335,6 +423,12 @@ model Invoice {
   companyId       String
   establishment   Establishment? @relation(fields: [establishmentId], references: [id])
   establishmentId String?
+  factor          Factor?        @relation(fields: [factorId], references: [id])
+  factorId        String?
+  bankAccount     BankAccount?   @relation(fields: [bankAccountId], references: [id])
+  bankAccountId   String?
+  paymentTerm     PaymentTerm?   @relation(fields: [paymentTermId], references: [id])
+  paymentTermId   String?
   number          String?        // null tant que brouillon ; attribué à la validation
   status          String         @default("draft") // draft | validated | paid | cancelled
   issueDate       DateTime?
