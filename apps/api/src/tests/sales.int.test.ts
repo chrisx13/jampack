@@ -13,8 +13,11 @@ afterAll(async () => {
   // Pièces dérivées (avoirs générés depuis une facture [INT]) : leurs notes ne contiennent pas [INT].
   const derived = await prisma.invoice.findMany({ where: { sourceId: { in: base.map((i) => i.id) } }, select: { id: true, journalEntryId: true } });
   const all = [...base, ...derived];
-  const entryIds = all.map((i) => i.journalEntryId).filter((x): x is string => !!x);
-  await prisma.invoice.deleteMany({ where: { id: { in: all.map((i) => i.id) } } }); // cascade payments + lignes
+  const invIds = all.map((i) => i.id);
+  // Écritures liées : comptabilisation des factures + des règlements (avant suppression des factures).
+  const pays = await prisma.payment.findMany({ where: { invoiceId: { in: invIds }, journalEntryId: { not: null } }, select: { journalEntryId: true } });
+  const entryIds = [...all.map((i) => i.journalEntryId), ...pays.map((p) => p.journalEntryId)].filter((x): x is string => !!x);
+  await prisma.invoice.deleteMany({ where: { id: { in: invIds } } }); // cascade payments + lignes
   await prisma.journalEntry.deleteMany({ where: { id: { in: entryIds } } }); // cascade lignes d'écriture
   await prisma.numberSequence.updateMany({ where: { societeId: soc.id, docType: { in: ['devis', 'facture', 'avoir'] } }, data: { nextValue: 1 } });
 });
@@ -84,5 +87,18 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
     const r2 = await caller.accounting.postSalesInvoice({ id: inv.id });
     expect(r2.alreadyPosted).toBe(true);
     expect(r2.id).toBe(r.id);
+  });
+
+  it('comptabilisation d’un règlement : journal banque 512 débit = 411 crédit', async () => {
+    const companyId = await anyCustomer();
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'Z', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    const pay = await caller.payments.create({ invoiceId: inv.id, amount: 120, method: 'virement' });
+    const r = await caller.accounting.postPayment({ id: pay.id });
+    expect(r.alreadyPosted).toBe(false);
+    const entry = await C.prisma.journalEntry.findUniqueOrThrow({ where: { id: r.id }, include: { lines: { include: { account: true } } } });
+    expect(N(entry.lines.find((l) => l.account.code === '512000')!.debit)).toBeCloseTo(120, 2);
+    expect(N(entry.lines.find((l) => l.account.code === '411000')!.credit)).toBeCloseTo(120, 2);
+    expect((await caller.accounting.postPayment({ id: pay.id })).alreadyPosted).toBe(true);
   });
 });

@@ -317,6 +317,7 @@ function PaymentsCard({ invoiceId, totalTtc }: { invoiceId: string; totalTtc: nu
   const list = trpc.payments.listForInvoice.useQuery({ invoiceId });
   const create = trpc.payments.create.useMutation();
   const remove = trpc.payments.remove.useMutation();
+  const postPay = trpc.accounting.postPayment.useMutation();
 
   const paid = (list.data ?? []).reduce((s, p) => s + num(p.amount), 0);
   const remaining = Math.round((totalTtc - paid) * 100) / 100;
@@ -339,6 +340,7 @@ function PaymentsCard({ invoiceId, totalTtc }: { invoiceId: string; totalTtc: nu
     setReference(''); refresh();
   };
   const del = async (id: string) => { await remove.mutateAsync({ id }); refresh(); };
+  const post = async (id: string) => { await postPay.mutateAsync({ id }); utils.payments.listForInvoice.invalidate({ invoiceId }); utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate(); };
 
   return (
     <Card className="mt-3">
@@ -359,8 +361,11 @@ function PaymentsCard({ invoiceId, totalTtc }: { invoiceId: string; totalTtc: nu
                 <td>{PAYMENT_METHOD_LABELS[p.method as PaymentMethod] ?? p.method}</td>
                 <td className="text-secondary">{p.reference}</td>
                 <td className="text-end fw-medium">{euro.format(num(p.amount))}</td>
-                <td className="text-end" style={{ width: 40 }}>
-                  {can('delete', 'Payment') && <Button variant="light" size="sm" className="text-danger" onClick={() => del(p.id)}><i className="bi bi-trash" /></Button>}
+                <td className="text-end" style={{ width: 90 }}>
+                  {p.journalEntryId
+                    ? <i className="bi bi-journal-check text-success me-1" title="Comptabilisé" />
+                    : can('create', 'Payment') && <Button variant="light" size="sm" className="me-1" title="Comptabiliser (journal banque)" onClick={() => post(p.id)}><i className="bi bi-journal-plus" /></Button>}
+                  {!p.journalEntryId && can('delete', 'Payment') && <Button variant="light" size="sm" className="text-danger" onClick={() => del(p.id)}><i className="bi bi-trash" /></Button>}
                 </td>
               </tr>
             ))}

@@ -157,4 +157,65 @@ export const accountingRouter = router({
       return { id: entry.id, alreadyPosted: false };
     });
   }),
+
+  /** Comptabilise un règlement client : journal de banque (512 débit = 411 crédit). */
+  postPayment: authed('create', 'Accounting').input(byId).mutation(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const p = await tx.payment.findUniqueOrThrow({ where: { id: input.id }, include: { invoice: { select: { number: true } } } });
+      if (p.journalEntryId) return { id: p.journalEntryId, alreadyPosted: true };
+      const [journal, banque, client] = await Promise.all([
+        tx.journal.findFirst({ where: { ...scope(ctx.societeId), type: 'banque' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '512000' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '411000' } }),
+      ]);
+      if (!journal || !banque || !client) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Initialisez le plan comptable et les journaux.' });
+      const amount = n(p.amount);
+      const entry = await tx.journalEntry.create({
+        data: {
+          organizationId: ctx.user.organizationId, societeId, journalId: journal.id, date: p.date, reference: p.invoice?.number,
+          label: `Règlement ${p.invoice?.number ?? ''}`.trim(), createdById: ctx.user.id,
+          lines: { create: [
+            { accountId: banque.id, label: 'Banque', debit: amount, credit: 0, position: 0 },
+            { accountId: client.id, label: 'Client', debit: 0, credit: amount, position: 1 },
+          ] },
+        },
+      });
+      await tx.payment.update({ where: { id: p.id }, data: { journalEntryId: entry.id } });
+      return { id: entry.id, alreadyPosted: false };
+    });
+  }),
+
+  /** Comptabilise une facture fournisseur : journal d'achat (607 HT + 44566 TVA déd. = 401 TTC). */
+  postSupplierInvoice: authed('create', 'Accounting').input(byId).mutation(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const inv = await tx.supplierInvoice.findUniqueOrThrow({ where: { id: input.id }, include: { lines: true, supplier: { select: { name: true } } } });
+      if (inv.status === 'draft' || inv.status === 'cancelled') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Validez la facture avant de la comptabiliser.' });
+      if (inv.journalEntryId) return { id: inv.journalEntryId, alreadyPosted: true };
+      const totals = computeInvoiceTotals(inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+      const [journal, achats, tvaDed, fourn] = await Promise.all([
+        tx.journal.findFirst({ where: { ...scope(ctx.societeId), type: 'achat' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '607000' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '445660' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '401000' } }),
+      ]);
+      if (!journal || !achats || !tvaDed || !fourn) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Initialisez le plan comptable et les journaux.' });
+      const entry = await tx.journalEntry.create({
+        data: {
+          organizationId: ctx.user.organizationId, societeId, journalId: journal.id, date: inv.issueDate ?? new Date(), reference: inv.reference,
+          label: `Facture fourn. ${inv.reference ?? ''} — ${inv.supplier?.name ?? ''}`.trim(), createdById: ctx.user.id,
+          lines: {
+            create: [
+              { accountId: achats.id, label: 'Achats HT', debit: totals.totalHt, credit: 0, position: 0 },
+              ...(totals.totalTva > 0 ? [{ accountId: tvaDed.id, label: 'TVA déductible', debit: totals.totalTva, credit: 0, position: 1 }] : []),
+              { accountId: fourn.id, label: 'Fournisseur', debit: 0, credit: totals.totalTtc, position: 2 },
+            ],
+          },
+        },
+      });
+      await tx.supplierInvoice.update({ where: { id: inv.id }, data: { journalEntryId: entry.id } });
+      return { id: entry.id, alreadyPosted: false };
+    });
+  }),
 });

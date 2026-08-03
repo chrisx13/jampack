@@ -16,8 +16,9 @@ afterAll(async () => {
   await prisma.purchaseOrder.deleteMany({ where: { id: { in: pos.map((p) => p.id) } } });
   await prisma.product.deleteMany({ where: { name: { contains: '[INT]' } } });
   await prisma.warehouse.deleteMany({ where: { id: { in: whIds } } });
-  const sis = await prisma.supplierInvoice.findMany({ where: { notes: { contains: '[INT]' } }, select: { id: true } });
+  const sis = await prisma.supplierInvoice.findMany({ where: { notes: { contains: '[INT]' } }, select: { id: true, journalEntryId: true } });
   await prisma.supplierInvoice.deleteMany({ where: { id: { in: sis.map((s) => s.id) } } });
+  await prisma.journalEntry.deleteMany({ where: { id: { in: sis.map((s) => s.journalEntryId).filter((x): x is string => !!x) } } });
   await prisma.numberSequence.updateMany({ where: { societeId: soc.id, docType: 'commande' }, data: { nextValue: 1 } });
 });
 
@@ -74,6 +75,21 @@ describe('Achats — commande → réception → stock ; factures fournisseurs',
     expect((await caller.supplierInvoices.echeancier()).some((r: { id: string }) => r.id === inv.id)).toBe(false);
     const row = (await caller.supplierInvoices.list()).find((r: { id: string; totalTtc: number }) => r.id === inv.id);
     expect(row.totalTtc).toBeCloseTo(240, 2);
+  });
+
+  it('comptabilisation d’une facture fournisseur : journal achat (607+44566 = 401), équilibrée & idempotente', async () => {
+    const sid = await supplier();
+    const inv = await caller.supplierInvoices.create({ supplierId: sid, reference: '[INT] FC', notes: '[INT]', lines: [{ label: 'Achat', quantity: 1, unitPriceHt: 200, taxRatePct: 20 }] });
+    await caller.supplierInvoices.validate({ id: inv.id });
+    const r = await caller.accounting.postSupplierInvoice({ id: inv.id });
+    expect(r.alreadyPosted).toBe(false);
+    const entry = await C.prisma.journalEntry.findUniqueOrThrow({ where: { id: r.id }, include: { lines: { include: { account: true } } } });
+    const debit = entry.lines.reduce((s, l) => s + N(l.debit), 0);
+    const credit = entry.lines.reduce((s, l) => s + N(l.credit), 0);
+    expect(debit).toBeCloseTo(credit, 2);
+    expect(N(entry.lines.find((l) => l.account.code === '401000')!.credit)).toBeCloseTo(240, 2);
+    expect(N(entry.lines.find((l) => l.account.code === '445660')!.debit)).toBeCloseTo(40, 2);
+    expect((await caller.accounting.postSupplierInvoice({ id: inv.id })).alreadyPosted).toBe(true);
   });
 });
 

@@ -138,7 +138,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CPT-2 | **Écritures** manuelles multi-lignes, contrôle d'**équilibre** (débit = crédit). | M | ✅ |
 | FR-CPT-3 | **Balance générale** (totaux/soldes par compte). | M | ✅ |
 | FR-CPT-4 | Écritures **générées automatiquement** depuis les **factures de vente** (411/707/44571). | M | ✅ |
-| FR-CPT-4b | Écritures auto depuis achats et règlements. | M | ⏳ |
+| FR-CPT-4b | Écritures auto depuis les **règlements** (journal banque 512/411) et les **factures fournisseurs** (journal achat 607/44566/401). | M | ✅ |
 | FR-CPT-5 | TVA (CA3), lettrage, rapprochement bancaire. | M | ⏳ |
 | FR-CPT-6 | Export **FEC** conforme. | M | ⏳ |
 

@@ -53,7 +53,9 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const validate = trpc.supplierInvoices.validate.useMutation();
   const markPaid = trpc.supplierInvoices.markPaid.useMutation();
   const markUnpaid = trpc.supplierInvoices.markUnpaid.useMutation();
-  const busy = create.isPending || update.isPending || validate.isPending || markPaid.isPending || markUnpaid.isPending;
+  const postAcc = trpc.accounting.postSupplierInvoice.useMutation();
+  const posted = !!existing.data?.journalEntryId;
+  const busy = create.isPending || update.isPending || validate.isPending || markPaid.isPending || markUnpaid.isPending || postAcc.isPending;
   const readOnly = status !== 'draft';
 
   const totals = useMemo(() => computeInvoiceTotals(lines), [lines]);
@@ -74,6 +76,11 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const onSave = async () => { await persist(); refreshLists(); if (id !== 'new') utils.supplierInvoices.get.invalidate({ id }); };
   const onValidate = async () => { const theId = await persist(); await validate.mutateAsync({ id: theId }); refreshLists(); onClose(); };
   const onPaid = async () => { await markPaid.mutateAsync({ id }); refreshLists(); utils.supplierInvoices.get.invalidate({ id }); };
+  const onPost = async () => {
+    const r = await postAcc.mutateAsync({ id });
+    utils.supplierInvoices.get.invalidate({ id }); utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate();
+    alert(r.alreadyPosted ? 'Déjà comptabilisée.' : 'Écriture générée (journal des achats) — voir Comptabilité ▸ Écritures.');
+  };
   const onUnpaid = async () => { await markUnpaid.mutateAsync({ id }); refreshLists(); utils.supplierInvoices.get.invalidate({ id }); };
 
   const err = create.error || update.error || validate.error || markPaid.error || markUnpaid.error;
@@ -89,6 +96,11 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
           </div>
         </div>
         <div className="d-flex gap-2">
+          {readOnly && status !== 'cancelled' && (
+            <Button variant={posted ? 'success' : 'outline-primary'} onClick={onPost} disabled={busy || posted}>
+              <i className={`bi ${posted ? 'bi-journal-check' : 'bi-journal-plus'} me-1`} />{posted ? 'Comptabilisée' : 'Comptabiliser'}
+            </Button>
+          )}
           {status === 'validated' && <Button variant="success" onClick={onPaid} disabled={busy}><i className="bi bi-cash-coin me-1" />Marquer payée</Button>}
           {status === 'paid' && <Button variant="outline-secondary" onClick={onUnpaid} disabled={busy}><i className="bi bi-arrow-counterclockwise me-1" />Annuler le paiement</Button>}
           {!readOnly && (

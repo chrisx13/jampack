@@ -420,6 +420,8 @@ model SupplierInvoice {
   paidDate        DateTime?
   notes           String?
   lines           SupplierInvoiceLine[]
+  journalEntry    JournalEntry?  @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  journalEntryId  String?
   createdById     String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -633,6 +635,8 @@ model Payment {
   method         String       @default("virement") // virement | cheque | cb | especes | prelevement
   reference      String?
   note           String?
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  journalEntryId String?
   createdById    String?
   createdAt      DateTime     @default(now())
   @@index([organizationId])
@@ -705,7 +709,9 @@ model JournalEntry {
   reference      String?      // pièce liée (ex. n° de facture)
   label          String
   lines          JournalEntryLine[]
-  salesInvoice   Invoice[]    // facture(s) de vente comptabilisée(s) par cette écriture
+  salesInvoice   Invoice[]         // facture(s) de vente comptabilisée(s) par cette écriture
+  payments       Payment[]         // règlement(s) comptabilisé(s)
+  supplierInvoices SupplierInvoice[] // facture(s) fournisseur comptabilisée(s)
   createdById    String?
   createdAt      DateTime     @default(now())
   @@index([organizationId])
