@@ -238,10 +238,31 @@ hr { border-color: var(--border); opacity: 1; }
 .hk-wrapper.subnav-collapsed .hk-tabbar { left: var(--hk-activity-width); }
 .hk-wrapper.subnav-collapsed .hk-content { padding-left: calc(var(--hk-activity-width) + 1.75rem); }
 
-@media (max-width: 991.98px) {
-  .hk-subnav { transform: translateX(-100%); }
-  .hk-tabbar { left: var(--hk-activity-width); }
-  .hk-content { padding-left: calc(var(--hk-activity-width) + 1rem); padding-right: 1rem; }
+// Mode « à la volée » (overlay) : le panneau flotte au-dessus du contenu (aucun
+// espace réservé), avec ombre + fond cliquable ; il se referme après sélection.
+// Mode « épinglé » (défaut) : panneau statique, le contenu lui réserve sa place.
+.hk-wrapper.subnav-overlay .hk-tabbar  { left: var(--hk-activity-width); }
+.hk-wrapper.subnav-overlay .hk-content { padding-left: calc(var(--hk-activity-width) + 1.75rem); }
+.hk-wrapper.subnav-overlay .hk-subnav  { box-shadow: .5rem 0 1.5rem rgba(0, 0, 0, .12); }
+.hk-subnav-backdrop { position: fixed; inset: var(--hk-navbar-height) 0 0 var(--hk-activity-width); z-index: 1026; background: rgba(0, 0, 0, .12); }
+
+// En-tête du panneau : titre + actions (bascule épinglé/volée, fermer).
+.hk-subnav .subnav-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .1rem .35rem .5rem; }
+.hk-subnav .subnav-head .subnav-title { padding: 0; }
+.hk-subnav .subnav-actions { display: flex; gap: .1rem; }
+.hk-subnav .subnav-act {
+  border: 0; background: transparent; color: var(--text-muted);
+  width: 26px; height: 26px; border-radius: .4rem; display: grid; place-items: center; font-size: .95rem;
+  transition: background-color .12s ease, color .12s ease;
+}
+.hk-subnav .subnav-act:hover { background: var(--surface-2); color: var(--text); }
+.hk-subnav .subnav-act.on { color: var(--bs-primary); }
+
+// Sous 768px (mobile) : le panneau flotte quel que soit le mode (pas d'espace réservé).
+@media (max-width: 767.98px) {
+  .hk-wrapper:not(.subnav-collapsed) .hk-tabbar  { left: var(--hk-activity-width); }
+  .hk-wrapper:not(.subnav-collapsed) .hk-content { padding-left: calc(var(--hk-activity-width) + 1rem); padding-right: 1rem; }
+  .hk-subnav { box-shadow: .5rem 0 1.5rem rgba(0, 0, 0, .12); }
 }
 
 // ── Menu contextuel des onglets ──
