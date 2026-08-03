@@ -11,6 +11,7 @@ import { paymentRouter } from '../invoice/payment.router';
 import { billingRouter } from '../billing/billing.router';
 import { stockRouter } from '../stock/stock.router';
 import { purchaseRouter } from '../purchases/purchase.router';
+import { supplierInvoiceRouter } from '../purchases/supplierInvoice.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -25,6 +26,7 @@ export const appRouter = router({
   billing: billingRouter,
   stock: stockRouter,
   purchases: purchaseRouter,
+  supplierInvoices: supplierInvoiceRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */

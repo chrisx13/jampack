@@ -47,6 +47,7 @@ async function main() {
     ['read', 'Warehouse'], ['create', 'Warehouse'], ['update', 'Warehouse'],
     ['read', 'StockMovement'], ['create', 'StockMovement'], ['delete', 'StockMovement'],
     ['read', 'PurchaseOrder'], ['create', 'PurchaseOrder'], ['update', 'PurchaseOrder'],
+    ['read', 'SupplierInvoice'], ['create', 'SupplierInvoice'], ['update', 'SupplierInvoice'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -77,11 +78,13 @@ async function main() {
     'read:Warehouse', 'create:Warehouse', 'update:Warehouse',
     'read:StockMovement', 'create:StockMovement', 'delete:StockMovement',
     'read:PurchaseOrder', 'create:PurchaseOrder', 'update:PurchaseOrder',
+    'read:SupplierInvoice', 'create:SupplierInvoice', 'update:SupplierInvoice',
   ]);
   const comptable = await role('Comptable', [
     'read:Company', 'read:Contact', 'read:Opportunity', 'read:Product',
     'read:Quote', 'read:Invoice', 'read:CreditNote',
     'read:Payment', 'create:Payment', 'delete:Payment',
+    'read:PurchaseOrder', 'read:SupplierInvoice', 'create:SupplierInvoice', 'update:SupplierInvoice',
   ]);
 
   // ── Utilisateurs ──
@@ -300,6 +303,24 @@ async function main() {
           create: [
             { label: 'Farine T65 (sac 25 kg)', quantity: 40, unitPriceHt: 18, position: 0 },
             { label: 'Levure fraîche (kg)', quantity: 10, unitPriceHt: 3.5, position: 1 },
+          ],
+        },
+      },
+    });
+  }
+
+  // ── Achats : facture fournisseur de démonstration (validée, à payer) ──
+  const supInvExists = await prisma.supplierInvoice.findFirst({ where: { societeId: boulangerie.id } });
+  if (!supInvExists) {
+    await prisma.supplierInvoice.create({
+      data: {
+        organizationId: org.id, societeId: boulangerie.id, supplierId: supplier.id, status: 'validated',
+        reference: 'FR-2026-0421', issueDate: new Date('2026-07-20'), dueDate: new Date('2026-08-19'),
+        notes: 'Facture fournisseur de démonstration',
+        lines: {
+          create: [
+            { label: 'Farine T65 (sac 25 kg)', quantity: 40, unitPriceHt: 18, taxRatePct: 5.5, position: 0 },
+            { label: 'Levure fraîche (kg)', quantity: 10, unitPriceHt: 3.5, taxRatePct: 5.5, position: 1 },
           ],
         },
       },

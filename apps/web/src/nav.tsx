@@ -9,6 +9,8 @@ import Factures from './pages/Factures';
 import Avoirs from './pages/Avoirs';
 import Echeancier from './pages/Echeancier';
 import PurchaseOrders from './pages/PurchaseOrders';
+import SupplierInvoices from './pages/SupplierInvoices';
+import SupplierEcheancier from './pages/SupplierEcheancier';
 import StockLevels from './pages/StockLevels';
 import StockMovements from './pages/StockMovements';
 import Warehouses from './pages/Warehouses';
@@ -64,6 +66,8 @@ export const DOMAINS: Domain[] = [
     icon: 'bi-cart',
     views: [
       { id: 'purchase-orders', label: 'Commandes', icon: 'bi-cart-check', element: <PurchaseOrders />, can: ['read', 'PurchaseOrder'] },
+      { id: 'supplier-invoices', label: 'Factures fournisseurs', icon: 'bi-receipt-cutoff', element: <SupplierInvoices />, can: ['read', 'SupplierInvoice'] },
+      { id: 'supplier-echeancier', label: 'Échéancier fournisseur', icon: 'bi-calendar-minus', element: <SupplierEcheancier />, can: ['read', 'SupplierInvoice'] },
     ],
   },
   {

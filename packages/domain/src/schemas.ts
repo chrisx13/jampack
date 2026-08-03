@@ -386,6 +386,37 @@ export const purchaseOrderUpdate = z.object({
 });
 export type PurchaseOrderUpdate = z.infer<typeof purchaseOrderUpdate>;
 
+// ── Achats : factures fournisseurs (comptes à payer) ──
+export const supplierInvoiceLineInput = z.object({
+  label: z.string().min(1),
+  quantity: z.number().positive(),
+  unitPriceHt: z.number().nonnegative(),
+  taxRatePct: z.number().min(0).max(100),
+  position: z.number().int().optional(),
+});
+export const supplierInvoiceCreate = z.object({
+  supplierId: z.string().min(1),
+  purchaseOrderId: z.string().optional(),
+  reference: z.string().optional(),
+  issueDate: z.string().optional(),
+  dueDate: z.string().optional(),
+  notes: z.string().optional(),
+  lines: z.array(supplierInvoiceLineInput).default([]),
+});
+export type SupplierInvoiceCreate = z.infer<typeof supplierInvoiceCreate>;
+
+export const supplierInvoiceUpdate = z.object({
+  id: z.string().min(1),
+  supplierId: z.string().optional(),
+  purchaseOrderId: z.string().nullable().optional(),
+  reference: z.string().nullable().optional(),
+  issueDate: z.string().nullable().optional(),
+  dueDate: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  lines: z.array(supplierInvoiceLineInput).optional(),
+});
+export type SupplierInvoiceUpdate = z.infer<typeof supplierInvoiceUpdate>;
+
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
 export function computeInvoiceTotals(
   lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[]

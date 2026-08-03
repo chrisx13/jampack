@@ -95,7 +95,7 @@ Fait :
 - [x] Chaîne **devis → facture → avoir** : devis (envoi, accepté/refusé, conversion en facture) et avoirs (depuis facture), pièces unifiées par `docType`.
 - [x] **Règlements & échéancier** : encaissements rattachés aux factures, statut *payée* automatique, échéancier des factures non soldées.
 - [x] **Stock** (Jalon 3) : entrepôts, mouvements (entrée/sortie/ajustement), niveaux calculés par article et entrepôt.
-- [x] **Achats** (Jalon 3) : commandes fournisseurs (fournisseur = tiers `isSupplier`) → **réception** qui alimente automatiquement le stock.
+- [x] **Achats** (Jalon 3) : commandes fournisseurs (fournisseur = tiers `isSupplier`) → **réception** qui alimente automatiquement le stock ; **factures fournisseurs** + échéancier fournisseur (comptes à payer).
 - [x] Personnalisation du thème (couleurs de marque) au niveau du compte.
 
 En cours / à venir (Jalon 2 — Ventes) :
