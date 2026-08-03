@@ -25,4 +25,5 @@ jobs:
       - run: pnpm --filter @jampack/db exec prisma generate
       - run: pnpm --filter @jampack/db exec prisma migrate deploy
       - run: pnpm typecheck
+      - run: pnpm test:cov
       - run: pnpm build

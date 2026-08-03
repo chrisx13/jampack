@@ -7,13 +7,22 @@ Garantir l'exactitude métier (totaux, numérotation, statuts, intégration acha
 (isolation multi-tenant, autorisation) et la non-régression.
 
 ## 2. Niveaux de test
-| Niveau | Portée | Outillage cible | État |
+| Niveau | Portée | Outillage | État |
 |---|---|---|---|
 | Statique | Types, contrats | `tsc --noEmit` (5 packages) en CI | ✅ |
 | Statique | Style/qualité | ESLint | ⏳ (script présent, hors CI) |
-| Composant/intégration | Routeurs tRPC via `createCaller` + DB réelle | Vitest + Postgres éphémère | 🔧 (scripts e2e manuels réalisés) |
+| **Unitaire** | **Logique métier (`packages/domain`)** | **Vitest + couverture v8, en CI** | ✅ **100 % lignes/fonctions, 98 % branches** |
+| Composant/intégration | Routeurs tRPC via `createCaller` + DB réelle | Vitest + Postgres éphémère | 🔧 (scripts e2e réalisés, à pérenniser) |
 | Bout-en-bout UI | Parcours web authentifié | Playwright | ⏳ |
 | Sécurité | Isolation RLS, FORBIDDEN | Cas dédiés | 🔧 |
+
+### 2.1 Couverture unitaire (objectif ≥ 90 %)
+Mesurée sur `packages/domain` (calculs de totaux, arbre de droits, validation Zod, garde-fous admin) —
+le cœur de correction. Seuils appliqués dans `vitest.config.ts` : lignes/fonctions/instructions **90 %**,
+branches **85 %**. Résultat courant : **100 % / 98 % / 100 % / 100 %** (40 tests).
+Fichiers : `packages/domain/src/*.test.ts`. Commande : `pnpm test:cov`.
+**Prochaine extension** : intégration routeurs (DB éphémère) et composants React (Testing Library) pour
+élargir le périmètre de couverture au-delà du domaine.
 
 ## 3. Preuves déjà produites (callers tRPC, RLS actif)
 | Domaine | Scénario vérifié |
