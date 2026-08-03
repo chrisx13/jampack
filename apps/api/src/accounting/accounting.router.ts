@@ -218,4 +218,32 @@ export const accountingRouter = router({
       return { id: entry.id, alreadyPosted: false };
     });
   }),
+
+  /** Export FEC (Fichier des Écritures Comptables) — format normé, tabulé, une ligne par ligne d'écriture. */
+  fec: authed('read', 'Accounting').input(z.object({ from: z.string().optional(), to: z.string().optional() }).optional()).query(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const soc = await tx.societe.findUniqueOrThrow({ where: { id: societeId } });
+      const dateFilter = input?.from || input?.to ? { date: { gte: input?.from ? new Date(input.from) : undefined, lte: input?.to ? new Date(input.to) : undefined } } : {};
+      const entries = await tx.journalEntry.findMany({
+        where: { ...scope(ctx.societeId), ...dateFilter },
+        include: { journal: true, lines: { include: { account: true }, orderBy: { position: 'asc' } } },
+        orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
+      });
+      const COLS = ['JournalCode', 'JournalLib', 'EcritureNum', 'EcritureDate', 'CompteNum', 'CompteLib', 'CompAuxNum', 'CompAuxLib', 'PieceRef', 'PieceDate', 'EcritureLib', 'Debit', 'Credit', 'EcritureLet', 'DateLet', 'ValidDate', 'Montantdevise', 'Idevise'];
+      const d = (dt: Date | null) => { const x = dt ? new Date(dt) : new Date(); return `${x.getFullYear()}${String(x.getMonth() + 1).padStart(2, '0')}${String(x.getDate()).padStart(2, '0')}`; };
+      const money = (v: unknown) => (Math.round(n(v) * 100) / 100).toFixed(2).replace('.', ',');
+      const clean = (s: unknown) => String(s ?? '').replace(/[\t\r\n]/g, ' ');
+      const rows: string[] = [COLS.join('\t')];
+      entries.forEach((e, i) => {
+        const num = String(i + 1);
+        for (const l of e.lines) {
+          rows.push([e.journal.code, clean(e.journal.name), num, d(e.date), l.account.code, clean(l.account.name), '', '', clean(e.reference), d(e.date), clean(l.label ?? e.label), money(l.debit), money(l.credit), '', '', '', '', ''].join('\t'));
+        }
+      });
+      const content = rows.join('\r\n');
+      const lineCount = entries.reduce((s, e) => s + e.lines.length, 0);
+      return { filename: `${soc.siren ?? 'SIREN'}FEC${d(input?.to ? new Date(input.to) : null)}.txt`, content, entries: entries.length, lines: lineCount };
+    });
+  }),
 });

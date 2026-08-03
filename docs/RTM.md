@@ -67,7 +67,8 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-CPT-3 | `accounting.balance` (groupBy) | e2e : 411 débit 120, D=C | ✅ |
 | FR-CPT-4 | `accounting.postSalesInvoice`, `Invoice.journalEntryId` | e2e : facture→écriture 411/707/44571 équilibrée, idempotent | ✅ |
 | FR-CPT-4b | `accounting.postPayment` (BQ), `accounting.postSupplierInvoice` (AC) | e2e int : 512↔411 ; 607+44566↔401 équilibrées, idempotentes | ✅ |
-| FR-CPT-5/6 | TVA (CA3) / FEC | — | ⏳ |
+| FR-CPT-6 | `accounting.fec` (18 colonnes normées, tabulé) | e2e int : entête FEC + lignes 411000, filename .txt | ✅ |
+| FR-CPT-5 | TVA (CA3), lettrage, rapprochement | — | ⏳ |
 
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |

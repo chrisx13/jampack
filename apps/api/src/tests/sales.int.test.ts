@@ -101,4 +101,16 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
     expect(N(entry.lines.find((l) => l.account.code === '411000')!.credit)).toBeCloseTo(120, 2);
     expect((await caller.accounting.postPayment({ id: pay.id })).alreadyPosted).toBe(true);
   });
+
+  it('export FEC : entête normée + lignes d’écriture', async () => {
+    const companyId = await anyCustomer();
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'W', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    await caller.accounting.postSalesInvoice({ id: inv.id });
+    const fec = await caller.accounting.fec({});
+    expect(fec.filename).toMatch(/\.txt$/);
+    expect(fec.content.split('\r\n')[0]).toContain('JournalCode\tJournalLib\tEcritureNum');
+    expect(fec.lines).toBeGreaterThanOrEqual(3);
+    expect(fec.content).toContain('411000');
+  });
 });
