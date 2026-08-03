@@ -75,9 +75,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@fontsource/dm-sans':
-        specifier: ^5.1.0
-        version: 5.3.0
       '@fontsource/inter':
         specifier: ^5.0.0
         version: 5.3.0
@@ -591,9 +588,6 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
-
-  '@fontsource/dm-sans@5.3.0':
-    resolution: {integrity: sha512-lYJtMXXO28q1z+yz+z8XKd0s4hXaa9QdkETzkyD760sidCv5heI86weYA0sx0Nc4pAMAQTUuyf4gO44cYKKS9g==}
 
   '@fontsource/inter@5.3.0':
     resolution: {integrity: sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g==}
@@ -3074,8 +3068,6 @@ snapshots:
 
   '@esbuild/win32-x64@0.28.1':
     optional: true
-
-  '@fontsource/dm-sans@5.3.0': {}
 
   '@fontsource/inter@5.3.0': {}
 

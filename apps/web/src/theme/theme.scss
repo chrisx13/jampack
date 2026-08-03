@@ -66,7 +66,6 @@ $link-decoration: none;
   --hk-activity-width: 60px;
   --hk-subnav-width: 246px;
   --hk-tabbar-height: 44px;
-  --hk-menu-width: 270px;
 
   --app-bg: #F8FAFC;
   --surface: #{$white};
@@ -77,9 +76,7 @@ $link-decoration: none;
   --active-bg: #{rgba($primary, .09)};
   --active-text: #{$primary};
 
-  --hk-menu-bg: var(--surface);
   --hk-menu-text: #{$gray-600};
-  --hk-menu-border: var(--border);
   --hk-menu-item-active-bg: var(--active-bg);
   --hk-menu-item-active-text: var(--active-text);
 }
@@ -103,9 +100,7 @@ $link-decoration: none;
   --active-bg: #{rgba($primary, .24)};
   --active-text: #A5B4FC;
 
-  --hk-menu-bg: var(--surface);
   --hk-menu-text: #CBD5E1;
-  --hk-menu-border: var(--border);
   --hk-menu-item-active-bg: var(--active-bg);
   --hk-menu-item-active-text: var(--active-text);
 }
