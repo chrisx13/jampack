@@ -113,16 +113,17 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **2 Ventes** | Affacturage / banques / conditions de paiement | ✅ ➕ | `billing.router.ts` (hors périmètre explicite de la roadmap) |
 | **2 Ventes** | **Devis** (+ conversion en facture) | ✅ | `quote.router.ts` (`convertToInvoice`, `accept`/`refuse`), `Invoice.docType='devis'` |
 | **2 Ventes** | **Avoirs** (depuis facture) | ✅ | `creditNote.router.ts`, `invoices.createCreditNote`, `Invoice.docType='avoir'` |
-| **2 Ventes** | **Règlements / échéancier** | ❌ | aucun modèle `Payment` |
+| **2 Ventes** | **Règlements / échéancier** | ✅ | `payment.router.ts` (`create`/`remove`/`echeancier`), modèle `Payment`, statut facture recalculé (validée ⇄ payée) |
 | **2 Ventes** | **E-invoicing Factur-X / PDP** | ❌ | PDF simple (pas hybride Factur-X) ; aucune intégration PDP — **point réglementaire n°1, non commencé** |
 | **3** | Achats & stock | ❌ | phase future |
 | **4** | Comptabilité (écritures, TVA/CA3, FEC) | ❌ | phase future |
 | **5** | Trésorerie & BI | ❌ | phase future |
 | transverse | Administration in-app (inviter users, gérer sociétés/rôles) | ⚠️ | lecture seule (`iam.members`) ; pas d'invitation ni d'édition de rôles |
 
-**Position actuelle : Jalon 2 (Ventes) avancé.** Chaîne devis → facture → avoir opérationnelle
-(un seul modèle `Invoice` discriminé par `docType`, PDF partagé, numérotation par type).
-Restent au Jalon 2 : **règlements/échéancier** puis **Factur-X / PDP** (échéance réception 09/2026).
+**Position actuelle : Jalon 2 (Ventes) quasi complet.** Chaîne devis → facture → avoir + **règlements
+et échéancier client** opérationnels (un seul modèle `Invoice` discriminé par `docType`, PDF partagé,
+numérotation par type ; `Payment` rattaché à la facture, statut payée automatique). Reste au Jalon 2 :
+**Factur-X / PDP** (échéance réception 09/2026), qui dépend du choix d'une PDP partenaire (décision business).
 
 ## 6. Charte front
 
@@ -148,7 +149,7 @@ Restent au Jalon 2 : **règlements/échéancier** puis **Factur-X / PDP** (éch�
 - [ ] Ajouter `lint` (et des tests) à la CI pour tenir la promesse de l'Archi §9.
 - [ ] Fournisseurs : passer du flag `isSupplier` à un vrai périmètre achats.
 - [x] Devis + conversion en facture, avoirs (chaîne Ventes).
-- [ ] Règlements / échéancier (compléter le Jalon 2 Ventes).
-- [ ] Factur-X / intégration PDP (conformité e-invoicing — prioritaire).
+- [x] Règlements + échéancier client (statut payée automatique).
+- [ ] Factur-X / intégration PDP (conformité e-invoicing — prioritaire, dépend du choix PDP).
 - [ ] Générer la partie native Tauri (`tauri init`) ; amorcer la PWA.
 - [ ] Administration in-app : invitation d'utilisateurs, édition sociétés/rôles.

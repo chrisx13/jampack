@@ -93,12 +93,12 @@ Fait :
 - [x] Référentiels : articles/services, catégories, taux de TVA, numérotation des pièces.
 - [x] Facturation : factures (brouillon → validée → annulée), calcul TVA, PDF ; affacturage, comptes bancaires et conditions de paiement.
 - [x] Chaîne **devis → facture → avoir** : devis (envoi, accepté/refusé, conversion en facture) et avoirs (depuis facture), pièces unifiées par `docType`.
+- [x] **Règlements & échéancier** : encaissements rattachés aux factures, statut *payée* automatique, échéancier des factures non soldées.
 - [x] Personnalisation du thème (couleurs de marque) au niveau du compte.
 
 En cours / à venir (Jalon 2 — Ventes) :
 
-- [ ] Règlements et échéancier client (encaissements).
-- [ ] E-invoicing **Factur-X / PDP** — réception obligatoire 09/2026 (prioritaire).
+- [ ] E-invoicing **Factur-X / PDP** — réception obligatoire 09/2026 (prioritaire ; dépend du choix d'une PDP partenaire).
 - [ ] Interface d'administration : inviter des utilisateurs, gérer sociétés et rôles.
 - [ ] `tauri init` pour générer la partie native du desktop ; amorcer la PWA mobile.
 - [ ] Fournisseurs & achats (au-delà du flag `isSupplier`).
@@ -107,4 +107,4 @@ En cours / à venir (Jalon 2 — Ventes) :
 
 ## Feuille de route
 
-Phase 0 (socle multi-société) ✓ → CRM ✓ → Référentiels ✓ → **Ventes / facturation** (en cours : devis → facture → avoir faits ; règlements + e-invoicing Factur-X à venir) → Achats + Stock → Comptabilité (FEC).
+Phase 0 (socle multi-société) ✓ → CRM ✓ → Référentiels ✓ → **Ventes / facturation** (devis → facture → avoir + règlements/échéancier faits ; e-invoicing Factur-X à venir) → Achats + Stock → Comptabilité (FEC).
