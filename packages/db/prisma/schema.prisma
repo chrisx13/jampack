@@ -45,6 +45,21 @@ model Organization {
   accounts        Account[]
   journals        Journal[]
   journalEntries  JournalEntry[]
+  auditLogs       AuditLog[]
+}
+
+// Journal d'audit : trace des mutations (qui, quoi, quand) — traçabilité sécurité/RGPD.
+model AuditLog {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societeId      String?
+  userId         String?
+  action         String       // chemin de la procédure tRPC (ex. invoices.validate)
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  @@index([organizationId])
+  @@index([createdAt])
 }
 
 // ── Société gérée dans le compte (entité juridique : compta/factu séparées) ──

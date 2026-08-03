@@ -20,6 +20,7 @@ afterAll(async () => {
   await prisma.supplierInvoice.deleteMany({ where: { id: { in: sis.map((s) => s.id) } } });
   await prisma.journalEntry.deleteMany({ where: { id: { in: sis.map((s) => s.journalEntryId).filter((x): x is string => !!x) } } });
   await prisma.numberSequence.updateMany({ where: { societeId: soc.id, docType: 'commande' }, data: { nextValue: 1 } });
+  await prisma.auditLog.deleteMany({});
 });
 
 const product = async () => (await C.prisma.product.findFirstOrThrow({ where: { societeId: C.soc.id, name: 'Baguette tradition' } })).id;

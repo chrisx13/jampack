@@ -78,6 +78,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-TRV-1 | `societe.router.ts` (settings) | UI paramétrage | ✅ |
 | FR-TRV-2 | `settings.router.ts`, `applyTheme.ts` | thème par compte | ✅ |
 | FR-TRV-5 | `analytics.router.ts` (`summary`), `Dashboard.tsx` | e2e int : CA facturé Δ +120 | ✅ |
+| FR-TRV-4 | middleware `auditMiddleware` (`trpc.ts`), `AuditLog`, `audit.router.ts` | e2e int : mutation → entrée (action, user, réf) | ✅ |
 | NFR-FON-1/2 | `computeInvoiceTotals`, `nextDocumentNumber` | e2e totaux + numérotation | ✅ |
 | NFR-SEC-1 | `rls.sql`, rôle `jampack_app` | RLS actif au boot (policies vérifiées) | ✅ |
 | NFR-SEC-3 | `authed()` | mutations FORBIDDEN sans droit | ✅ |

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { demoCaller } from './caller';
 
 let C: Awaited<ReturnType<typeof demoCaller>>;
@@ -6,6 +6,7 @@ let C: Awaited<ReturnType<typeof demoCaller>>;
 let caller: any;
 
 beforeAll(async () => { C = await demoCaller(); caller = C.caller; });
+afterAll(async () => { await C.prisma.auditLog.deleteMany({}); });
 
 describe('IAM — administration des utilisateurs & rôles', () => {
   it('invite, attribue puis révoque un rôle', async () => {

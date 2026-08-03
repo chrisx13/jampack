@@ -24,6 +24,7 @@ import Appearance from './pages/Appearance';
 import SocieteSettings from './pages/SocieteSettings';
 import BillingSettings from './pages/BillingSettings';
 import Members from './pages/Members';
+import AuditLog from './pages/AuditLog';
 import Placeholder from './pages/Placeholder';
 
 /**
@@ -113,6 +114,7 @@ export const DOMAINS: Domain[] = [
     views: [
       { id: 'settings', label: 'Paramètres', icon: 'bi-sliders', element: <Settings /> },
       { id: 'members', label: 'Utilisateurs & rôles', icon: 'bi-people-fill', element: <Members />, can: ['manage', 'all'] },
+      { id: 'audit', label: 'Journal d\'audit', icon: 'bi-shield-check', element: <AuditLog />, can: ['manage', 'all'] },
       { id: 'company', label: 'Société (facturation)', icon: 'bi-building-gear', element: <SocieteSettings />, can: ['manage', 'all'] },
       { id: 'billing', label: 'Facturation (banques, affacturage…)', icon: 'bi-bank', element: <BillingSettings />, can: ['manage', 'all'] },
       { id: 'appearance', label: 'Apparence', icon: 'bi-palette', element: <Appearance />, can: ['manage', 'all'] },

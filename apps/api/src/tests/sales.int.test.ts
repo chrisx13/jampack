@@ -20,6 +20,8 @@ afterAll(async () => {
   await prisma.invoice.deleteMany({ where: { id: { in: invIds } } }); // cascade payments + lignes
   await prisma.journalEntry.deleteMany({ where: { id: { in: entryIds } } }); // cascade lignes d'écriture
   await prisma.numberSequence.updateMany({ where: { societeId: soc.id, docType: { in: ['devis', 'facture', 'avoir'] } }, data: { nextValue: 1 } });
+  // Le journal d'audit se remplit à chaque mutation des tests → on le vide (dernier fichier exécuté).
+  await prisma.auditLog.deleteMany({});
 });
 
 async function anyCustomer() {
@@ -137,6 +139,19 @@ describe('Comptabilité — déclaration de TVA (CA3)', () => {
     const siRow = await C.prisma.supplierInvoice.findUniqueOrThrow({ where: { id: si.id } });
     await C.prisma.supplierInvoice.delete({ where: { id: si.id } });
     if (siRow.journalEntryId) await C.prisma.journalEntry.delete({ where: { id: siRow.journalEntryId } });
+  });
+});
+
+describe('Audit — journalisation des mutations', () => {
+  it('journalise chaque mutation (qui, quoi, référence)', async () => {
+    const wh = await caller.stock.warehouses.create({ name: '[INT] Audit' });
+    await caller.stock.warehouses.update({ id: wh.id, name: '[INT] Audit 2' });
+    const logs = await caller.audit.list();
+    expect(logs.some((l: { action: string }) => l.action === 'stock.warehouses.create')).toBe(true);
+    const upd = logs.find((l: { action: string; ref: string | null }) => l.action === 'stock.warehouses.update' && l.ref === wh.id);
+    expect(upd).toBeTruthy();
+    expect(upd.userEmail).toContain('@');
+    await C.prisma.warehouse.delete({ where: { id: wh.id } });
   });
 });
 

@@ -60,8 +60,10 @@ gestion B2B, pas de données sensibles au sens de l'art. 9), une AIPD allégée 
 ajout de scoring, profilage, ou données sensibles.
 
 ## 6. Journalisation & audit
-- Cible : journal immuable des actions sensibles (création/validation de pièces, changements de rôle).
-- Statut : **⏳ planifié** (NFR-SEC / FR-TRV-4).
+- **✅ Implémenté** : un middleware tRPC journalise chaque **mutation** réussie (utilisateur, action = chemin
+  de la procédure, société active, horodatage, référence de la pièce) dans `AuditLog` (isolé par compte, RLS).
+  Consultable dans **Administration ▸ Journal d'audit**. Non bloquant (une erreur d'audit n'échoue pas l'opération).
+- Reste : immuabilité renforcée (append-only strict / signature), purge/rétention configurable.
 
 ## 7. Gestion des vulnérabilités
 - Dépendances : audit régulier (`pnpm audit`), mises à jour de sécurité.
@@ -76,6 +78,6 @@ ajout de scoring, profilage, ou données sensibles.
 ## 9. Écarts connus (registre)
 | Écart | Impact | Plan |
 |---|---|---|
-| Journal d'audit non implémenté | Traçabilité partielle | Jalon transverse |
-| Lint/tests absents de la CI | Risque de régression | Ajout CI (NFR-MNT-3) |
+| Immuabilité stricte du journal d'audit | Falsification théorique | Append-only + signature (à venir) |
+| Lint absent de la CI (tests ✅) | Qualité | Ajout du lint en CI |
 | InvoiceLine sans RLS société propre | Accès seulement via pièce parente (protégée) | TODO Jalon A (`rls.sql`) |
