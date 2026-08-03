@@ -139,3 +139,15 @@ describe('Comptabilité — déclaration de TVA (CA3)', () => {
     if (siRow.journalEntryId) await C.prisma.journalEntry.delete({ where: { id: siRow.journalEntryId } });
   });
 });
+
+describe('Analytics — synthèse financière', () => {
+  it('CA facturé et encours clients reflètent une facture validée (Δ +120)', async () => {
+    const before = await caller.analytics.summary();
+    const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'S', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    const after = await caller.analytics.summary();
+    expect(after.caFacture - before.caFacture).toBeCloseTo(120, 2);
+    expect(after.encoursClients - before.encoursClients).toBeCloseTo(120, 2);
+  });
+});

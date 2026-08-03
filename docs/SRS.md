@@ -150,6 +150,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-TRV-2 | Personnalisation du **thème** (couleurs de marque) au niveau compte. | S | ✅ |
 | FR-TRV-3 | Édition **PDF** normalisée des pièces. | M | 🔧 (factures) |
 | FR-TRV-4 | Journal d'audit immuable des actions sensibles. | S | ⏳ |
+| FR-TRV-5 | **Tableau de bord** : KPI consolidés (CA facturé, encours clients/fournisseurs, valeur stock, TVA). | S | ✅ |
 
 ---
 

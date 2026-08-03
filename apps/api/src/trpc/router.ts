@@ -13,6 +13,7 @@ import { stockRouter } from '../stock/stock.router';
 import { purchaseRouter } from '../purchases/purchase.router';
 import { supplierInvoiceRouter } from '../purchases/supplierInvoice.router';
 import { accountingRouter } from '../accounting/accounting.router';
+import { analyticsRouter } from '../analytics/analytics.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -29,6 +30,7 @@ export const appRouter = router({
   purchases: purchaseRouter,
   supplierInvoices: supplierInvoiceRouter,
   accounting: accountingRouter,
+  analytics: analyticsRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */
