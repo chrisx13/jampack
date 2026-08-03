@@ -1,0 +1,42 @@
+{
+  // ── Éditeur ──
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.tabSize": 2,
+
+  // ── TypeScript : utiliser la version du workspace (pnpm) ──
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // ── ESLint : monorepo pnpm (chaque app/paquet a sa config) ──
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+
+  // ── Prisma ──
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  },
+
+  // ── Bruit inutile dans l'explorateur / la recherche ──
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.turbo": true,
+    "**/dist": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/pnpm-lock.yaml": true,
+    "**/dist": true,
+    "**/.turbo": true
+  },
+
+  // ── Correcteur orthographique (français + termes du projet) ──
+  "cSpell.language": "fr,en",
+  "cSpell.words": [
+    "JAMPACK", "societe", "societes", "affactureur", "affacturage", "subrogation",
+    "Keycloak", "Prisma", "tRPC", "superjson", "turborepo", "Tauri", "CASL",
+    "SIREN", "SIRET", "SIRENE", "jampack"
+  ]
+}

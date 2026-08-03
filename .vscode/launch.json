@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Débogue le front React dans Chrome (lancer `pnpm dev` avant).
+      "name": "Web (Chrome) — front React",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/apps/web"
+    }
+  ]
+}

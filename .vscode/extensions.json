@@ -1,0 +1,16 @@
+{
+  // Extensions recommandées pour développer JAMPACK.
+  // VS Code proposera de les installer à l'ouverture du dossier.
+  "recommendations": [
+    "dbaeumer.vscode-eslint",        // ESLint (lint TypeScript/React)
+    "esbenp.prettier-vscode",        // Prettier (formatage)
+    "Prisma.prisma",                 // Coloration + autocomplétion du schéma Prisma
+    "ms-azuretools.vscode-docker",   // Gestion des conteneurs Docker
+    "bradlc.vscode-tailwindcss",     // (facultatif) classes utilitaires
+    "editorconfig.editorconfig",     // Respect du .editorconfig
+    "usernamehw.errorlens",          // Affiche les erreurs en ligne
+    "yoavbls.pretty-ts-errors",      // Erreurs TypeScript lisibles
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-french"
+  ]
+}

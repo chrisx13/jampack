@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "JAMPACK ▸ Installer les dépendances",
+      "type": "shell",
+      "command": "pnpm install",
+      "problemMatcher": []
+    },
+    {
+      "label": "JAMPACK ▸ Base de données (Docker, Postgres seul)",
+      "type": "shell",
+      "command": "docker compose -f docker/docker-compose.yml up -d",
+      "problemMatcher": []
+    },
+    {
+      "label": "JAMPACK ▸ Dev (API :3000 + Web :5173)",
+      "type": "shell",
+      "command": "pnpm dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "panel": "dedicated" }
+    },
+    {
+      "label": "JAMPACK ▸ Stack complète (Docker)",
+      "type": "shell",
+      "command": "docker compose up --build",
+      "problemMatcher": []
+    },
+    {
+      "label": "JAMPACK ▸ Prisma migrate dev",
+      "type": "shell",
+      "command": "pnpm --filter @jampack/db exec prisma migrate dev",
+      "problemMatcher": []
+    },
+    {
+      "label": "JAMPACK ▸ Seed + RLS",
+      "type": "shell",
+      "command": "pnpm db:rls && pnpm db:seed",
+      "problemMatcher": []
+    },
+    {
+      "label": "JAMPACK ▸ Typecheck",
+      "type": "shell",
+      "command": "pnpm typecheck",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "JAMPACK ▸ Lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "problemMatcher": ["$eslint-stylish"]
+    }
+  ]
+}
