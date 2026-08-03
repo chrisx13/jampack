@@ -196,6 +196,16 @@ export const activityCreate = z.object({
 });
 export type ActivityCreate = z.infer<typeof activityCreate>;
 
+// ── Création d'une société ──
+export const societeCreate = z.object({
+  name: z.string().min(1),
+  siren: z.string().optional(),
+  siret: z.string().optional(),
+  tvaNumber: z.string().optional(),
+  city: z.string().optional(),
+});
+export type SocieteCreate = z.infer<typeof societeCreate>;
+
 // ── Paramétrage société (facturation) ──
 const optStr = z.string().max(2000).nullable().optional();
 export const societeSettingsUpdate = z.object({

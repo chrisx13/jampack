@@ -42,4 +42,15 @@ describe('IAM — administration des utilisateurs & rôles', () => {
     const still = await C.prisma.societeRole.findFirst({ where: { userId: adminUser.id, roleId: admin.id, societeId: C.soc.id } });
     expect(still).not.toBeNull();
   });
+
+  it('crée une société et la rend accessible au créateur', async () => {
+    const soc = await caller.societes.create({ name: '[INT] Nouvelle SARL', city: 'Testville' });
+    const all = await caller.societes.listAll();
+    expect(all.some((s: { id: string }) => s.id === soc.id)).toBe(true);
+    const role = await C.prisma.societeRole.findFirst({ where: { societeId: soc.id } });
+    expect(role).not.toBeNull();
+    // Nettoyage
+    await C.prisma.societeRole.deleteMany({ where: { societeId: soc.id } });
+    await C.prisma.societe.delete({ where: { id: soc.id } });
+  });
 });

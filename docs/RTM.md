@@ -14,6 +14,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-IAM-4/5 | Rôles par société cumulables | `SocieteRole`, `context.ts` | seed 2 users multi-rôles | ✅ |
 | FR-IAM-6 | CASL serveur + UI | `domain/ability.ts`, `trpc/trpc.ts` (`authed`) | mutations → FORBIDDEN | ✅ |
 | FR-IAM-7 | `iam.router` (`invite`/`grantRole`/`revokeRole`), `Members.tsx` | e2e int : invite→grant→revoke ; garde-fou dernier admin | ✅ |
+| FR-IAM-7b | `societe.router` (`create`/`listAll`), `Societes.tsx` | e2e int : société créée + accessible au créateur | ✅ |
 | FR-IAM-8 | Éditeur de droits fin `rights.ts` | — | ⏳ |
 
 ## CRM
