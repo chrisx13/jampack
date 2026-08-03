@@ -297,6 +297,23 @@ export const SALES_DOCS: Record<SalesDocType, SalesDocMeta> = {
   avoir:   { docType: 'avoir',   subject: 'CreditNote', seqType: 'avoir',   issuedStatus: 'validated', singular: 'Avoir',  plural: 'Avoirs' },
 };
 
+// ── Règlements (encaissements) ──
+export const PAYMENT_METHODS = ['virement', 'cheque', 'cb', 'especes', 'prelevement'] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  virement: 'Virement', cheque: 'Chèque', cb: 'Carte bancaire', especes: 'Espèces', prelevement: 'Prélèvement',
+};
+
+export const paymentCreate = z.object({
+  invoiceId: z.string().min(1),
+  amount: z.number().positive(),
+  date: z.string().optional(),
+  method: z.enum(PAYMENT_METHODS).optional(),
+  reference: z.string().optional(),
+  note: z.string().optional(),
+});
+export type PaymentCreate = z.infer<typeof paymentCreate>;
+
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
 export function computeInvoiceTotals(
   lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[]

@@ -43,6 +43,7 @@ async function main() {
     ['read', 'Quote'], ['create', 'Quote'], ['update', 'Quote'],
     ['read', 'Invoice'], ['create', 'Invoice'], ['update', 'Invoice'],
     ['read', 'CreditNote'], ['create', 'CreditNote'], ['update', 'CreditNote'],
+    ['read', 'Payment'], ['create', 'Payment'], ['delete', 'Payment'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -69,10 +70,12 @@ async function main() {
     'read:Quote', 'create:Quote', 'update:Quote',
     'read:Invoice', 'create:Invoice', 'update:Invoice',
     'read:CreditNote', 'create:CreditNote', 'update:CreditNote',
+    'read:Payment', 'create:Payment', 'delete:Payment',
   ]);
   const comptable = await role('Comptable', [
     'read:Company', 'read:Contact', 'read:Opportunity', 'read:Product',
     'read:Quote', 'read:Invoice', 'read:CreditNote',
+    'read:Payment', 'create:Payment', 'delete:Payment',
   ]);
 
   // ── Utilisateurs ──

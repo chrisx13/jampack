@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, Table, Button, Form, Spinner, Badge } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
-import { computeInvoiceTotals } from '@jampack/domain';
+import { computeInvoiceTotals, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, type PaymentMethod } from '@jampack/domain';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const num = (v: unknown) => { const n = Number(v as never); return Number.isFinite(n) ? n : 0; };
@@ -289,8 +289,100 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
           </Card>
         </div>
       </div>
+      {cfg.key === 'invoices' && (status === 'validated' || status === 'paid') && id !== 'new' && (
+        <PaymentsCard invoiceId={id} totalTtc={totals.totalTtc} />
+      )}
       {err && <div className="text-danger small mt-2">{err.message}</div>}
     </>
+  );
+}
+
+/** Encaissements d'une facture : liste, ajout, reste dû. */
+function PaymentsCard({ invoiceId, totalTtc }: { invoiceId: string; totalTtc: number }) {
+  const utils = trpc.useUtils();
+  const can = useCan();
+  const list = trpc.payments.listForInvoice.useQuery({ invoiceId });
+  const create = trpc.payments.create.useMutation();
+  const remove = trpc.payments.remove.useMutation();
+
+  const paid = (list.data ?? []).reduce((s, p) => s + num(p.amount), 0);
+  const remaining = Math.round((totalTtc - paid) * 100) / 100;
+
+  const [amount, setAmount] = useState(0);
+  const [method, setMethod] = useState<PaymentMethod>('virement');
+  const [date, setDate] = useState('');
+  const [reference, setReference] = useState('');
+  useEffect(() => { setAmount(remaining > 0 ? remaining : 0); }, [list.data]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const refresh = () => {
+    utils.payments.listForInvoice.invalidate({ invoiceId });
+    utils.invoices.get.invalidate({ id: invoiceId });
+    utils.invoices.list.invalidate();
+    utils.payments.echeancier.invalidate();
+  };
+  const add = async () => {
+    if (!(amount > 0)) return;
+    await create.mutateAsync({ invoiceId, amount, method, date: date || undefined, reference: reference || undefined });
+    setReference(''); refresh();
+  };
+  const del = async (id: string) => { await remove.mutateAsync({ id }); refresh(); };
+
+  return (
+    <Card className="mt-3">
+      <Card.Body>
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h6 className="mb-0 fw-semibold"><i className="bi bi-cash-coin me-2" />Règlements</h6>
+          <div className="small">
+            <span className="text-secondary me-3">Réglé <span className="fw-medium text-body">{euro.format(paid)}</span></span>
+            <span className={remaining > 0 ? 'text-danger' : 'text-success'}>Reste dû <span className="fw-semibold">{euro.format(remaining)}</span></span>
+          </div>
+        </div>
+
+        <Table size="sm" className="align-middle mb-2">
+          <tbody>
+            {(list.data ?? []).map((p) => (
+              <tr key={p.id}>
+                <td className="text-secondary" style={{ width: 110 }}>{dfmt(p.date)}</td>
+                <td>{PAYMENT_METHOD_LABELS[p.method as PaymentMethod] ?? p.method}</td>
+                <td className="text-secondary">{p.reference}</td>
+                <td className="text-end fw-medium">{euro.format(num(p.amount))}</td>
+                <td className="text-end" style={{ width: 40 }}>
+                  {can('delete', 'Payment') && <Button variant="light" size="sm" className="text-danger" onClick={() => del(p.id)}><i className="bi bi-trash" /></Button>}
+                </td>
+              </tr>
+            ))}
+            {list.data?.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-2">Aucun règlement</td></tr>}
+          </tbody>
+        </Table>
+
+        {can('create', 'Payment') && remaining > 0 && (
+          <div className="row g-2 align-items-end">
+            <div className="col-6 col-md-3">
+              <Form.Label className="small mb-1">Montant</Form.Label>
+              <Form.Control size="sm" type="number" step="0.01" value={amount} onChange={(e) => setAmount(num(e.target.value))} />
+            </div>
+            <div className="col-6 col-md-3">
+              <Form.Label className="small mb-1">Moyen</Form.Label>
+              <Form.Select size="sm" value={method} onChange={(e) => setMethod(e.target.value as PaymentMethod)}>
+                {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</option>)}
+              </Form.Select>
+            </div>
+            <div className="col-6 col-md-2">
+              <Form.Label className="small mb-1">Date</Form.Label>
+              <Form.Control size="sm" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div className="col-6 col-md-2">
+              <Form.Label className="small mb-1">Référence</Form.Label>
+              <Form.Control size="sm" value={reference} onChange={(e) => setReference(e.target.value)} />
+            </div>
+            <div className="col-12 col-md-2">
+              <Button size="sm" className="w-100" onClick={add} disabled={create.isPending || !(amount > 0)}><i className="bi bi-plus-lg me-1" />Encaisser</Button>
+            </div>
+          </div>
+        )}
+        {create.error && <div className="text-danger small mt-2">{create.error.message}</div>}
+      </Card.Body>
+    </Card>
   );
 }
 
