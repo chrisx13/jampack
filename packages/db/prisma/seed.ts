@@ -44,6 +44,8 @@ async function main() {
     ['read', 'Invoice'], ['create', 'Invoice'], ['update', 'Invoice'],
     ['read', 'CreditNote'], ['create', 'CreditNote'], ['update', 'CreditNote'],
     ['read', 'Payment'], ['create', 'Payment'], ['delete', 'Payment'],
+    ['read', 'Warehouse'], ['create', 'Warehouse'], ['update', 'Warehouse'],
+    ['read', 'StockMovement'], ['create', 'StockMovement'], ['delete', 'StockMovement'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -71,6 +73,8 @@ async function main() {
     'read:Invoice', 'create:Invoice', 'update:Invoice',
     'read:CreditNote', 'create:CreditNote', 'update:CreditNote',
     'read:Payment', 'create:Payment', 'delete:Payment',
+    'read:Warehouse', 'create:Warehouse', 'update:Warehouse',
+    'read:StockMovement', 'create:StockMovement', 'delete:StockMovement',
   ]);
   const comptable = await role('Comptable', [
     'read:Company', 'read:Contact', 'read:Opportunity', 'read:Product',
@@ -262,6 +266,22 @@ async function main() {
         update: {},
         create: { organizationId: org.id, societeId: s.id, docType, prefix },
       });
+    }
+  }
+
+  // ── Stock : entrepôts + stock initial de démonstration ──
+  const ensureWarehouse = async (societeId: string, name: string, data: Record<string, unknown> = {}) => {
+    const f = await prisma.warehouse.findFirst({ where: { societeId, name } });
+    return f ?? prisma.warehouse.create({ data: { organizationId: org.id, societeId, name, ...data } });
+  };
+  const whBoul = await ensureWarehouse(boulangerie.id, 'Fournil — Réserve', { code: 'BOUL-1', city: 'Lyon', isDefault: true });
+  await ensureWarehouse(studio.id, 'Studio — Local', { code: 'STU-1', city: 'Nantes', isDefault: true });
+
+  const boulHasStock = await prisma.stockMovement.findFirst({ where: { societeId: boulangerie.id } });
+  if (!boulHasStock) {
+    for (const [productName, qty] of [['Baguette tradition', 500], ['Croissant', 300]] as [string, number][]) {
+      const p = await prisma.product.findFirst({ where: { societeId: boulangerie.id, name: productName } });
+      if (p) await prisma.stockMovement.create({ data: { organizationId: org.id, societeId: boulangerie.id, warehouseId: whBoul.id, productId: p.id, kind: 'entree', quantity: qty, note: 'Stock initial' } });
     }
   }
 

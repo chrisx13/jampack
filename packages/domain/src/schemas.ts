@@ -314,6 +314,43 @@ export const paymentCreate = z.object({
 });
 export type PaymentCreate = z.infer<typeof paymentCreate>;
 
+// ── Stock : entrepôts & mouvements ──
+export const STOCK_KINDS = ['entree', 'sortie', 'ajustement'] as const;
+export type StockKind = (typeof STOCK_KINDS)[number];
+export const STOCK_KIND_LABELS: Record<StockKind, string> = { entree: 'Entrée', sortie: 'Sortie', ajustement: 'Ajustement' };
+
+export const warehouseCreate = z.object({
+  name: z.string().min(1),
+  code: z.string().optional(),
+  addressLine1: z.string().optional(),
+  postalCode: z.string().optional(),
+  city: z.string().optional(),
+  isDefault: z.boolean().optional(),
+});
+export const warehouseUpdate = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).optional(),
+  code: z.string().nullable().optional(),
+  addressLine1: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  isDefault: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+});
+export type WarehouseCreate = z.infer<typeof warehouseCreate>;
+
+export const stockMovementCreate = z.object({
+  warehouseId: z.string().min(1),
+  productId: z.string().min(1),
+  kind: z.enum(STOCK_KINDS),
+  // Quantité saisie (positive pour entrée/sortie ; signée autorisée pour un ajustement).
+  quantity: z.number().refine((v) => v !== 0, 'Quantité non nulle attendue'),
+  unitCost: z.number().nonnegative().optional(),
+  note: z.string().optional(),
+  date: z.string().optional(),
+});
+export type StockMovementCreate = z.infer<typeof stockMovementCreate>;
+
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
 export function computeInvoiceTotals(
   lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[]

@@ -9,6 +9,7 @@ import { quoteRouter } from '../invoice/quote.router';
 import { creditNoteRouter } from '../invoice/creditNote.router';
 import { paymentRouter } from '../invoice/payment.router';
 import { billingRouter } from '../billing/billing.router';
+import { stockRouter } from '../stock/stock.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -21,6 +22,7 @@ export const appRouter = router({
   creditNotes: creditNoteRouter,
   payments: paymentRouter,
   billing: billingRouter,
+  stock: stockRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */
