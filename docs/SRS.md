@@ -142,7 +142,8 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CPT-4b | Écritures auto depuis les **règlements** (journal banque 512/411) et les **factures fournisseurs** (journal achat 607/44566/401). | M | ✅ |
 | FR-CPT-5 | **Déclaration de TVA (CA3)** : collectée − déductible → à décaisser / crédit. | M | ✅ |
 | FR-CPT-5b | **Lettrage** des comptes de tiers (rapprochement débit/crédit équilibré). | M | ✅ |
-| FR-CPT-5c | Rapprochement bancaire, écriture de clôture TVA, déclaration périodique. | M | ⏳ |
+| FR-CPT-5c | **Écriture de clôture de TVA** (solde 44571/44566 → 44551/44567, journal OD). | M | ✅ |
+| FR-CPT-5d | Rapprochement bancaire, déclaration périodique (mensuelle/trimestrielle). | M | ⏳ |
 | FR-CPT-6 | Export **FEC** (Fichier des Écritures Comptables) tabulé normé. | M | ✅ |
 
 ### 3.8 Transverse

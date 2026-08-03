@@ -332,6 +332,7 @@ async function main() {
   // ── Comptabilité : plan comptable minimal + journaux (par société) ──
   const PCG: [string, string][] = [
     ['401000', 'Fournisseurs'], ['411000', 'Clients'], ['445660', 'TVA déductible'], ['445710', 'TVA collectée'],
+    ['445510', 'TVA à décaisser'], ['445670', 'Crédit de TVA à reporter'],
     ['512000', 'Banque'], ['530000', 'Caisse'], ['607000', 'Achats de marchandises'], ['627000', 'Services bancaires'],
     ['707000', 'Ventes de marchandises'], ['706000', 'Prestations de services'],
   ];

@@ -1,15 +1,30 @@
-import { Card, Spinner } from 'react-bootstrap';
+import { Card, Spinner, Button } from 'react-bootstrap';
 import { trpc } from '../trpc';
+import { useCan } from '../ability';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 
 export default function VatReturn() {
+  const utils = trpc.useUtils();
+  const can = useCan();
   const tva = trpc.accounting.vatReturn.useQuery({});
+  const close = trpc.accounting.closeVat.useMutation();
   const d = tva.data;
+
+  const onClose = async () => {
+    const r = await close.mutateAsync({});
+    utils.accounting.vatReturn.invalidate(); utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate();
+    alert(`Écriture de clôture générée (journal OD). Net : ${euro.format(Math.abs(r.net))} ${r.net >= 0 ? 'à décaisser' : 'de crédit de TVA'}.`);
+  };
 
   return (
     <>
-      <div className="mb-4"><h4 className="mb-1 fw-semibold">Déclaration de TVA (CA3)</h4><p className="text-secondary mb-0">TVA collectée − TVA déductible</p></div>
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <div><h4 className="mb-1 fw-semibold">Déclaration de TVA (CA3)</h4><p className="text-secondary mb-0">TVA collectée − TVA déductible</p></div>
+        {can('manage', 'all') && d && (d.collectee > 0 || d.deductible > 0) && (
+          <Button variant="outline-primary" onClick={onClose} disabled={close.isPending}><i className="bi bi-journal-check me-1" />Générer l'écriture de clôture</Button>
+        )}
+      </div>
 
       {tva.isLoading && <Spinner size="sm" />}
       {d && (

@@ -195,4 +195,19 @@ describe('Comptabilité — lettrage', () => {
     const afterU = await caller.accounting.accountLines({ accountId: acc411 });
     expect(afterU.find((l: { id: string }) => l.id === debitLine.id)?.letter).toBeNull();
   });
+
+  it('génère l’écriture de clôture de TVA (solde 44571/44566)', async () => {
+    const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'v', quantity: 1, unitPriceHt: 120, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    await caller.accounting.postSalesInvoice({ id: inv.id }); // 44571 crédit 24
+    const r = await caller.accounting.closeVat({});
+    expect(r.id).toBeTruthy();
+    const after = await caller.accounting.vatReturn({});
+    expect(after.collectee).toBeCloseTo(0, 2);
+    expect(after.deductible).toBeCloseTo(0, 2);
+    // Nettoyage de l'écriture de clôture (les factures [INT] et leurs écritures sont nettoyées par afterAll).
+    await C.prisma.journalEntryLine.deleteMany({ where: { entryId: r.id } });
+    await C.prisma.journalEntry.delete({ where: { id: r.id } });
+  });
 });

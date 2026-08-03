@@ -72,7 +72,8 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-CPT-6 | `accounting.fec` (18 colonnes normées, tabulé) | e2e int : entête FEC + lignes 411000, filename .txt | ✅ |
 | FR-CPT-5 | `accounting.vatReturn` (44571 − 44566) | e2e int : Δ collectée +20 / déductible +40 | ✅ |
 | FR-CPT-5b | `accounting.accountLines`/`letter`/`unletter`, `Lettrage.tsx` | e2e int : lettrage équilibré, rejet déséquilibre, délettrage | ✅ |
-| FR-CPT-5c | rapprochement bancaire, clôture TVA | — | ⏳ |
+| FR-CPT-5c | `accounting.closeVat` (journal OD) | e2e int : clôture → 44571/44566 soldés à 0 | ✅ |
+| FR-CPT-5d | rapprochement bancaire, déclaration périodique | — | ⏳ |
 
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |

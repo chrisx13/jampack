@@ -308,4 +308,31 @@ export const accountingRouter = router({
   unletter: authed('manage', 'all').input(z.object({ letter: z.string().min(1) })).mutation(({ ctx, input }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.journalEntryLine.updateMany({ where: { letter: input.letter, entry: { is: scope(ctx.societeId) } }, data: { letter: null } }))
   ),
+
+  /** Écriture de clôture de TVA (journal OD) : solde 44571/44566 vers 44551 (à décaisser) ou 44567 (crédit). */
+  closeVat: authed('create', 'Accounting').input(z.object({ from: z.string().optional(), to: z.string().optional() }).optional()).mutation(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const dateFilter = input?.from || input?.to ? { date: { gte: input?.from ? new Date(input.from) : undefined, lte: input?.to ? new Date(input.to) : undefined } } : {};
+      const accs = await tx.account.findMany({ where: { ...scope(ctx.societeId), code: { in: ['445710', '445660', '445510', '445670'] } }, select: { id: true, code: true } });
+      const byCode = new Map(accs.map((a) => [a.code, a.id]));
+      for (const c of ['445710', '445660', '445510', '445670']) if (!byCode.get(c)) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Initialisez le plan comptable (comptes de TVA).' });
+      const r2v = (v: number) => Math.round(v * 100) / 100;
+      const sumFor = async (code: string) => { const g = await tx.journalEntryLine.aggregate({ where: { accountId: byCode.get(code)!, entry: { is: { ...scope(ctx.societeId), ...dateFilter } } }, _sum: { debit: true, credit: true } }); return { d: n(g._sum.debit), c: n(g._sum.credit) }; };
+      const cc = await sumFor('445710'); const dd = await sumFor('445660');
+      const collectee = r2v(cc.c - cc.d); const deductible = r2v(dd.d - dd.c);
+      if (collectee === 0 && deductible === 0) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Aucune TVA à clôturer.' });
+      const net = r2v(collectee - deductible);
+      const journal = await tx.journal.findFirst({ where: { ...scope(ctx.societeId), type: 'od' } });
+      if (!journal) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Journal OD manquant.' });
+      const lines: { accountId: string; label: string; debit: number; credit: number; position: number }[] = [
+        { accountId: byCode.get('445710')!, label: 'TVA collectée', debit: collectee, credit: 0, position: 0 },
+        { accountId: byCode.get('445660')!, label: 'TVA déductible', debit: 0, credit: deductible, position: 1 },
+      ];
+      if (net > 0) lines.push({ accountId: byCode.get('445510')!, label: 'TVA à décaisser', debit: 0, credit: net, position: 2 });
+      else if (net < 0) lines.push({ accountId: byCode.get('445670')!, label: 'Crédit de TVA', debit: -net, credit: 0, position: 2 });
+      const entry = await tx.journalEntry.create({ data: { organizationId: ctx.user.organizationId, societeId, journalId: journal.id, date: input?.to ? new Date(input.to) : new Date(), label: 'Clôture de TVA', createdById: ctx.user.id, lines: { create: lines } } });
+      return { id: entry.id, collectee, deductible, net };
+    });
+  }),
 });

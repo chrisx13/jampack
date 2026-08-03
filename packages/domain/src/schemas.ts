@@ -466,6 +466,8 @@ export const PCG_MINIMAL: { code: string; name: string }[] = [
   { code: '411000', name: 'Clients' },
   { code: '445660', name: 'TVA déductible' },
   { code: '445710', name: 'TVA collectée' },
+  { code: '445510', name: 'TVA à décaisser' },
+  { code: '445670', name: 'Crédit de TVA à reporter' },
   { code: '512000', name: 'Banque' },
   { code: '530000', name: 'Caisse' },
   { code: '607000', name: 'Achats de marchandises' },
