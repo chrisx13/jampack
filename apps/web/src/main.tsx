@@ -9,10 +9,11 @@ import { activeSociete } from './activeSociete';
 import { authEnabled, oidcConfig, accessToken } from './auth';
 import App from './App';
 
-// Charte officielle Jampack (Bootstrap 5 + DM Sans + icônes)
-import '@fontsource/dm-sans/400.css';
-import '@fontsource/dm-sans/500.css';
-import '@fontsource/dm-sans/700.css';
+// Thème JAMPACK (Bootstrap 5 + Inter + icônes)
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './theme/theme.scss';
 

@@ -55,11 +55,11 @@ export const themeColors = z.object({
 export type ThemeColors = z.infer<typeof themeColors>;
 
 export const DEFAULT_THEME: ThemeColors = {
-  primary: '#007D88',
-  success: '#00D67F',
-  info: '#18DDEF',
-  warning: '#FFC400',
-  danger: '#FF0000',
+  primary: '#4F46E5', // indigo-600
+  success: '#10B981', // emerald-500
+  info: '#0EA5E9', // sky-500
+  warning: '#F59E0B', // amber-500
+  danger: '#EF4444', // red-500
 };
 
 // ── Référentiels : catégories d'articles ──
