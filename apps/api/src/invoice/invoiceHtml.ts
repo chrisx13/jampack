@@ -1,9 +1,11 @@
 type Line = { label: string; quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown };
 type Invoice = {
   number: string | null;
+  docType?: string | null;
   status: string;
   issueDate: Date | null;
   dueDate: Date | null;
+  validUntil?: Date | null;
   notes: string | null;
   company: { name: string } | null;
   establishment: { name?: string | null; addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
@@ -12,6 +14,8 @@ type Invoice = {
   paymentTerm?: { label: string } | null;
   lines: Line[];
 };
+
+const DOC_TITLES: Record<string, string> = { devis: 'DEVIS', facture: 'FACTURE', avoir: 'AVOIR' };
 type Societe = Record<string, unknown> & { name: string };
 type Totals = { totalHt: number; totalTva: number; totalTtc: number };
 
@@ -21,9 +25,17 @@ const d = (v: Date | null) => (v ? new Date(v).toLocaleDateString('fr-FR') : '�
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 const s = (soc: Societe, k: string) => (soc[k] ? String(soc[k]) : '');
 
-/** Rendu HTML A4 d'une facture (champs de fusion société + facture + subrogation). */
-export function renderInvoiceHtml(inv: Invoice, soc: Societe, totals: Totals): string {
-  const title = inv.status === 'draft' ? 'FACTURE (BROUILLON)' : 'FACTURE';
+/** Rendu HTML A4 d'une pièce de vente (devis / facture / avoir). */
+export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): string {
+  const docType = inv.docType ?? 'facture';
+  const base = DOC_TITLES[docType] ?? 'FACTURE';
+  const title = inv.status === 'draft' ? `${base} (BROUILLON)` : base;
+  const secondDate = docType === 'devis'
+    ? { lbl: 'Validité', val: inv.validUntil ?? null }
+    : docType === 'avoir'
+      ? null
+      : { lbl: 'Échéance', val: inv.dueDate ?? null };
+  const showSubrogation = docType === 'facture';
   const addr = [s(soc, 'addressLine1'), s(soc, 'addressLine2'), [s(soc, 'postalCode'), s(soc, 'city')].filter(Boolean).join(' ')].filter(Boolean);
   const contact = [s(soc, 'phone') && `Tél. ${s(soc, 'phone')}`, s(soc, 'email'), s(soc, 'website')].filter(Boolean);
   const est = inv.establishment;
@@ -37,7 +49,7 @@ export function renderInvoiceHtml(inv: Invoice, soc: Societe, totals: Totals): s
     s(soc, 'ape') && `APE ${s(soc, 'ape')}`,
   ].filter(Boolean).join(' · ');
 
-  const subrogation = inv.factor
+  const subrogation = showSubrogation && inv.factor
     ? `<div class="subro"><strong>Subrogation — affacturage.</strong> Le règlement de cette facture doit être effectué à <strong>${esc(inv.factor.name)}</strong>${inv.factor.iban ? `, IBAN <strong>${esc(inv.factor.iban)}</strong>` : ''}, subrogé dans nos droits, à qui vous devez payer valablement.</div>`
     : '';
 
@@ -88,7 +100,7 @@ export function renderInvoiceHtml(inv: Invoice, soc: Societe, totals: Totals): s
       <h1>${title}</h1>
       <div class="num">${esc(inv.number ?? '—')}</div>
       <div class="muted">Émission : ${d(inv.issueDate)}</div>
-      <div class="muted">Échéance : ${d(inv.dueDate)}</div>
+      ${secondDate ? `<div class="muted">${secondDate.lbl} : ${d(secondDate.val)}</div>` : ''}
     </div>
   </div>
 

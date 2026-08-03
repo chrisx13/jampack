@@ -40,7 +40,9 @@ async function main() {
     ['read', 'Contact'], ['create', 'Contact'], ['update', 'Contact'],
     ['read', 'Opportunity'], ['create', 'Opportunity'], ['update', 'Opportunity'],
     ['read', 'Product'], ['create', 'Product'], ['update', 'Product'],
+    ['read', 'Quote'], ['create', 'Quote'], ['update', 'Quote'],
     ['read', 'Invoice'], ['create', 'Invoice'], ['update', 'Invoice'],
+    ['read', 'CreditNote'], ['create', 'CreditNote'], ['update', 'CreditNote'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -64,9 +66,14 @@ async function main() {
     'read:Contact', 'create:Contact', 'update:Contact',
     'read:Opportunity', 'create:Opportunity', 'update:Opportunity',
     'read:Product', 'create:Product', 'update:Product',
+    'read:Quote', 'create:Quote', 'update:Quote',
     'read:Invoice', 'create:Invoice', 'update:Invoice',
+    'read:CreditNote', 'create:CreditNote', 'update:CreditNote',
   ]);
-  const comptable = await role('Comptable', ['read:Company', 'read:Contact', 'read:Opportunity', 'read:Product']);
+  const comptable = await role('Comptable', [
+    'read:Company', 'read:Contact', 'read:Opportunity', 'read:Product',
+    'read:Quote', 'read:Invoice', 'read:CreditNote',
+  ]);
 
   // ── Utilisateurs ──
   const userAdmin = await prisma.user.upsert({ where: { email: 'admin@demo.fr' }, update: {}, create: { email: 'admin@demo.fr', name: 'Admin Demo' } });
@@ -208,17 +215,35 @@ async function main() {
   await prisma.company.update({ where: { id: c1.id }, data: { paymentTermId: term30.id, factorId: factor.id, factorMandatory: true } });
 
   // ── Facture de démonstration (brouillon) ──
-  const existingInvoice = await prisma.invoice.findFirst({ where: { societeId: boulangerie.id } });
+  const existingInvoice = await prisma.invoice.findFirst({ where: { societeId: boulangerie.id, docType: 'facture' } });
   if (!existingInvoice) {
     await prisma.invoice.create({
       data: {
-        organizationId: org.id, societeId: boulangerie.id, companyId: c1.id, status: 'draft',
+        organizationId: org.id, societeId: boulangerie.id, companyId: c1.id, docType: 'facture', status: 'draft',
         notes: 'Facture de démonstration',
         factorId: factor.id, bankAccountId: bank.id, paymentTermId: term30.id,
         lines: {
           create: [
             { label: 'Baguette tradition', quantity: 100, unitPriceHt: 1.1, taxRatePct: 5.5, position: 0 },
             { label: 'Croissant', quantity: 50, unitPriceHt: 1.2, taxRatePct: 5.5, position: 1 },
+          ],
+        },
+      },
+    });
+  }
+
+  // ── Devis de démonstration (brouillon) ──
+  const existingQuote = await prisma.invoice.findFirst({ where: { societeId: boulangerie.id, docType: 'devis' } });
+  if (!existingQuote) {
+    await prisma.invoice.create({
+      data: {
+        organizationId: org.id, societeId: boulangerie.id, companyId: c2.id, docType: 'devis', status: 'draft',
+        notes: 'Devis de démonstration',
+        paymentTermId: term30.id,
+        lines: {
+          create: [
+            { label: 'Pain de campagne', quantity: 80, unitPriceHt: 2.4, taxRatePct: 5.5, position: 0 },
+            { label: 'Fourniture hebdomadaire', quantity: 1, unitPriceHt: 120, taxRatePct: 20, position: 1 },
           ],
         },
       },

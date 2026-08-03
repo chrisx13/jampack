@@ -429,10 +429,21 @@ model Invoice {
   bankAccountId   String?
   paymentTerm     PaymentTerm?   @relation(fields: [paymentTermId], references: [id])
   paymentTermId   String?
+  // Type de pièce de vente : un seul modèle sert le devis, la facture et l'avoir.
+  docType         String         @default("facture") // devis | facture | avoir
+  // Filiation entre pièces : devis → facture → avoir (traçabilité de la conversion).
+  source          Invoice?       @relation("DocLineage", fields: [sourceId], references: [id], onDelete: SetNull)
+  sourceId        String?
+  derived         Invoice[]      @relation("DocLineage")
   number          String?        // null tant que brouillon ; attribué à la validation
-  status          String         @default("draft") // draft | validated | paid | cancelled
+  // Statuts selon docType :
+  //   facture : draft | validated | paid | cancelled
+  //   devis   : draft | sent | accepted | refused | converted | cancelled
+  //   avoir   : draft | validated | cancelled
+  status          String         @default("draft")
   issueDate       DateTime?
-  dueDate         DateTime?
+  dueDate         DateTime?      // facture : échéance de règlement
+  validUntil      DateTime?      // devis : date de validité
   notes           String?
   lines           InvoiceLine[]
   createdById     String?
@@ -442,6 +453,8 @@ model Invoice {
   @@index([organizationId])
   @@index([societeId])
   @@index([companyId])
+  @@index([societeId, docType])
+  @@index([sourceId])
 }
 
 model InvoiceLine {
