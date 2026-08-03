@@ -46,6 +46,7 @@ async function main() {
     ['read', 'Payment'], ['create', 'Payment'], ['delete', 'Payment'],
     ['read', 'Warehouse'], ['create', 'Warehouse'], ['update', 'Warehouse'],
     ['read', 'StockMovement'], ['create', 'StockMovement'], ['delete', 'StockMovement'],
+    ['read', 'PurchaseOrder'], ['create', 'PurchaseOrder'], ['update', 'PurchaseOrder'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -75,6 +76,7 @@ async function main() {
     'read:Payment', 'create:Payment', 'delete:Payment',
     'read:Warehouse', 'create:Warehouse', 'update:Warehouse',
     'read:StockMovement', 'create:StockMovement', 'delete:StockMovement',
+    'read:PurchaseOrder', 'create:PurchaseOrder', 'update:PurchaseOrder',
   ]);
   const comptable = await role('Comptable', [
     'read:Company', 'read:Contact', 'read:Opportunity', 'read:Product',
@@ -283,6 +285,25 @@ async function main() {
       const p = await prisma.product.findFirst({ where: { societeId: boulangerie.id, name: productName } });
       if (p) await prisma.stockMovement.create({ data: { organizationId: org.id, societeId: boulangerie.id, warehouseId: whBoul.id, productId: p.id, kind: 'entree', quantity: qty, note: 'Stock initial' } });
     }
+  }
+
+  // ── Achats : fournisseur + commande de démonstration (brouillon) ──
+  const supplier = await ensureCompany(boulangerie.id, 'Moulins de Lyon');
+  await prisma.company.update({ where: { id: supplier.id }, data: { isSupplier: true, isCustomer: false } });
+  const poExists = await prisma.purchaseOrder.findFirst({ where: { societeId: boulangerie.id } });
+  if (!poExists) {
+    await prisma.purchaseOrder.create({
+      data: {
+        organizationId: org.id, societeId: boulangerie.id, supplierId: supplier.id, warehouseId: whBoul.id, status: 'draft',
+        notes: 'Commande de démonstration',
+        lines: {
+          create: [
+            { label: 'Farine T65 (sac 25 kg)', quantity: 40, unitPriceHt: 18, position: 0 },
+            { label: 'Levure fraîche (kg)', quantity: 10, unitPriceHt: 3.5, position: 1 },
+          ],
+        },
+      },
+    });
   }
 
   console.log('Seed OK — compte=%s ; sociétés=[Boulangerie, Studio] ; users: admin@demo.fr (Admin+Comptable@Boulangerie, Commercial@Studio), compta@demo.fr (Comptable@Boulangerie)', org.name);

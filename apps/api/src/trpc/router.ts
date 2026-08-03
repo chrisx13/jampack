@@ -10,6 +10,7 @@ import { creditNoteRouter } from '../invoice/creditNote.router';
 import { paymentRouter } from '../invoice/payment.router';
 import { billingRouter } from '../billing/billing.router';
 import { stockRouter } from '../stock/stock.router';
+import { purchaseRouter } from '../purchases/purchase.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -23,6 +24,7 @@ export const appRouter = router({
   payments: paymentRouter,
   billing: billingRouter,
   stock: stockRouter,
+  purchases: purchaseRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */

@@ -351,6 +351,41 @@ export const stockMovementCreate = z.object({
 });
 export type StockMovementCreate = z.infer<typeof stockMovementCreate>;
 
+// ── Achats : commandes fournisseurs ──
+export const PO_STATUS_LABELS: Record<string, string> = {
+  draft: 'Brouillon', sent: 'Envoyée', received: 'Réceptionnée', cancelled: 'Annulée',
+};
+
+export const poLineInput = z.object({
+  productId: z.string().optional(),
+  label: z.string().min(1),
+  quantity: z.number().positive(),
+  unitPriceHt: z.number().nonnegative(),
+  position: z.number().int().optional(),
+});
+export type PoLineInput = z.infer<typeof poLineInput>;
+
+export const purchaseOrderCreate = z.object({
+  supplierId: z.string().min(1),
+  warehouseId: z.string().optional(),
+  orderDate: z.string().optional(),
+  expectedDate: z.string().optional(),
+  notes: z.string().optional(),
+  lines: z.array(poLineInput).default([]),
+});
+export type PurchaseOrderCreate = z.infer<typeof purchaseOrderCreate>;
+
+export const purchaseOrderUpdate = z.object({
+  id: z.string().min(1),
+  supplierId: z.string().optional(),
+  warehouseId: z.string().nullable().optional(),
+  orderDate: z.string().nullable().optional(),
+  expectedDate: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  lines: z.array(poLineInput).optional(),
+});
+export type PurchaseOrderUpdate = z.infer<typeof purchaseOrderUpdate>;
+
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
 export function computeInvoiceTotals(
   lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[]

@@ -40,6 +40,7 @@ model Organization {
   payments        Payment[]
   warehouses      Warehouse[]
   stockMovements  StockMovement[]
+  purchaseOrders  PurchaseOrder[]
 }
 
 // ── Société gérée dans le compte (entité juridique : compta/factu séparées) ──
@@ -85,6 +86,7 @@ model Societe {
   payments        Payment[]
   warehouses      Warehouse[]
   stockMovements  StockMovement[]
+  purchaseOrders  PurchaseOrder[]
   @@unique([organizationId, name])
   @@index([organizationId])
 }
@@ -162,6 +164,7 @@ model Company {
   opportunities  Opportunity[]
   establishments Establishment[]
   invoices       Invoice[]
+  purchaseOrders PurchaseOrder[]
   factor          Factor?      @relation(fields: [factorId], references: [id])
   factorId        String?
   factorMandatory Boolean      @default(false)
@@ -310,6 +313,7 @@ model Product {
   categoryId     String?
   invoiceLines   InvoiceLine[]
   stockMovements StockMovement[]
+  purchaseLines  PurchaseOrderLine[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   @@index([organizationId])
@@ -332,6 +336,7 @@ model Warehouse {
   isDefault      Boolean         @default(false)
   isActive       Boolean         @default(true)
   movements      StockMovement[]
+  purchaseOrders PurchaseOrder[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   @@index([organizationId])
@@ -359,6 +364,46 @@ model StockMovement {
   @@index([societeId])
   @@index([warehouseId])
   @@index([productId])
+}
+
+// ── Achats : commandes fournisseurs (le fournisseur est une Company isSupplier) ──
+model PurchaseOrder {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  supplier       Company      @relation(fields: [supplierId], references: [id])
+  supplierId     String
+  warehouse      Warehouse?   @relation(fields: [warehouseId], references: [id])
+  warehouseId    String?      // entrepôt de destination des réceptions
+  number         String?      // null tant que brouillon ; attribué à la validation
+  status         String       @default("draft") // draft | sent | received | cancelled
+  orderDate      DateTime?
+  expectedDate   DateTime?
+  notes          String?
+  lines          PurchaseOrderLine[]
+  createdById    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@unique([societeId, number])
+  @@index([organizationId])
+  @@index([societeId])
+  @@index([supplierId])
+}
+
+model PurchaseOrderLine {
+  id               String        @id @default(cuid())
+  order            PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId          String
+  product          Product?      @relation(fields: [productId], references: [id])
+  productId        String?
+  label            String
+  quantity         Decimal       @db.Decimal(12, 3) @default(1)
+  unitPriceHt      Decimal       @db.Decimal(12, 2) @default(0)
+  quantityReceived Decimal       @db.Decimal(12, 3) @default(0)
+  position         Int           @default(0)
+  @@index([orderId])
 }
 
 // ── Catégories d'articles (référentiel par société, hiérarchie optionnelle) ──

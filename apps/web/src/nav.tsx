@@ -8,6 +8,7 @@ import Devis from './pages/Devis';
 import Factures from './pages/Factures';
 import Avoirs from './pages/Avoirs';
 import Echeancier from './pages/Echeancier';
+import PurchaseOrders from './pages/PurchaseOrders';
 import StockLevels from './pages/StockLevels';
 import StockMovements from './pages/StockMovements';
 import Warehouses from './pages/Warehouses';
@@ -55,6 +56,14 @@ export const DOMAINS: Domain[] = [
       { id: 'invoices', label: 'Factures', icon: 'bi-file-earmark-text', element: <Factures />, can: ['read', 'Invoice'] },
       { id: 'credit-notes', label: 'Avoirs', icon: 'bi-file-earmark-minus', element: <Avoirs />, can: ['read', 'CreditNote'] },
       { id: 'echeancier', label: 'Échéancier', icon: 'bi-calendar-check', element: <Echeancier />, can: ['read', 'Payment'] },
+    ],
+  },
+  {
+    id: 'achats',
+    label: 'Achats',
+    icon: 'bi-cart',
+    views: [
+      { id: 'purchase-orders', label: 'Commandes', icon: 'bi-cart-check', element: <PurchaseOrders />, can: ['read', 'PurchaseOrder'] },
     ],
   },
   {

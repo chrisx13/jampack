@@ -117,7 +117,8 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **2 Ventes** | **E-invoicing Factur-X / PDP** | ❌ | PDF simple (pas hybride Factur-X) ; aucune intégration PDP — **point réglementaire n°1, non commencé** |
 | **3 Stock** | Entrepôts + mouvements (entrée/sortie/ajustement) + niveaux calculés | ✅ | `stock.router.ts` (`warehouses`, `movements`, `levels`), modèles `Warehouse`/`StockMovement` |
 | **3 Stock** | Valorisation (PMP/FIFO), inventaires, lots/seuils | ❌ | `StockMovement.unitCost` prévu, non exploité |
-| **3 Achats** | Commandes fournisseurs, réceptions, factures fournisseurs | ❌ | phase future (les réceptions génèreront des mouvements d'entrée) |
+| **3 Achats** | Commandes fournisseurs → **réceptions** (génèrent les entrées de stock) | ✅ | `purchase.router.ts` (`orders.validate`/`receive`), modèles `PurchaseOrder`/`PurchaseOrderLine` ; fournisseur = `Company.isSupplier` |
+| **3 Achats** | Factures fournisseurs, échéancier fournisseur, rapprochement | ❌ | phase future |
 | **4** | Comptabilité (écritures, TVA/CA3, FEC) | ❌ | phase future |
 | **5** | Trésorerie & BI | ❌ | phase future |
 | transverse | Administration in-app (inviter users, gérer sociétés/rôles) | ⚠️ | lecture seule (`iam.members`) ; pas d'invitation ni d'édition de rôles |
