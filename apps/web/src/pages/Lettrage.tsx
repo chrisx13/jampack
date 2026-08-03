@@ -14,7 +14,7 @@ export default function Lettrage() {
   const unletter = trpc.accounting.unletter.useMutation();
 
   const [sel, setSel] = useState<Set<string>>(new Set());
-  const toggle = (id: string) => setSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggle = (id: string) => setSel((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
 
   const selected = (lines.data ?? []).filter((l) => sel.has(l.id));
   const selDebit = useMemo(() => Math.round(selected.reduce((s, l) => s + l.debit, 0) * 100) / 100, [selected]);

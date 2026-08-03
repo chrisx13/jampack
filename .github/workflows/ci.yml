@@ -25,6 +25,7 @@ jobs:
       - run: pnpm --filter @jampack/db exec prisma generate
       - run: pnpm --filter @jampack/db exec prisma migrate deploy
       - run: pnpm --filter @jampack/db seed
+      - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test:cov       # tests unitaires (domaine) + couverture ≥ 90 %
       - run: pnpm test:int       # tests d'intégration des routeurs (DB réelle)

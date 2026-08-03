@@ -10,7 +10,7 @@ Garantir l'exactitude métier (totaux, numérotation, statuts, intégration acha
 | Niveau | Portée | Outillage | État |
 |---|---|---|---|
 | Statique | Types, contrats | `tsc --noEmit` (5 packages) en CI | ✅ |
-| Statique | Style/qualité | ESLint | ⏳ (script présent, hors CI) |
+| Statique | Style/qualité | ESLint (flat config, en CI) | ✅ |
 | **Unitaire** | **Logique métier (`packages/domain`)** | **Vitest + couverture v8, en CI** | ✅ **100 % lignes/fonctions, 98 % branches** |
 | **Intégration** | **Routeurs tRPC via `createCaller` + DB réelle** | **Vitest (config dédiée), exécution séquentielle** | ✅ **8 tests** (ventes, règlements, comptabilisation, stock, valorisation, achats/réception, factures fournisseurs, écritures) |
 | Bout-en-bout UI | Parcours web authentifié | Playwright | ⏳ |

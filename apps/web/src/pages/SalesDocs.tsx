@@ -326,7 +326,7 @@ function PaymentsCard({ invoiceId, totalTtc }: { invoiceId: string; totalTtc: nu
   const [method, setMethod] = useState<PaymentMethod>('virement');
   const [date, setDate] = useState('');
   const [reference, setReference] = useState('');
-  useEffect(() => { setAmount(remaining > 0 ? remaining : 0); }, [list.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setAmount(remaining > 0 ? remaining : 0); }, [list.data]); // amount réinitialisé au reste dû quand les règlements changent
 
   const refresh = () => {
     utils.payments.listForInvoice.invalidate({ invoiceId });

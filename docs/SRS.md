@@ -190,7 +190,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 ### 4.7 Maintenabilité
 - **NFR-MNT-1 (M)** Types et schémas de validation (Zod) partagés front/back (source unique). ✅
 - **NFR-MNT-2 (S)** Découpage modulaire (un module métier = frontières nettes). ✅
-- **NFR-MNT-3 (S)** `typecheck` + **tests unitaires (couverture ≥ 90 % du domaine)** + build verts en CI sur chaque push. ✅ (lint ⏳)
+- **NFR-MNT-3 (S)** `lint` (ESLint) + `typecheck` + **tests (unitaires ≥ 90 % + intégration)** + build verts en CI sur chaque push. ✅
 
 ### 4.8 Portabilité
 - **NFR-POR-1 (M)** Déploiement conteneurisé reproductible (Docker Compose). ✅

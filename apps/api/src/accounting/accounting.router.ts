@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
 import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_MINIMAL, JOURNAL_TYPES } from '@jampack/domain';
-import { router, protectedProcedure, authed } from '../trpc/trpc';
+import { router, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
 function req(s: string | null): string {
