@@ -284,9 +284,9 @@ async function main() {
 
   const boulHasStock = await prisma.stockMovement.findFirst({ where: { societeId: boulangerie.id } });
   if (!boulHasStock) {
-    for (const [productName, qty] of [['Baguette tradition', 500], ['Croissant', 300]] as [string, number][]) {
+    for (const [productName, qty, unitCost] of [['Baguette tradition', 500, 0.45], ['Croissant', 300, 0.55]] as [string, number, number][]) {
       const p = await prisma.product.findFirst({ where: { societeId: boulangerie.id, name: productName } });
-      if (p) await prisma.stockMovement.create({ data: { organizationId: org.id, societeId: boulangerie.id, warehouseId: whBoul.id, productId: p.id, kind: 'entree', quantity: qty, note: 'Stock initial' } });
+      if (p) await prisma.stockMovement.create({ data: { organizationId: org.id, societeId: boulangerie.id, warehouseId: whBoul.id, productId: p.id, kind: 'entree', quantity: qty, unitCost, note: 'Stock initial' } });
     }
   }
 

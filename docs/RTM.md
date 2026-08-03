@@ -56,7 +56,8 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-STK-1 | `stock/stock.router.ts` (`warehouses`) | seed 2 entrepôts | ✅ |
 | FR-STK-2 | `stock.router.ts` (`movements`) | e2e : entrée/sortie/ajustement signés | ✅ |
 | FR-STK-3 | `stock.router.ts` (`levels`) | e2e : net = +100−30−5 = 65 | ✅ |
-| FR-STK-4 | `StockMovement.unitCost` | — | ⏳ (PMP) |
+| FR-STK-4 | `stock.router.ts` (`valuation`), `StockMovement.unitCost` | e2e : PMP démo = 390 (225+165) | ✅ |
+| FR-STK-5 | inventaires / lots / seuils | — | ⏳ |
 
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |

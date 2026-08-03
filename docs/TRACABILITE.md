@@ -116,7 +116,8 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **2 Ventes** | **Règlements / échéancier** | ✅ | `payment.router.ts` (`create`/`remove`/`echeancier`), modèle `Payment`, statut facture recalculé (validée ⇄ payée) |
 | **2 Ventes** | **E-invoicing Factur-X / PDP** | ❌ | PDF simple (pas hybride Factur-X) ; aucune intégration PDP — **point réglementaire n°1, non commencé** |
 | **3 Stock** | Entrepôts + mouvements (entrée/sortie/ajustement) + niveaux calculés | ✅ | `stock.router.ts` (`warehouses`, `movements`, `levels`), modèles `Warehouse`/`StockMovement` |
-| **3 Stock** | Valorisation (PMP/FIFO), inventaires, lots/seuils | ❌ | `StockMovement.unitCost` prévu, non exploité |
+| **3 Stock** | **Valorisation PMP** (par article) | ✅ | `stock.router.ts` (`valuation`) — PMP des entrées × quantité nette |
+| **3 Stock** | Inventaires, FIFO, lots/seuils | ❌ | phase future |
 | **3 Achats** | Commandes fournisseurs → **réceptions** (génèrent les entrées de stock) | ✅ | `purchase.router.ts` (`orders.validate`/`receive`), modèles `PurchaseOrder`/`PurchaseOrderLine` ; fournisseur = `Company.isSupplier` |
 | **3 Achats** | **Factures fournisseurs** + échéancier fournisseur | ✅ | `supplierInvoice.router.ts` (`validate`/`markPaid`/`echeancier`), modèles `SupplierInvoice`/`SupplierInvoiceLine` |
 | **3 Achats** | Rapprochement commande/réception/facture, règlements fournisseurs partiels | ❌ | phase future (lien `SupplierInvoice.purchaseOrderId` déjà présent) |

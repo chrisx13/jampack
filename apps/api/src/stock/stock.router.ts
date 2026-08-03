@@ -91,4 +91,39 @@ export const stockRouter = router({
         .sort((a, b) => a.productName.localeCompare(b.productName) || a.warehouseName.localeCompare(b.warehouseName));
     })
   ),
+
+  /** Valorisation du stock au PMP (prix moyen pondéré des entrées) par article. */
+  valuation: authed('read', 'StockMovement').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const movements = await tx.stockMovement.findMany({ where: scope(ctx.societeId), select: { productId: true, quantity: true, kind: true, unitCost: true } });
+      if (movements.length === 0) return { rows: [], total: 0 };
+      const agg = new Map<string, { qty: number; entryQty: number; entryValue: number }>();
+      for (const m of movements) {
+        const e = agg.get(m.productId) ?? { qty: 0, entryQty: 0, entryValue: 0 };
+        e.qty += N(m.quantity);
+        if (m.kind === 'entree' && m.unitCost != null) { e.entryQty += N(m.quantity); e.entryValue += N(m.quantity) * N(m.unitCost); }
+        agg.set(m.productId, e);
+      }
+      const products = await tx.product.findMany({ where: scope(ctx.societeId), select: { id: true, name: true, unit: true, reference: true } });
+      const pById = new Map(products.map((p) => [p.id, p]));
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      const r3 = (v: number) => Math.round(v * 1000) / 1000;
+      const rows = [...agg.entries()]
+        .map(([productId, e]) => {
+          const pmp = e.entryQty > 0 ? e.entryValue / e.entryQty : 0;
+          return {
+            productId,
+            productName: pById.get(productId)?.name ?? '—',
+            reference: pById.get(productId)?.reference ?? null,
+            unit: pById.get(productId)?.unit ?? '',
+            quantity: r3(e.qty),
+            pmp: r2(pmp),
+            value: r2(e.qty * pmp),
+          };
+        })
+        .filter((r) => Math.abs(r.quantity) > 0.0005 || r.value !== 0)
+        .sort((a, b) => a.productName.localeCompare(b.productName));
+      return { rows, total: r2(rows.reduce((s, r) => s + r.value, 0)) };
+    })
+  ),
 });

@@ -128,7 +128,8 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-STK-1 | Gérer les **entrepôts** (par société), entrepôt par défaut. | M | ✅ |
 | FR-STK-2 | Enregistrer des **mouvements** (entrée/sortie/ajustement) signés. | M | ✅ |
 | FR-STK-3 | Calculer les **niveaux de stock** nets par article et entrepôt. | M | ✅ |
-| FR-STK-4 | **Valorisation** (PMP/FIFO), inventaires, seuils, lots/n° de série. | C | ⏳ (`unitCost` capturé) |
+| FR-STK-4 | **Valorisation PMP** (prix moyen pondéré des entrées) par article. | S | ✅ |
+| FR-STK-5 | Inventaires, seuils de réapprovisionnement, lots/n° de série, FIFO. | C | ⏳ |
 
 ### 3.7 Comptabilité (Jalon 4)
 | ID | Exigence | Prio | Statut |

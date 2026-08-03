@@ -12,6 +12,7 @@ import PurchaseOrders from './pages/PurchaseOrders';
 import SupplierInvoices from './pages/SupplierInvoices';
 import SupplierEcheancier from './pages/SupplierEcheancier';
 import StockLevels from './pages/StockLevels';
+import StockValuation from './pages/StockValuation';
 import StockMovements from './pages/StockMovements';
 import Warehouses from './pages/Warehouses';
 import Settings from './pages/Settings';
@@ -76,6 +77,7 @@ export const DOMAINS: Domain[] = [
     icon: 'bi-boxes',
     views: [
       { id: 'stock-levels', label: 'Niveaux', icon: 'bi-clipboard-data', element: <StockLevels />, can: ['read', 'StockMovement'] },
+      { id: 'stock-valuation', label: 'Valorisation', icon: 'bi-cash-stack', element: <StockValuation />, can: ['read', 'StockMovement'] },
       { id: 'stock-movements', label: 'Mouvements', icon: 'bi-arrow-left-right', element: <StockMovements />, can: ['read', 'StockMovement'] },
       { id: 'warehouses', label: 'Entrepôts', icon: 'bi-building', element: <Warehouses />, can: ['read', 'Warehouse'] },
     ],
