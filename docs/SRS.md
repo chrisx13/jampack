@@ -81,7 +81,8 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-IAM-4 | **Rôles par société, cumulables** ; permissions effectives = union des rôles sur la société active. | M | ✅ |
 | FR-IAM-5 | Un utilisateur ne voit que les sociétés où il a au moins un rôle ; bascule via sélecteur ; vue consolidée. | M | ✅ |
 | FR-IAM-6 | Contrôle d'accès **CASL** appliqué côté serveur (mutations → FORBIDDEN) et masquage UI. | M | ✅ |
-| FR-IAM-7 | Administration in-app : inviter des utilisateurs, gérer sociétés et rôles. | S | ⏳ |
+| FR-IAM-7 | Administration in-app : **inviter des utilisateurs, attribuer/révoquer des rôles par société** (garde-fou dernier admin). | S | ✅ |
+| FR-IAM-7b | Création/édition des sociétés depuis l'app. | S | ⏳ |
 | FR-IAM-8 | Éditeur de rôles fin `module.domaine.action` (catalogue `rights.ts`). | C | ⏳ |
 
 ### 3.2 CRM

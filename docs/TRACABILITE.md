@@ -127,7 +127,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **4 Compta** | **Déclaration de TVA (CA3)** | ✅ | `accounting.vatReturn` — collectée (44571) − déductible (44566) |
 | **4 Compta** | Lettrage, rapprochement bancaire, clôture TVA | ❌ | phase future |
 | **5** | Trésorerie & BI | ❌ | phase future |
-| transverse | Administration in-app (inviter users, gérer sociétés/rôles) | ⚠️ | lecture seule (`iam.members`) ; pas d'invitation ni d'édition de rôles |
+| transverse | Administration in-app : inviter users, attribuer/révoquer rôles | ✅ | `iam.router` (`invite`/`grantRole`/`revokeRole`), garde-fou dernier admin, page `Members.tsx` |
 
 **Position actuelle : Jalon 2 (Ventes) quasi complet.** Chaîne devis → facture → avoir + **règlements
 et échéancier client** opérationnels (un seul modèle `Invoice` discriminé par `docType`, PDF partagé,

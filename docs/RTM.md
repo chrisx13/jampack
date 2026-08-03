@@ -13,7 +13,8 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-IAM-2 | OIDC Keycloak | `auth/oidc.ts`, `keycloak/realm-jampack.json` | boot stack : login SSO OK | ✅ |
 | FR-IAM-4/5 | Rôles par société cumulables | `SocieteRole`, `context.ts` | seed 2 users multi-rôles | ✅ |
 | FR-IAM-6 | CASL serveur + UI | `domain/ability.ts`, `trpc/trpc.ts` (`authed`) | mutations → FORBIDDEN | ✅ |
-| FR-IAM-7/8 | Admin in-app / éditeur de rôles | `iam.router` (lecture), `rights.ts` | — | ⏳ |
+| FR-IAM-7 | `iam.router` (`invite`/`grantRole`/`revokeRole`), `Members.tsx` | e2e int : invite→grant→revoke ; garde-fou dernier admin | ✅ |
+| FR-IAM-8 | Éditeur de droits fin `rights.ts` | — | ⏳ |
 
 ## CRM
 | Exigence | Code | Test / Preuve | État |
