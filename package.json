@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
+    "test:int": "vitest run -c vitest.integration.config.ts",
     "db:migrate": "pnpm --filter @jampack/db migrate",
     "db:seed": "pnpm --filter @jampack/db seed",
     "db:rls": "pnpm --filter @jampack/db rls"

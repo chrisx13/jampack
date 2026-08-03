@@ -12,7 +12,7 @@ Garantir l'exactitude métier (totaux, numérotation, statuts, intégration acha
 | Statique | Types, contrats | `tsc --noEmit` (5 packages) en CI | ✅ |
 | Statique | Style/qualité | ESLint | ⏳ (script présent, hors CI) |
 | **Unitaire** | **Logique métier (`packages/domain`)** | **Vitest + couverture v8, en CI** | ✅ **100 % lignes/fonctions, 98 % branches** |
-| Composant/intégration | Routeurs tRPC via `createCaller` + DB réelle | Vitest + Postgres éphémère | 🔧 (scripts e2e réalisés, à pérenniser) |
+| **Intégration** | **Routeurs tRPC via `createCaller` + DB réelle** | **Vitest (config dédiée), exécution séquentielle** | ✅ **8 tests** (ventes, règlements, comptabilisation, stock, valorisation, achats/réception, factures fournisseurs, écritures) |
 | Bout-en-bout UI | Parcours web authentifié | Playwright | ⏳ |
 | Sécurité | Isolation RLS, FORBIDDEN | Cas dédiés | 🔧 |
 
@@ -33,8 +33,10 @@ Fichiers : `packages/domain/src/*.test.ts`. Commande : `pnpm test:cov`.
 | Achats | commande CM-0001 → réception → stock +200 ; quantité reçue = 200 |
 | Factures fournisseurs | validée→échéancier ; payée→date+hors échéancier ; TTC=240 |
 
-> Ces scénarios ont été exécutés comme scripts jetables contre la base de la stack Docker (nettoyés
-> après exécution). **Prochaine étape** : les pérenniser en tests Vitest versionnés + DB éphémère en CI.
+> Ces scénarios sont désormais **pérennisés** en tests Vitest versionnés (`apps/api/src/tests/*.int.test.ts`,
+> config `vitest.integration.config.ts`), idempotents (auto-nettoyage). Commande : `pnpm test:int`
+> (nécessite `DATABASE_URL` + base migrée/seedée). **Prochaine étape** : les intégrer à la CI (migrate+seed
+> puis `test:int`) et mesurer la couverture serveur.
 
 ## 4. Environnements
 - **Local/démo** : Docker Compose (db+keycloak+app+web), base seedée.
