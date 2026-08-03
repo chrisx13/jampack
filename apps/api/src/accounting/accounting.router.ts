@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, byId, PCG_MINIMAL, JOURNAL_TYPES } from '@jampack/domain';
+import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_MINIMAL, JOURNAL_TYPES } from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -123,4 +123,38 @@ export const accountingRouter = router({
       return { rows, totalDebit: r2(rows.reduce((s, r) => s + r.debit, 0)), totalCredit: r2(rows.reduce((s, r) => s + r.credit, 0)) };
     })
   ),
+
+  /** Comptabilise une facture de vente : écriture au journal des ventes (411 débit TTC = 707 HT + 44571 TVA). */
+  postSalesInvoice: authed('create', 'Accounting').input(byId).mutation(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const inv = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: { lines: true, company: { select: { name: true } } } });
+      if (inv.docType !== 'facture') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Seule une facture se comptabilise.' });
+      if (inv.status === 'draft' || inv.status === 'cancelled') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Validez la facture avant de la comptabiliser.' });
+      if (inv.journalEntryId) return { id: inv.journalEntryId, alreadyPosted: true };
+      const totals = computeInvoiceTotals(inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+      const [journal, client, ventes, tva] = await Promise.all([
+        tx.journal.findFirst({ where: { ...scope(ctx.societeId), type: 'vente' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '411000' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '707000' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '445710' } }),
+      ]);
+      if (!journal || !client || !ventes || !tva) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Initialisez le plan comptable et les journaux (Comptabilité ▸ Plan comptable).' });
+      const entry = await tx.journalEntry.create({
+        data: {
+          organizationId: ctx.user.organizationId, societeId, journalId: journal.id,
+          date: inv.issueDate ?? new Date(), reference: inv.number, label: `Facture ${inv.number ?? ''} — ${inv.company?.name ?? ''}`.trim(), createdById: ctx.user.id,
+          lines: {
+            create: [
+              { accountId: client.id, label: 'Client', debit: totals.totalTtc, credit: 0, position: 0 },
+              { accountId: ventes.id, label: 'Ventes HT', debit: 0, credit: totals.totalHt, position: 1 },
+              ...(totals.totalTva > 0 ? [{ accountId: tva.id, label: 'TVA collectée', debit: 0, credit: totals.totalTva, position: 2 }] : []),
+            ],
+          },
+        },
+      });
+      await tx.invoice.update({ where: { id: inv.id }, data: { journalEntryId: entry.id } });
+      return { id: entry.id, alreadyPosted: false };
+    });
+  }),
 });

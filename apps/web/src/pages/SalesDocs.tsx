@@ -92,6 +92,8 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const accept = cfg.key === 'quotes' ? api.accept.useMutation() : null;
   const refuse = cfg.key === 'quotes' ? api.refuse.useMutation() : null;
   const creditNote = cfg.key === 'invoices' ? api.createCreditNote.useMutation() : null;
+  const postAcc = trpc.accounting.postSalesInvoice.useMutation();
+  const posted = !!existing.data?.journalEntryId;
   const busy = create.isPending || update.isPending || validate.isPending;
   const readOnly = status !== 'draft';
   const pdf = usePdf(api);
@@ -149,6 +151,12 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     utils.creditNotes.list.invalidate();
     alert('Avoir (brouillon) créé depuis cette facture — voir l’onglet Avoirs.');
   };
+  const onPost = async () => {
+    const r = await postAcc.mutateAsync({ id });
+    utils.invoices.get.invalidate({ id });
+    utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate();
+    alert(r.alreadyPosted ? 'Facture déjà comptabilisée.' : 'Écriture comptable générée (journal des ventes) — voir Comptabilité ▸ Écritures.');
+  };
 
   const err = create.error || update.error || validate.error || convert?.error || accept?.error || refuse?.error || creditNote?.error;
 
@@ -178,7 +186,12 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
           {cfg.key === 'quotes' && (status === 'sent' || status === 'accepted') && (
             <Button variant="primary" onClick={onConvert} disabled={convert!.isPending}><i className="bi bi-arrow-right-circle me-1" />Convertir en facture</Button>
           )}
-          {/* Facture émise : créer un avoir */}
+          {/* Facture émise : comptabiliser + créer un avoir */}
+          {cfg.key === 'invoices' && readOnly && status !== 'cancelled' && (
+            <Button variant={posted ? 'success' : 'outline-primary'} onClick={onPost} disabled={postAcc.isPending || posted}>
+              <i className={`bi ${posted ? 'bi-journal-check' : 'bi-journal-plus'} me-1`} />{posted ? 'Comptabilisée' : 'Comptabiliser'}
+            </Button>
+          )}
           {cfg.key === 'invoices' && readOnly && status !== 'cancelled' && (
             <Button variant="outline-secondary" onClick={onCreditNote} disabled={creditNote!.isPending}><i className="bi bi-arrow-counterclockwise me-1" />Créer un avoir</Button>
           )}

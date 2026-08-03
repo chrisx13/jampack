@@ -591,6 +591,9 @@ model Invoice {
   notes           String?
   lines           InvoiceLine[]
   payments        Payment[]
+  // Comptabilisation : écriture générée (journal des ventes) — null tant que non comptabilisée.
+  journalEntry    JournalEntry?  @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  journalEntryId  String?
   createdById     String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -702,6 +705,7 @@ model JournalEntry {
   reference      String?      // pièce liée (ex. n° de facture)
   label          String
   lines          JournalEntryLine[]
+  salesInvoice   Invoice[]    // facture(s) de vente comptabilisée(s) par cette écriture
   createdById    String?
   createdAt      DateTime     @default(now())
   @@index([organizationId])
