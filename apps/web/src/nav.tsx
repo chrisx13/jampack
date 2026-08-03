@@ -7,6 +7,7 @@ import Catalogue from './pages/Catalogue';
 import Factures from './pages/Factures';
 import Settings from './pages/Settings';
 import Appearance from './pages/Appearance';
+import SocieteSettings from './pages/SocieteSettings';
 import Placeholder from './pages/Placeholder';
 
 /**
@@ -60,6 +61,7 @@ export const DOMAINS: Domain[] = [
     icon: 'bi-gear-fill',
     views: [
       { id: 'settings', label: 'Paramètres', icon: 'bi-sliders', element: <Settings /> },
+      { id: 'company', label: 'Société (facturation)', icon: 'bi-building-gear', element: <SocieteSettings />, can: ['manage', 'all'] },
       { id: 'appearance', label: 'Apparence', icon: 'bi-palette', element: <Appearance />, can: ['manage', 'all'] },
     ],
   },

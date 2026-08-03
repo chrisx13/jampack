@@ -1,7 +1,9 @@
 import { TRPCError } from '@trpc/server';
+import { chromium } from 'playwright';
 import { withTenant, nextDocumentNumber } from '@jampack/db';
 import { invoiceCreate, invoiceUpdate, computeInvoiceTotals, byId } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
+import { renderInvoiceHtml } from './invoiceHtml';
 
 const scope = (societeId: string | null) => (societeId ? { societeId } : {});
 function requireSociete(societeId: string | null): string {
@@ -104,4 +106,27 @@ export const invoiceRouter = router({
       tx.invoice.update({ where: { id: input.id }, data: { status: 'cancelled' } })
     )
   ),
+
+  /** PDF de la facture (template HTML à champs de fusion → PDF via Chromium). */
+  pdf: authed('read', 'Invoice').input(byId).mutation(async ({ ctx, input }) => {
+    const societeId = requireSociete(ctx.societeId);
+    const { html, filename } = await withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const inv = await tx.invoice.findUniqueOrThrow({
+        where: { id: input.id },
+        include: { lines: { orderBy: { position: 'asc' } }, company: { select: { name: true } }, establishment: true },
+      });
+      const soc = await tx.societe.findUniqueOrThrow({ where: { id: societeId } });
+      const totals = computeInvoiceTotals(inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+      return { html: renderInvoiceHtml(inv, soc, totals), filename: `${inv.number ?? 'brouillon'}.pdf` };
+    });
+    const browser = await chromium.launch({ ignoreDefaultArgs: ['--headless=old'], args: ['--headless=new', '--no-sandbox'] });
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle' });
+      const buf = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '14mm', bottom: '16mm', left: '14mm', right: '14mm' } });
+      return { filename, base64: Buffer.from(buf).toString('base64') };
+    } finally {
+      await browser.close();
+    }
+  }),
 });

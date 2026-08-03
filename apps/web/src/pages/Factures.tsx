@@ -52,6 +52,7 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
   const validate = trpc.invoices.validate.useMutation();
   const busy = create.isPending || update.isPending || validate.isPending;
   const readOnly = status !== 'draft';
+  const pdf = useInvoicePdf();
 
   const totals = useMemo(() => computeInvoiceTotals(lines), [lines]);
 
@@ -91,12 +92,19 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
             <StatusBadge s={status} />
           </div>
         </div>
-        {!readOnly && (
-          <div className="d-flex gap-2">
-            <Button variant="light" onClick={onSave} disabled={busy || !companyId}>{busy ? <Spinner size="sm" /> : <><i className="bi bi-save me-1" />Enregistrer</>}</Button>
-            <Button onClick={onValidate} disabled={busy || !companyId || lines.length === 0}><i className="bi bi-check2-circle me-1" />Valider</Button>
-          </div>
-        )}
+        <div className="d-flex gap-2">
+          {id !== 'new' && (
+            <Button variant="light" title="Télécharger le PDF" disabled={pdf.pending} onClick={() => pdf.download(id)}>
+              <i className="bi bi-filetype-pdf me-1" />PDF
+            </Button>
+          )}
+          {!readOnly && (
+            <>
+              <Button variant="light" onClick={onSave} disabled={busy || !companyId}>{busy ? <Spinner size="sm" /> : <><i className="bi bi-save me-1" />Enregistrer</>}</Button>
+              <Button onClick={onValidate} disabled={busy || !companyId || lines.length === 0}><i className="bi bi-check2-circle me-1" />Valider</Button>
+            </>
+          )}
+        </div>
       </div>
 
       <Card className="mb-3">
@@ -174,9 +182,23 @@ function InvoiceEditor({ id: initialId, onClose }: { id: string | 'new'; onClose
   );
 }
 
+function useInvoicePdf() {
+  const pdf = trpc.invoices.pdf.useMutation();
+  const download = async (id: string) => {
+    const r = await pdf.mutateAsync({ id });
+    const bytes = Uint8Array.from(atob(r.base64), (c) => c.charCodeAt(0));
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = r.filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+  return { download, pending: pdf.isPending };
+}
+
 export default function Factures() {
   const list = trpc.invoices.list.useQuery();
   const can = useCan();
+  const pdf = useInvoicePdf();
   const [editing, setEditing] = useState<string | 'new' | null>(null);
 
   if (editing) return <InvoiceEditor id={editing} onClose={() => setEditing(null)} />;
@@ -204,7 +226,12 @@ export default function Factures() {
                   <td className="text-secondary">{dfmt(r.dueDate)}</td>
                   <td className="text-end fw-medium">{euro.format(r.totalTtc)}</td>
                   <td><StatusBadge s={r.status} /></td>
-                  <td className="text-end pe-3"><i className="bi bi-chevron-right text-secondary" /></td>
+                  <td className="text-end pe-3" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="light" size="sm" className="me-1" title="Télécharger le PDF" disabled={pdf.pending} onClick={() => pdf.download(r.id)}>
+                      <i className="bi bi-filetype-pdf" />
+                    </Button>
+                    <i className="bi bi-chevron-right text-secondary" />
+                  </td>
                 </tr>
               ))}
               {list.data?.length === 0 && <tr><td colSpan={7} className="text-center text-secondary py-4">Aucune facture pour cette société</td></tr>}

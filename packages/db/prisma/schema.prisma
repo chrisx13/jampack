@@ -45,6 +45,26 @@ model Societe {
   siret          String?
   tvaNumber      String?
   city           String?
+  // ── Paramétrage facturation (en-tête / pied de page des documents) ──
+  legalForm      String?   // forme juridique (SARL, SAS…)
+  capital        String?   // capital social
+  rcs            String?   // RCS
+  ape            String?   // code APE/NAF
+  addressLine1   String?
+  addressLine2   String?
+  postalCode     String?
+  phone          String?
+  email          String?
+  website        String?
+  logoUrl        String?   // URL ou data: URL du logo
+  iban           String?
+  bic            String?
+  paymentTerms   String?   // conditions & échéances de paiement (texte)
+  legalMentions  String?   // mentions légales / pénalités de retard
+  cgv            String?   // conditions générales de vente
+  factorName     String?   // affactureur (subrogation)
+  factorIban     String?
+  subrogation    Boolean   @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   companies      Company[]

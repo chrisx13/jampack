@@ -190,6 +190,20 @@ export const activityCreate = z.object({
 });
 export type ActivityCreate = z.infer<typeof activityCreate>;
 
+// ── Paramétrage société (facturation) ──
+const optStr = z.string().max(2000).nullable().optional();
+export const societeSettingsUpdate = z.object({
+  name: z.string().min(1).optional(),
+  siren: optStr, siret: optStr, tvaNumber: optStr,
+  legalForm: optStr, capital: optStr, rcs: optStr, ape: optStr,
+  addressLine1: optStr, addressLine2: optStr, postalCode: optStr, city: optStr,
+  phone: optStr, email: optStr, website: optStr, logoUrl: optStr,
+  iban: optStr, bic: optStr,
+  paymentTerms: optStr, legalMentions: optStr, cgv: optStr,
+  factorName: optStr, factorIban: optStr, subrogation: z.boolean().optional(),
+});
+export type SocieteSettingsUpdate = z.infer<typeof societeSettingsUpdate>;
+
 // ── Facturation ──
 export const invoiceLineInput = z.object({
   productId: z.string().optional(),

@@ -22,6 +22,19 @@ async function main() {
     create: { organizationId: org.id, name: 'Studio Design SAS', siret: '85298765400027', tvaNumber: 'FR55852987654', city: 'Nantes' },
   });
 
+  // Paramétrage facturation de démonstration (Boulangerie)
+  await prisma.societe.update({
+    where: { id: boulangerie.id },
+    data: {
+      legalForm: 'SARL', capital: '10 000 €', siren: '800123456', rcs: 'Lyon B 800 123 456', ape: '1071C',
+      addressLine1: '12 rue de la République', postalCode: '69002', city: 'Lyon',
+      phone: '04 78 00 00 00', email: 'contact@boulangerie-martin.fr', website: 'boulangerie-martin.fr',
+      iban: 'FR76 3000 4000 0100 0001 2345 678', bic: 'AGRIFRPPXXX',
+      paymentTerms: 'Paiement à 30 jours à réception de facture.',
+      legalMentions: "Pénalités de retard : 3× le taux d'intérêt légal. Indemnité forfaitaire de recouvrement des frais : 40 €.",
+    },
+  });
+
   // ── Catalogue de permissions ──
   const permCatalog: [string, string][] = [
     ['manage', 'all'],
