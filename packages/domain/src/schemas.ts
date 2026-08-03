@@ -252,6 +252,7 @@ export const invoiceCreate = z.object({
   establishmentId: z.string().optional(),
   issueDate: z.string().optional(),
   dueDate: z.string().optional(),
+  validUntil: z.string().optional(),
   notes: z.string().optional(),
   factorId: z.string().nullable().optional(),
   bankAccountId: z.string().nullable().optional(),
@@ -266,6 +267,7 @@ export const invoiceUpdate = z.object({
   establishmentId: z.string().nullable().optional(),
   issueDate: z.string().nullable().optional(),
   dueDate: z.string().nullable().optional(),
+  validUntil: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   factorId: z.string().nullable().optional(),
   bankAccountId: z.string().nullable().optional(),
@@ -273,6 +275,44 @@ export const invoiceUpdate = z.object({
   lines: z.array(invoiceLineInput).optional(),
 });
 export type InvoiceUpdate = z.infer<typeof invoiceUpdate>;
+
+/**
+ * Type de pièce de vente et sémantique associée — source unique partagée
+ * par le serveur (numérotation, statuts) et l'UI (libellés, actions).
+ */
+export type SalesDocType = 'devis' | 'facture' | 'avoir';
+
+export interface SalesDocMeta {
+  docType: SalesDocType;
+  subject: string;        // sujet CASL (Quote | Invoice | CreditNote)
+  seqType: string;        // clé de NumberSequence (devis | facture | avoir)
+  issuedStatus: string;   // statut après « validation »/émission
+  singular: string;
+  plural: string;
+}
+
+export const SALES_DOCS: Record<SalesDocType, SalesDocMeta> = {
+  devis:   { docType: 'devis',   subject: 'Quote',      seqType: 'devis',   issuedStatus: 'sent',      singular: 'Devis',  plural: 'Devis' },
+  facture: { docType: 'facture', subject: 'Invoice',    seqType: 'facture', issuedStatus: 'validated', singular: 'Facture', plural: 'Factures' },
+  avoir:   { docType: 'avoir',   subject: 'CreditNote', seqType: 'avoir',   issuedStatus: 'validated', singular: 'Avoir',  plural: 'Avoirs' },
+};
+
+// ── Règlements (encaissements) ──
+export const PAYMENT_METHODS = ['virement', 'cheque', 'cb', 'especes', 'prelevement'] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  virement: 'Virement', cheque: 'Chèque', cb: 'Carte bancaire', especes: 'Espèces', prelevement: 'Prélèvement',
+};
+
+export const paymentCreate = z.object({
+  invoiceId: z.string().min(1),
+  amount: z.number().positive(),
+  date: z.string().optional(),
+  method: z.enum(PAYMENT_METHODS).optional(),
+  reference: z.string().optional(),
+  note: z.string().optional(),
+});
+export type PaymentCreate = z.infer<typeof paymentCreate>;
 
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
 export function computeInvoiceTotals(

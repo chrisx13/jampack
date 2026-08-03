@@ -78,6 +78,12 @@ export default function AppShell() {
   const [openIds, setOpenIds] = useState<string[]>([DASHBOARD_VIEW.id]); // dashboard épinglé en tête
   const [activeId, setActiveId] = useState(DASHBOARD_VIEW.id);
   const [subnavOpen, setSubnavOpen] = useState(true);
+  // Mode d'affichage du panneau secondaire : « pinned » (statique, réserve sa place)
+  // ou « overlay » (à la volée : flotte au-dessus du contenu et se referme après sélection).
+  const [subnavMode, setSubnavMode] = useState<'pinned' | 'overlay'>(
+    () => (typeof localStorage !== 'undefined' && localStorage.getItem('jampack.subnavMode') === 'overlay' ? 'overlay' : 'pinned')
+  );
+  useEffect(() => { try { localStorage.setItem('jampack.subnavMode', subnavMode); } catch { /* stockage indisponible */ } }, [subnavMode]);
   const [dark, setDark] = useState(false);
 
   // Sélectionne un domaine valide dès que les droits sont chargés.
@@ -90,6 +96,7 @@ export default function AppShell() {
   const openView = (id: string) => {
     setOpenIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
     setActiveId(id);
+    if (subnavMode === 'overlay') setSubnavOpen(false); // « à la volée » : referme après sélection
   };
 
   const closeTab = (id: string, e: MouseEvent) => {
@@ -132,7 +139,7 @@ export default function AppShell() {
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
-    <div className={`hk-wrapper${subnavOpen ? '' : ' subnav-collapsed'}`}>
+    <div className={`hk-wrapper${subnavOpen ? '' : ' subnav-collapsed'}${subnavMode === 'overlay' ? ' subnav-overlay' : ''}`}>
       {/* Barre du haut */}
       <nav className="hk-navbar">
         <button className="btn btn-icon btn-sm btn-light border-0" onClick={() => setSubnavOpen((c) => !c)} aria-label="Basculer le panneau">
@@ -183,16 +190,38 @@ export default function AppShell() {
             key={d.id}
             className={`act${d.id === activeDomainId ? ' active' : ''}`}
             title={d.label}
-            onClick={() => { setActiveDomainId(d.id); setSubnavOpen(true); }}
+            onClick={() => {
+              // Comme VS Code : re-cliquer le domaine actif bascule son panneau ;
+              // cliquer un autre domaine le sélectionne et ouvre le panneau.
+              if (d.id === activeDomainId) setSubnavOpen((o) => !o);
+              else { setActiveDomainId(d.id); setSubnavOpen(true); }
+            }}
           >
             <i className={`bi ${d.icon}`} />
           </button>
         ))}
       </div>
 
+      {/* Fond cliquable (mode à la volée) : referme le panneau au clic à côté */}
+      {subnavMode === 'overlay' && subnavOpen && <div className="hk-subnav-backdrop" onClick={() => setSubnavOpen(false)} />}
+
       {/* Panneau secondaire : sous-domaines du domaine actif */}
       <aside className="hk-subnav">
-        <div className="subnav-title">{activeDomain?.label ?? '—'}</div>
+        <div className="subnav-head">
+          <span className="subnav-title">{activeDomain?.label ?? '—'}</span>
+          <div className="subnav-actions">
+            <button
+              className={`subnav-act${subnavMode === 'pinned' ? ' on' : ''}`}
+              title={subnavMode === 'overlay' ? 'Affichage à la volée — cliquer pour épingler' : 'Panneau épinglé — cliquer pour affichage à la volée'}
+              onClick={() => setSubnavMode((m) => (m === 'overlay' ? 'pinned' : 'overlay'))}
+            >
+              <i className={`bi ${subnavMode === 'pinned' ? 'bi-pin-angle-fill' : 'bi-pin-angle'}`} />
+            </button>
+            <button className="subnav-act" title="Fermer le panneau" onClick={() => setSubnavOpen(false)}>
+              <i className="bi bi-x-lg" />
+            </button>
+          </div>
+        </div>
         {activeDomain?.views.map((v) => (
           <a key={v.id} className={`nav-link${activeId === v.id ? ' active' : ''}`} onClick={() => openView(v.id)}>
             <i className={`bi ${v.icon}`} />

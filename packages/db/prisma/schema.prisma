@@ -37,6 +37,7 @@ model Organization {
   paymentTerms      PaymentTerm[]
   numberSequences NumberSequence[]
   invoices        Invoice[]
+  payments        Payment[]
 }
 
 // ── Société gérée dans le compte (entité juridique : compta/factu séparées) ──
@@ -79,6 +80,7 @@ model Societe {
   paymentTerms      PaymentTerm[]
   numberSequences NumberSequence[]
   invoices        Invoice[]
+  payments        Payment[]
   @@unique([organizationId, name])
   @@index([organizationId])
 }
@@ -429,12 +431,24 @@ model Invoice {
   bankAccountId   String?
   paymentTerm     PaymentTerm?   @relation(fields: [paymentTermId], references: [id])
   paymentTermId   String?
+  // Type de pièce de vente : un seul modèle sert le devis, la facture et l'avoir.
+  docType         String         @default("facture") // devis | facture | avoir
+  // Filiation entre pièces : devis → facture → avoir (traçabilité de la conversion).
+  source          Invoice?       @relation("DocLineage", fields: [sourceId], references: [id], onDelete: SetNull)
+  sourceId        String?
+  derived         Invoice[]      @relation("DocLineage")
   number          String?        // null tant que brouillon ; attribué à la validation
-  status          String         @default("draft") // draft | validated | paid | cancelled
+  // Statuts selon docType :
+  //   facture : draft | validated | paid | cancelled
+  //   devis   : draft | sent | accepted | refused | converted | cancelled
+  //   avoir   : draft | validated | cancelled
+  status          String         @default("draft")
   issueDate       DateTime?
-  dueDate         DateTime?
+  dueDate         DateTime?      // facture : échéance de règlement
+  validUntil      DateTime?      // devis : date de validité
   notes           String?
   lines           InvoiceLine[]
+  payments        Payment[]
   createdById     String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -442,6 +456,8 @@ model Invoice {
   @@index([organizationId])
   @@index([societeId])
   @@index([companyId])
+  @@index([societeId, docType])
+  @@index([sourceId])
 }
 
 model InvoiceLine {
@@ -455,6 +471,27 @@ model InvoiceLine {
   unitPriceHt  Decimal  @db.Decimal(12, 2) @default(0)
   taxRatePct   Decimal  @db.Decimal(5, 2)  @default(0) // taux figé sur la ligne
   position     Int      @default(0)
+  @@index([invoiceId])
+}
+
+// Règlement (encaissement) rattaché à une facture
+model Payment {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  invoice        Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId      String
+  amount         Decimal      @db.Decimal(12, 2)
+  date           DateTime     @default(now())
+  method         String       @default("virement") // virement | cheque | cb | especes | prelevement
+  reference      String?
+  note           String?
+  createdById    String?
+  createdAt      DateTime     @default(now())
+  @@index([organizationId])
+  @@index([societeId])
   @@index([invoiceId])
 }
 

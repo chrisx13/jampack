@@ -4,7 +4,10 @@ import Pipeline from './pages/Pipeline';
 import Clients from './pages/Clients';
 import Contacts from './pages/Contacts';
 import Catalogue from './pages/Catalogue';
+import Devis from './pages/Devis';
 import Factures from './pages/Factures';
+import Avoirs from './pages/Avoirs';
+import Echeancier from './pages/Echeancier';
 import Settings from './pages/Settings';
 import Appearance from './pages/Appearance';
 import SocieteSettings from './pages/SocieteSettings';
@@ -45,7 +48,10 @@ export const DOMAINS: Domain[] = [
     icon: 'bi-receipt',
     views: [
       { id: 'catalog', label: 'Catalogue', icon: 'bi-box-seam', element: <Catalogue />, can: ['read', 'Product'] },
+      { id: 'quotes', label: 'Devis', icon: 'bi-file-earmark-ruled', element: <Devis />, can: ['read', 'Quote'] },
       { id: 'invoices', label: 'Factures', icon: 'bi-file-earmark-text', element: <Factures />, can: ['read', 'Invoice'] },
+      { id: 'credit-notes', label: 'Avoirs', icon: 'bi-file-earmark-minus', element: <Avoirs />, can: ['read', 'CreditNote'] },
+      { id: 'echeancier', label: 'Échéancier', icon: 'bi-calendar-check', element: <Echeancier />, can: ['read', 'Payment'] },
     ],
   },
   {

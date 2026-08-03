@@ -5,6 +5,9 @@ import { societeRouter } from '../societe/societe.router';
 import { catalogRouter } from '../catalog/catalog.router';
 import { settingsRouter } from '../settings/settings.router';
 import { invoiceRouter } from '../invoice/invoice.router';
+import { quoteRouter } from '../invoice/quote.router';
+import { creditNoteRouter } from '../invoice/creditNote.router';
+import { paymentRouter } from '../invoice/payment.router';
 import { billingRouter } from '../billing/billing.router';
 
 export const appRouter = router({
@@ -13,7 +16,10 @@ export const appRouter = router({
   societes: societeRouter,
   catalog: catalogRouter,
   settings: settingsRouter,
+  quotes: quoteRouter,
   invoices: invoiceRouter,
+  creditNotes: creditNoteRouter,
+  payments: paymentRouter,
   billing: billingRouter,
 });
 

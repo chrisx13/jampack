@@ -34,11 +34,12 @@ ALTER TABLE "SocieteAddress"  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Factor"          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "BankAccount"     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "PaymentTerm"     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Payment"         ENABLE ROW LEVEL SECURITY;
 
 DO $$
 DECLARE t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['Societe','Establishment','Company','Contact','Opportunity','Activity','PipelineStage','Role','Membership','SocieteRole','TaxRate','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice']
+  FOREACH t IN ARRAY ARRAY['Societe','Establishment','Company','Contact','Opportunity','Activity','PipelineStage','Role','Membership','SocieteRole','TaxRate','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice','Payment']
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS org_isolation ON %I;', t);
     EXECUTE format(
@@ -55,7 +56,7 @@ END $$;
 DO $$
 DECLARE t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['Establishment','Company','Contact','Opportunity','Activity','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice']
+  FOREACH t IN ARRAY ARRAY['Establishment','Company','Contact','Opportunity','Activity','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice','Payment']
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS societe_isolation ON %I;', t);
     EXECUTE format(

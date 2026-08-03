@@ -83,15 +83,28 @@ RLS filtrent alors chaque table. La société active est un filtre applicatif au
 isolation. L'API tourne avec un rôle SQL **non-propriétaire** (`jampack_app`) pour que le RLS
 s'applique réellement — le setup Docker le crée automatiquement.
 
-## À faire ensuite
+## État d'avancement
+
+Fait :
 
 - [x] Authentification OIDC (Keycloak) + rôles par société (cumulables) + isolation RLS.
 - [x] Permissions appliquées via CASL côté serveur (mutations → FORBIDDEN) et masquage des actions dans l'UI.
-- [x] CRM : pipeline kanban (drag & drop), CRUD clients / contacts / opportunités.
+- [x] CRM : pipeline kanban (drag & drop), CRUD clients / contacts / opportunités, établissements & adresses.
+- [x] Référentiels : articles/services, catégories, taux de TVA, numérotation des pièces.
+- [x] Facturation : factures (brouillon → validée → annulée), calcul TVA, PDF ; affacturage, comptes bancaires et conditions de paiement.
+- [x] Chaîne **devis → facture → avoir** : devis (envoi, accepté/refusé, conversion en facture) et avoirs (depuis facture), pièces unifiées par `docType`.
+- [x] **Règlements & échéancier** : encaissements rattachés aux factures, statut *payée* automatique, échéancier des factures non soldées.
+- [x] Personnalisation du thème (couleurs de marque) au niveau du compte.
+
+En cours / à venir (Jalon 2 — Ventes) :
+
+- [ ] E-invoicing **Factur-X / PDP** — réception obligatoire 09/2026 (prioritaire ; dépend du choix d'une PDP partenaire).
 - [ ] Interface d'administration : inviter des utilisateurs, gérer sociétés et rôles.
-- [ ] `tauri init` pour générer la partie native du desktop.
-- [ ] Facturation : devis → facture → avoir, TVA, e-invoicing (Factur-X / PDP).
+- [ ] `tauri init` pour générer la partie native du desktop ; amorcer la PWA mobile.
+- [ ] Fournisseurs & achats (au-delà du flag `isSupplier`).
+
+> État détaillé code ↔ spécifications : [`docs/TRACABILITE.md`](docs/TRACABILITE.md).
 
 ## Feuille de route
 
-Phase 0 (socle multi-société) → **CRM** (en cours) → Facturation + e-invoicing (Factur-X / PDP) → Stock → Comptabilité (FEC).
+Phase 0 (socle multi-société) ✓ → CRM ✓ → Référentiels ✓ → **Ventes / facturation** (devis → facture → avoir + règlements/échéancier faits ; e-invoicing Factur-X à venir) → Achats + Stock → Comptabilité (FEC).

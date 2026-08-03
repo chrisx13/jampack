@@ -8,6 +8,10 @@ OWNER_URL="${DATABASE_URL_OWNER:?DATABASE_URL_OWNER manquant}"
 APP_URL="${DATABASE_URL_APP:?DATABASE_URL_APP manquant}"
 APP_PWD="${APP_DB_PASSWORD:-jampack}"
 
+# psql (libpq) ne comprend pas le paramètre Prisma « ?schema=public » : on le retire
+# pour les appels psql (les commandes Prisma gardent, elles, l'URL complète).
+PSQL_OWNER="${OWNER_URL%%\?*}"
+
 echo "⏳ Attente de PostgreSQL ($DB_HOST:$DB_PORT)…"
 until pg_isready -h "$DB_HOST" -p "$DB_PORT" >/dev/null 2>&1; do sleep 1; done
 
@@ -15,10 +19,10 @@ echo "▶ Migrations Prisma…"
 DATABASE_URL="$OWNER_URL" pnpm --filter @jampack/db exec prisma migrate deploy
 
 echo "▶ Row-Level Security…"
-psql "$OWNER_URL" -v ON_ERROR_STOP=1 -f packages/db/prisma/rls.sql
+psql "$PSQL_OWNER" -v ON_ERROR_STOP=1 -f packages/db/prisma/rls.sql
 
 echo "▶ Rôle applicatif non-propriétaire + droits…"
-psql "$OWNER_URL" -v ON_ERROR_STOP=1 <<SQL
+psql "$PSQL_OWNER" -v ON_ERROR_STOP=1 <<SQL
 DO \$\$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'jampack_app') THEN
     CREATE ROLE jampack_app LOGIN PASSWORD '${APP_PWD}';
@@ -34,4 +38,6 @@ DATABASE_URL="$OWNER_URL" pnpm --filter @jampack/db exec tsx prisma/seed.ts || e
 
 echo "🚀 API JAMPACK (rôle applicatif, RLS actif)"
 export DATABASE_URL="$APP_URL"
-exec pnpm --filter @jampack/api exec tsx src/main.ts
+# tsx n'est fourni que par @jampack/db ; on l'utilise pour exécuter l'entrée de l'API
+# (les imports workspace @jampack/* sont du TypeScript, transpilé à la volée par tsx).
+exec pnpm --filter @jampack/db exec tsx /app/apps/api/src/main.ts
