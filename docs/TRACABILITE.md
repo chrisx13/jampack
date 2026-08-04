@@ -31,7 +31,7 @@
 | Desktop Tauri 2 (enveloppe web) | scaffold, `tauri init` non lancé | ⚠️ | `apps/desktop/README.md` (partie native à générer) |
 | Mobile PWA | absent | ❌ | pas d'app mobile ni de `vite-plugin-pwa` |
 | Docker + Compose | idem | ✅ | `docker-compose.yml`, `docker/docker-compose.yml` |
-| CI GitHub Actions | présent, **sans lint ni test** | ⚠️ | `.github/workflows/ci.yml` = migrate→typecheck→build |
+| CI GitHub Actions | **lint + typecheck + tests unitaires & intégration + build** | ✅ | `.github/workflows/ci.yml` = install→migrate→seed→lint→typecheck→`test:cov`→`test:int`→build |
 | Hébergement UE (Scaleway/OVH) | non applicable au repo | — | décision infra, hors code |
 
 ### Packages du monorepo
@@ -132,10 +132,17 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **5 BI** | Tableaux de bord analytiques avancés (séries temporelles, marges) | 🔧 | KPI consolidés via `analytics.summary` (Dashboard) ; BI approfondie = phase future |
 | transverse | Administration in-app : inviter users, attribuer/révoquer rôles | ✅ | `iam.router` (`invite`/`grantRole`/`revokeRole`), garde-fou dernier admin, page `Members.tsx` |
 
-**Position actuelle : Jalon 2 (Ventes) quasi complet.** Chaîne devis → facture → avoir + **règlements
-et échéancier client** opérationnels (un seul modèle `Invoice` discriminé par `docType`, PDF partagé,
-numérotation par type ; `Payment` rattaché à la facture, statut payée automatique). Reste au Jalon 2 :
-**Factur-X / PDP** (échéance réception 09/2026), qui dépend du choix d'une PDP partenaire (décision business).
+**Position actuelle : Jalons 0 à 5 livrés (socle → trésorerie).** Ventes (devis → facture → avoir,
+règlements + échéancier client, un seul modèle `Invoice` discriminé par `docType`), **e-invoicing**
+(Factur-X CII + connecteur PDP interne, `PdpTransmission`), Achats (commandes → réception → stock,
+factures **et règlements fournisseurs**), Stock (mouvements, niveaux, valorisation PMP), Comptabilité
+(écritures auto ventes/achats/règlements, lettrage, TVA/CA3, clôture TVA, FEC) et **Trésorerie**
+(prévisionnel encaissements/décaissements) sont opérationnels.
+
+**Décisions restant à prendre** (voir [ARCHITECTURE §2 ▸ Décisions ouvertes](ARCHITECTURE.md)) :
+**voie PDP réglementaire** (immatriculation DGFiP/PPF *ou* PDP partenaire — le connecteur interne ne vaut
+pas PDP agréée), rapprochement bancaire, valorisation FIFO/lots, rapprochement 3 voies achats, API
+publique REST, hébergeur UE définitif. Restent en phase future : desktop (Tauri), PWA mobile, BI avancée.
 
 ## 6. Charte front
 
@@ -153,15 +160,22 @@ numérotation par type ; `Payment` rattaché à la facture, statut payée automa
 |---|---|---|
 | `docker compose up` lève Postgres + Adminer (dev) | idem | ✅ `docker/docker-compose.yml` (service `adminer`) |
 | Stack complète en un `docker compose up --build` | db + keycloak + app + web | ✅ ➕ `docker-compose.yml` |
-| CI lint → typecheck → **test** → migrate → build | migrate → typecheck → build | ⚠️ pas de `lint` ni de `test` en CI (aucun test écrit) |
+| CI lint → typecheck → **test** → migrate → build | install → migrate → seed → **lint → typecheck → test:cov → test:int** → build | ✅ `.github/workflows/ci.yml` (couverture ≥ 90 %) |
 
 ## 8. Backlog d'alignement (issu de cet audit)
 
-- [ ] Câbler `rights.ts` (éditeur de rôles fin) côté serveur, ou le remplacer par le modèle CASL.
-- [ ] Ajouter `lint` (et des tests) à la CI pour tenir la promesse de l'Archi §9.
-- [ ] Fournisseurs : passer du flag `isSupplier` à un vrai périmètre achats.
+Réalisé depuis l'audit initial :
 - [x] Devis + conversion en facture, avoirs (chaîne Ventes).
 - [x] Règlements + échéancier client (statut payée automatique).
-- [ ] Factur-X / intégration PDP (conformité e-invoicing — prioritaire, dépend du choix PDP).
+- [x] **Factur-X + connecteur PDP interne** (`invoice/facturx.ts`, `invoice/pdp.ts`, `PdpTransmission`).
+- [x] **Achats** : commandes → réception → stock, factures **et règlements fournisseurs**.
+- [x] **Comptabilité** : écritures auto, lettrage, TVA/CA3, clôture TVA, FEC.
+- [x] **Trésorerie** : prévisionnel encaissements/décaissements.
+- [x] `lint` + tests unitaires **et** d'intégration en CI (promesse de l'Archi §9 tenue).
+- [x] Administration in-app : invitation d'utilisateurs, édition sociétés/rôles.
+
+Reste ouvert (décisions ou phases futures — voir [ARCHITECTURE §2 ▸ Décisions ouvertes](ARCHITECTURE.md)) :
+- [ ] **Voie PDP réglementaire** : immatriculation DGFiP/PPF **ou** PDP partenaire (DO-1).
+- [ ] Câbler `rights.ts` (éditeur de rôles fin) côté serveur, ou le remplacer par le modèle CASL.
+- [ ] Rapprochement bancaire (DO-4) ; valorisation FIFO/lots (DO-5) ; rapprochement 3 voies achats (DO-6).
 - [ ] Générer la partie native Tauri (`tauri init`) ; amorcer la PWA.
-- [ ] Administration in-app : invitation d'utilisateurs, édition sociétés/rôles.
