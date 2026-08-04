@@ -150,6 +150,18 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
     ${s(soc, 'legalMentions') ? `<div class="muted" style="margin-top:6px">${esc(s(soc, 'legalMentions'))}</div>` : ''}
   </div>
 
+  ${docType === 'devis' ? `<div class="pay">
+    ${inv.validUntil ? `<div><strong>Validité :</strong> devis valable jusqu'au ${d(inv.validUntil)}.</div>` : ''}
+    ${s(soc, 'cgv') ? `<div class="muted" style="margin-top:6px">${esc(s(soc, 'cgv'))}</div>` : ''}
+    <div style="margin-top:14px;display:flex;justify-content:flex-end">
+      <div style="border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;min-width:250px">
+        <div style="font-size:.82rem"><strong>Bon pour accord</strong> — date et signature du client</div>
+        <div class="muted" style="font-size:.72rem;margin-top:4px">(à faire précéder de la mention manuscrite « Bon pour accord »)</div>
+        <div style="height:46px"></div>
+      </div>
+    </div>
+  </div>` : ''}
+
   <div class="foot">
     <span>${esc(legalBits)}</span>
     <span class="made">${PRODUCT_MARK}Édité avec JAMPACK</span>
