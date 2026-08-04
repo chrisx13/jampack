@@ -738,6 +738,7 @@ model Invoice {
   customerReference String?      // référence commande / marché du client (B2B) portée sur la pièce
   discountType    String         @default("none") // remise globale (pied) : none | percent | amount
   discountValue   Decimal        @default(0) @db.Decimal(12, 2) // valeur de la remise globale
+  isDeposit       Boolean        @default(false) // facture d'acompte (déduite à la facture de solde)
   notes           String?
   lines           InvoiceLine[]
   payments        Payment[]

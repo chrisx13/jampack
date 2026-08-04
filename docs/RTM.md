@@ -49,6 +49,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-VEN-13 | `invoiceHtml.ts` (bloc `docType === 'devis'` : validité + CGV + « Bon pour accord ») | rendu PDF (gabarit) | ✅ |
 | FR-VEN-14 | `Invoice.customerReference`, `invoiceCreate`/`invoiceUpdate`, champ `SalesDocs.tsx`, affichage `invoiceHtml.ts` + Factur-X `facturx.ts` (BT-13 `BuyerOrderReferencedDocument`) | e2e int : référence persistée, copiée à la duplication, présente dans le XML CII | ✅ |
 | FR-VEN-15 | `computeInvoiceTotals(lines, opts)` + `effectiveDiscountFactor`, `Invoice.discountType`/`discountValue`, helper unique `salesTotals(inv)` propagé (liste, PDF, `payment.router`, `accounting.postSalesInvoice`, `analytics`, `facturx`), contrôle `SalesDocs.tsx` | unit : remise %/montant, TVA par taux préservée, none/0 ignoré ; e2e int : remise 10 % → totaux nets, reste dû, solde, comptabilisation | ✅ |
+| FR-VEN-16 | `depositLines` (domain), `quote.createDepositInvoice` + déduction dans `convertToInvoice` (facteur de remise), `Invoice.isDeposit`, bouton « Facture d'acompte » `SalesDocs.tsx` | unit : acompte 30 % ventilé par taux, base nette ; e2e int : acompte 30 % multi-taux (360 HT / 423,30 TTC) puis solde = total − acompte | ✅ |
 | FR-VEN-8 | `invoice/facturx.ts`, `invoice/pdp.ts`, `invoice.router.ts` (`facturx`/`sendToPdp`/`transmissions`), `PdpTransmission` | `sales.int.test.ts` › *E-invoicing — Factur-X & PDP interne* | 🔧 (génération CII + connecteur ✅ ; immatriculation DGFiP/PPF/e-reporting ⛔ hors périmètre logiciel) |
 
 ## Achats

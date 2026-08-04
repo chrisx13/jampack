@@ -31,6 +31,9 @@
 - **Réf. commande client** : saisir le n° de bon de commande / marché du client ; il apparaît sur le PDF (exigence fréquente en B2B).
 - **Remise globale** : dans le bloc des totaux, choisir « Remise % » ou « Remise € » et saisir la valeur ; elle
   s'applique à toute la pièce (la TVA par taux reste exacte) et apparaît sur le PDF (sous-total, remise, net).
+- **Facture d'acompte** : sur un devis émis, bouton **Facture d'acompte** → saisir le pourcentage ; une facture
+  d'acompte (brouillon) est créée, ventilée par taux de TVA. À la **conversion** du devis en facture, les acomptes
+  déjà facturés (validés) sont **automatiquement déduits** : la facture obtenue est la facture de solde.
 - **Devis** : le PDF porte la **date de validité**, les **CGV** et un cartouche **« Bon pour accord »** (date + signature) pour l'acceptation par le client.
 - **Escompte** (Administration ▸ Société) : renseigner vos conditions d'escompte pour paiement anticipé ; laissé vide,
   la facture porte automatiquement la mention légale « Pas d'escompte pour paiement anticipé » (art. L441-10).

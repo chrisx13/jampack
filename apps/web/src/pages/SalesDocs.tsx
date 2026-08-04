@@ -173,6 +173,16 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     alert('Facture (brouillon) créée depuis ce devis — voir l’onglet Factures.');
     onClose();
   };
+  const deposit = cfg.key === 'quotes' ? (trpc as unknown as { quotes: { createDepositInvoice: { useMutation: () => { mutateAsync: (v: { id: string; pct: number }) => Promise<{ id: string }>; isPending: boolean } } } }).quotes.createDepositInvoice.useMutation() : null;
+  const onDeposit = async () => {
+    const raw = window.prompt('Pourcentage d’acompte à facturer (%) :', '30');
+    if (raw == null) return;
+    const pct = Number(raw.replace(',', '.'));
+    if (!(pct > 0 && pct <= 100)) { alert('Pourcentage invalide (0 à 100).'); return; }
+    await deposit!.mutateAsync({ id, pct });
+    utils.invoices.list.invalidate();
+    alert(`Facture d’acompte (${pct} %) créée en brouillon — voir l’onglet Factures. Elle sera déduite à la conversion en facture de solde.`);
+  };
   const onAccept = async () => { await accept!.mutateAsync({ id }); uapi.list.invalidate(); uapi.get.invalidate({ id }); };
   const onRefuse = async () => { await refuse!.mutateAsync({ id }); uapi.list.invalidate(); uapi.get.invalidate({ id }); };
   const onCreditNote = async () => {
@@ -234,7 +244,10 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
             </>
           )}
           {cfg.key === 'quotes' && (status === 'sent' || status === 'accepted') && (
-            <Button variant="primary" onClick={onConvert} disabled={convert!.isPending}><i className="bi bi-arrow-right-circle me-1" />Convertir en facture</Button>
+            <>
+              <Button variant="outline-primary" onClick={onDeposit} disabled={deposit!.isPending}><i className="bi bi-cash-coin me-1" />Facture d'acompte</Button>
+              <Button variant="primary" onClick={onConvert} disabled={convert!.isPending}><i className="bi bi-arrow-right-circle me-1" />Convertir en facture</Button>
+            </>
           )}
           {/* Facture émise : comptabiliser + créer un avoir */}
           {cfg.key === 'invoices' && readOnly && status !== 'cancelled' && (

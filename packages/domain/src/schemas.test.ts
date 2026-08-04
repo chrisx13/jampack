@@ -9,7 +9,7 @@ import {
   isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs, auditLogCsv,
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
-  isValidIban, isValidBic, formatIban, ledgerCsv,
+  isValidIban, isValidBic, formatIban, ledgerCsv, depositLines,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -50,6 +50,25 @@ describe('computeInvoiceTotals', () => {
   it('remise ignorée si type none ou valeur nulle', () => {
     expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'none', discountValue: 10 }).totalHt).toBe(100);
     expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'percent', discountValue: 0 }).totalHt).toBe(100);
+  });
+});
+
+describe('depositLines — facture d\'acompte', () => {
+  it('acompte 30 % réparti par taux de TVA', () => {
+    const dl = depositLines(
+      [{ quantity: 1, unitPriceHt: 1000, taxRatePct: 20 }, { quantity: 1, unitPriceHt: 200, taxRatePct: 5.5 }],
+      undefined, 30,
+    );
+    expect(dl).toHaveLength(2);
+    expect(dl[0]).toMatchObject({ unitPriceHt: 300, taxRatePct: 20 });  // 1000 × 30 %
+    expect(dl[1]).toMatchObject({ unitPriceHt: 60, taxRatePct: 5.5 });   // 200 × 30 %
+  });
+  it('acompte sur base nette (remise globale prise en compte)', () => {
+    const dl = depositLines(
+      [{ quantity: 1, unitPriceHt: 1000, taxRatePct: 20 }],
+      { discountType: 'percent', discountValue: 10 }, 50,
+    );
+    expect(dl[0].unitPriceHt).toBe(450); // (1000 − 10 %) × 50 % = 900 × 0,5
   });
 });
 

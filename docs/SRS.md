@@ -125,6 +125,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-VEN-13 | **Mentions du devis** sur le PDF : validité (« valable jusqu'au »), CGV, cartouche **« Bon pour accord »** (date + signature client). | S | ✅ |
 | FR-VEN-14 | **Référence commande client** (B2B) : champ porté sur la pièce et affiché sur le PDF. | C | ✅ |
 | FR-VEN-15 | **Remise globale** (pied de pièce) en % ou montant, répartie proportionnellement (TVA par taux exacte), répercutée sur totaux, paiements, comptabilisation, PDF et Factur-X. | S | ✅ |
+| FR-VEN-16 | **Facture d'acompte** : depuis un devis, acompte de X % ventilé par taux de TVA (art. 269 CGI) ; à la conversion, **facture de solde** déduisant les acomptes déjà facturés (compatible remise globale). | S | ✅ |
 | FR-VEN-8 | **E-invoicing Factur-X / PDP** : génération **Factur-X (XML CII, EN 16931)**, connecteur **PDP** (interface + adaptateur interne), journal des transmissions (`PdpTransmission`, sous RLS). Émission/réception effective via PDP **immatriculée** ou **partenaire**. | M | 🔧 (génération + connecteur ✅ ; immatriculation DGFiP / PPF / e-reporting ⛔ hors périmètre logiciel) |
 
 ### 3.5 Achats

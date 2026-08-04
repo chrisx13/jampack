@@ -960,6 +960,32 @@ export function effectiveDiscountFactor(grossHt: number, opts?: DiscountOpts): n
   return 1;
 }
 
+/**
+ * Lignes d'une **facture d'acompte** : un acompte de `pct` % réparti **par taux de TVA**
+ * (la TVA de l'acompte est due à l'encaissement, art. 269 CGI). Prend en compte une éventuelle
+ * remise globale (base nette). Renvoie une ligne par taux présent dans la pièce.
+ */
+export function depositLines(
+  lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[],
+  opts: DiscountOpts | undefined,
+  pct: number,
+): { label: string; quantity: number; unitPriceHt: number; taxRatePct: number }[] {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  let grossHt = 0;
+  for (const l of lines) grossHt += r2(l.quantity * l.unitPriceHt);
+  const factor = effectiveDiscountFactor(r2(grossHt), opts);
+  const f = Math.min(Math.max(pct, 0), 100) / 100;
+  const byRate = new Map<number, number>();
+  for (const l of lines) {
+    const net = r2(r2(l.quantity * l.unitPriceHt) * factor);
+    byRate.set(l.taxRatePct, r2((byRate.get(l.taxRatePct) ?? 0) + net));
+  }
+  return [...byRate.entries()]
+    .filter(([, base]) => base !== 0)
+    .sort((a, b) => b[0] - a[0])
+    .map(([rate, base]) => ({ label: `Acompte ${pct} % (TVA ${rate} %)`, quantity: 1, unitPriceHt: r2(base * f), taxRatePct: rate }));
+}
+
 export function computeInvoiceTotals(
   lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[],
   opts?: DiscountOpts

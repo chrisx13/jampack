@@ -185,6 +185,30 @@ describe('CRM — activités & tâches', () => {
   });
 });
 
+describe('Ventes — facture d\'acompte', () => {
+  it('acompte 30 % ventilé par taux, puis facture de solde déduisant l\'acompte', async () => {
+    const companyId = await anyCustomer();
+    // Devis : 1000 HT (TVA 20) + 200 HT (TVA 5,5) → TTC = 1200 + 200 + 11 = 1411.
+    const devis = await caller.quotes.create({ companyId, notes: '[INT]', lines: [{ label: 'Presta', quantity: 1, unitPriceHt: 1000, taxRatePct: 20 }, { label: 'Fourniture', quantity: 1, unitPriceHt: 200, taxRatePct: 5.5 }] });
+    await caller.quotes.validate({ id: devis.id });
+
+    const dep = await caller.quotes.createDepositInvoice({ id: devis.id, pct: 30 });
+    const depFull = await caller.invoices.get({ id: dep.id });
+    expect(depFull.isDeposit).toBe(true);
+    expect(depFull.lines).toHaveLength(2); // une ligne par taux
+    // Acompte HT = 30 % de 1200 = 360 ; TVA = 30%×(200+11)=63,3 ; TTC = 423,30.
+    const depRow = (await caller.invoices.list()).find((r: { id: string }) => r.id === dep.id);
+    expect(depRow.totalHt).toBeCloseTo(360, 2);
+    expect(depRow.totalTtc).toBeCloseTo(423.3, 2);
+    await caller.invoices.validate({ id: dep.id });
+
+    // Conversion → facture de solde : total net = total devis − acompte.
+    const conv = await caller.quotes.convertToInvoice({ id: devis.id });
+    const solde = (await caller.invoices.list()).find((r: { id: string }) => r.id === conv.id);
+    expect(solde.totalTtc).toBeCloseTo(1411 - 423.3, 2); // 987,70
+  });
+});
+
 describe('Ventes — remise globale (pied de pièce)', () => {
   it('remise 10 % : totaux nets cohérents jusqu\'au paiement et à la compta', async () => {
     const companyId = await anyCustomer();
