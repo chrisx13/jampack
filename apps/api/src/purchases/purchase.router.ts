@@ -122,6 +122,26 @@ export const purchaseRouter = router({
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.purchaseOrder.update({ where: { id: input.id }, data: { status: 'cancelled' } }))
     ),
 
+    /** Duplique une commande en brouillon (même fournisseur/entrepôt/lignes ; numéro, dates et réceptions réinitialisés). */
+    duplicate: authed('create', 'PurchaseOrder').input(byId).mutation(({ ctx, input }) => {
+      const societeId = req(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const src = await tx.purchaseOrder.findUniqueOrThrow({ where: { id: input.id }, include: { lines: true } });
+        return tx.purchaseOrder.create({
+          data: {
+            organizationId: ctx.user.organizationId,
+            societeId,
+            createdById: ctx.user.id,
+            supplierId: src.supplierId,
+            warehouseId: src.warehouseId,
+            notes: src.notes,
+            lines: { create: src.lines.map((l) => ({ productId: l.productId ?? undefined, label: l.label, quantity: l.quantity, unitPriceHt: l.unitPriceHt, position: l.position })) },
+          },
+          include: { lines: true },
+        });
+      });
+    }),
+
     /** Réception : entre en stock les quantités restantes et passe la commande « réceptionnée ». */
     receive: authed('update', 'PurchaseOrder').input(byId).mutation(({ ctx, input }) => {
       const societeId = req(ctx.societeId);

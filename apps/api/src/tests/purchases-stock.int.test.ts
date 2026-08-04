@@ -183,6 +183,19 @@ describe('Achats — commande → réception → stock ; factures fournisseurs',
     expect(after - before).toBeCloseTo(100, 3);
   });
 
+  it('duplique une commande en brouillon (mêmes lignes, sans numéro)', async () => {
+    const [pid, sid] = [await product(), await supplier()];
+    const wh = await caller.stock.warehouses.create({ name: '[INT] DupCmd' });
+    const po = await caller.purchases.orders.create({ supplierId: sid, warehouseId: wh.id, notes: '[INT]', lines: [{ productId: pid, label: 'Baguette', quantity: 5, unitPriceHt: 0.5 }] });
+    await caller.purchases.orders.validate({ id: po.id });
+    const copy = await caller.purchases.orders.duplicate({ id: po.id });
+    expect(copy.id).not.toBe(po.id);
+    expect(copy.status).toBe('draft');
+    expect(copy.number).toBeNull();
+    expect(copy.supplierId).toBe(sid);
+    expect(copy.lines).toHaveLength(1);
+  });
+
   it('commande en retard : envoyée + date prévue dépassée → listée, puis sort après réception', async () => {
     const [pid, sid] = [await product(), await supplier()];
     const wh = await caller.stock.warehouses.create({ name: '[INT] Retard' });

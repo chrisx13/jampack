@@ -24,6 +24,7 @@ type Line = { productId?: string; label: string; quantity: number; unitPriceHt: 
 
 function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () => void }) {
   const utils = trpc.useUtils();
+  const can = useCan();
   const [id, setId] = useState<string | 'new'>(initialId);
   const suppliers = trpc.purchases.suppliers.useQuery();
   const warehouses = trpc.stock.warehouses.list.useQuery();
@@ -55,6 +56,12 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const validate = trpc.purchases.orders.validate.useMutation();
   const receive = trpc.purchases.orders.receive.useMutation();
   const receivePartial = trpc.purchases.orders.receivePartial.useMutation();
+  const duplicate = trpc.purchases.orders.duplicate.useMutation();
+  const onDuplicate = async () => {
+    const copy = await duplicate.mutateAsync({ id: id as string });
+    utils.purchases.orders.list.invalidate();
+    setId(copy.id);
+  };
   const busy = create.isPending || update.isPending || validate.isPending || receive.isPending || receivePartial.isPending;
   const readOnly = status !== 'draft';
   const canReceive = status === 'sent' || status === 'partial';
@@ -122,6 +129,9 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
         <div className="d-flex gap-2">
           {canReceive && (
             <Button variant="success" onClick={onReceive} disabled={busy}><i className="bi bi-box-arrow-in-down me-1" />Tout réceptionner</Button>
+          )}
+          {id !== 'new' && can('create', 'PurchaseOrder') && (
+            <Button variant="light" title="Dupliquer en brouillon" disabled={duplicate.isPending} onClick={onDuplicate}><i className="bi bi-files me-1" />Dupliquer</Button>
           )}
           {!readOnly && (
             <>
