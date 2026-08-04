@@ -245,6 +245,7 @@ export const societeSettingsUpdate = z.object({
   phone: optStr, email: optStr, website: optStr, logoUrl: optStr,
   legalMentions: optStr, cgv: optStr, penaltyRate: optStr,
   vatFranchise: z.boolean().optional(),
+  vatOnPayments: z.boolean().optional(),
 });
 export type SocieteSettingsUpdate = z.infer<typeof societeSettingsUpdate>;
 
@@ -253,6 +254,9 @@ export const VAT_FRANCHISE_MENTION = 'TVA non applicable, art. 293 B du CGI';
 
 /** Mention obligatoire en cas d'autoliquidation de la TVA (TVA due par le preneur). */
 export const VAT_REVERSE_CHARGE_MENTION = 'Autoliquidation — TVA due par le preneur (art. 283-2 du CGI)';
+
+/** Mention obligatoire sous le régime « TVA sur les encaissements » (prestations de services). */
+export const VAT_ON_PAYMENTS_MENTION = "TVA acquittée d'après les encaissements";
 
 // ── Adresses de la société (plusieurs) ──
 export const societeAddressCreate = z.object({

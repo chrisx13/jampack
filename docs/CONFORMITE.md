@@ -86,8 +86,9 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 ### 3.7 TVA — taux & régimes France
 - **Taux** : 20 % / 10 % / 5,5 % / 2,1 % paramétrables (référentiel société). ✅
 - **Régimes** : **franchise en base** (293 B, Factur-X « E ») ✅ ; **autoliquidation** (283-2, Factur-X
-  « AE ») ✅ ; **CA3** (réel normal) ✅ ; **CA12** (réel simplifié annuel) et choix **TVA sur les débits
-  vs sur les encaissements** ⏳ (décision DO-8). → FR-CPT-5, REG-7.
+  « AE ») ✅ ; **CA3** (réel normal) ✅ ; **TVA sur les encaissements** — mention obligatoire « TVA
+  acquittée d'après les encaissements » (flag société `vatOnPayments`) ✅ ; **CA12** (réel simplifié
+  annuel) et **recalcul du timing CA3** (exigibilité à l'encaissement) ⏳ (décision DO-8). → FR-CPT-5, REG-7.
 
 ### 3.8 Plan Comptable Général (PCG — règlement ANC 2014-03)
 - Le plan comptable et les journaux suivent le **PCG**. État : init **PCG minimal** (comptes usuels

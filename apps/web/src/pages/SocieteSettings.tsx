@@ -26,6 +26,7 @@ export default function SocieteSettings() {
     const payload: Settings = {};
     for (const k of keys) payload[k] = (form[k] as string) ?? '';
     payload.vatFranchise = !!form.vatFranchise;
+    payload.vatOnPayments = !!form.vatOnPayments;
     save.mutate(payload as never);
   };
 
@@ -75,6 +76,12 @@ export default function SocieteSettings() {
               label="Franchise en base de TVA (art. 293 B CGI) — mention d'exonération sur les factures"
               checked={!!form.vatFranchise} disabled={!editable}
               onChange={(e) => set('vatFranchise', e.target.checked)}
+            />
+            <Form.Check
+              type="switch" id="vatOnPayments" className="mb-3"
+              label="TVA sur les encaissements (services) — mention « TVA acquittée d'après les encaissements »"
+              checked={!!form.vatOnPayments} disabled={!editable}
+              onChange={(e) => set('vatOnPayments', e.target.checked)}
             />
             <Text k="penaltyRate" label="Taux des pénalités de retard (LME) — défaut : trois fois le taux d'intérêt légal" />
             <Text k="legalMentions" label="Mentions légales complémentaires" as="textarea" />

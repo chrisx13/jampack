@@ -1,4 +1,4 @@
-import { lmePaymentMention, VAT_FRANCHISE_MENTION, VAT_REVERSE_CHARGE_MENTION } from '@jampack/domain';
+import { lmePaymentMention, VAT_FRANCHISE_MENTION, VAT_REVERSE_CHARGE_MENTION, VAT_ON_PAYMENTS_MENTION } from '@jampack/domain';
 
 type Line = { label: string; quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown };
 type Invoice = {
@@ -144,6 +144,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
     ${inv.notes ? `<div class="muted" style="margin-top:6px">${esc(inv.notes)}</div>` : ''}
     ${soc.vatFranchise ? `<div class="muted" style="margin-top:6px"><strong>${esc(VAT_FRANCHISE_MENTION)}</strong></div>` : ''}
     ${inv.vatReverseCharge ? `<div class="muted" style="margin-top:6px"><strong>${esc(VAT_REVERSE_CHARGE_MENTION)}</strong></div>` : ''}
+    ${soc.vatOnPayments && docType === 'facture' ? `<div class="muted" style="margin-top:6px">${esc(VAT_ON_PAYMENTS_MENTION)}</div>` : ''}
     ${docType === 'facture' ? `<div class="muted" style="margin-top:6px">${esc(lmePaymentMention(s(soc, 'penaltyRate')))}</div>` : ''}
     ${s(soc, 'legalMentions') ? `<div class="muted" style="margin-top:6px">${esc(s(soc, 'legalMentions'))}</div>` : ''}
   </div>

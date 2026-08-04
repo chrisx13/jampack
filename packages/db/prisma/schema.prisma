@@ -89,6 +89,7 @@ model Societe {
   legalMentions  String?   // mentions légales / pénalités de retard
   cgv            String?   // conditions générales de vente
   vatFranchise   Boolean   @default(false) // franchise en base de TVA (art. 293 B CGI)
+  vatOnPayments  Boolean   @default(false) // régime TVA sur les encaissements (mention obligatoire)
   penaltyRate    String?   // formulation du taux de pénalités de retard (LME)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
