@@ -444,6 +444,18 @@ export default function SalesDocs({ cfg }: { cfg: SalesCfg }) {
   const can = useCan();
   const pdf = usePdf(api);
   const [editing, setEditing] = useState<string | 'new' | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  // Filtrage local (recherche numéro/client + statut) — instantané, sans requête serveur.
+  const all = (list.data ?? []) as { id: string; number?: string | null; status: string; company?: { name?: string } }[];
+  const q = search.trim().toLowerCase();
+  const rows = all.filter((r) =>
+    (!statusFilter || r.status === statusFilter) &&
+    (!q || (r.number ?? '').toLowerCase().includes(q) || (r.company?.name ?? '').toLowerCase().includes(q))
+  );
+  // La barre de filtres n'apparaît qu'au-delà de quelques pièces (évite le superflu sur un écran quasi vide).
+  const showFilters = all.length > 5;
 
   if (editing) return <Editor cfg={cfg} id={editing} onClose={() => setEditing(null)} />;
 
@@ -454,6 +466,19 @@ export default function SalesDocs({ cfg }: { cfg: SalesCfg }) {
         {can('create', cfg.subject) && <Button onClick={() => setEditing('new')}><i className="bi bi-plus-lg me-1" />{cfg.newLabel}</Button>}
       </div>
 
+      {showFilters && (
+        <div className="d-flex flex-wrap gap-2 mb-3" style={{ maxWidth: 560 }}>
+          <div className="position-relative flex-grow-1">
+            <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+            <Form.Control size="sm" className="ps-4" placeholder="Rechercher un numéro ou un client…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <Form.Select size="sm" style={{ width: 180 }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="">Tous les statuts</option>
+            {Object.entries(cfg.statuses).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </Form.Select>
+        </div>
+      )}
+
       <Card>
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
@@ -463,7 +488,7 @@ export default function SalesDocs({ cfg }: { cfg: SalesCfg }) {
             <tbody>
               {list.isLoading && <tr><td colSpan={7} className="text-center py-4"><Spinner size="sm" /></td></tr>}
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {list.data?.map((r: any) => (
+              {rows.map((r: any) => (
                 <tr key={r.id} style={{ cursor: 'pointer' }} onClick={() => setEditing(r.id)}>
                   <td className="ps-3 fw-medium">{r.number ?? <span className="text-secondary fst-italic">brouillon</span>}</td>
                   <td>{r.company?.name ?? '—'}</td>
@@ -479,7 +504,8 @@ export default function SalesDocs({ cfg }: { cfg: SalesCfg }) {
                   </td>
                 </tr>
               ))}
-              {list.data?.length === 0 && <tr><td colSpan={7} className="text-center text-secondary py-4">Aucun élément pour cette société</td></tr>}
+              {list.isSuccess && all.length === 0 && <tr><td colSpan={7} className="text-center text-secondary py-4">Aucun élément pour cette société</td></tr>}
+              {list.isSuccess && all.length > 0 && rows.length === 0 && <tr><td colSpan={7} className="text-center text-secondary py-4">Aucun résultat pour ce filtre</td></tr>}
             </tbody>
           </Table>
         </Card.Body>
