@@ -73,6 +73,45 @@ export function frTvaNumber(siren?: string | null): string | null {
   return `FR${String(key).padStart(2, '0')}${s}`;
 }
 
+// ── Factures récurrentes (abonnements) ──
+export const RECURRENCE_FREQUENCIES = ['weekly', 'monthly', 'quarterly', 'yearly'] as const;
+export type RecurrenceFrequency = (typeof RECURRENCE_FREQUENCIES)[number];
+export const recurrenceLabel = (f: string): string =>
+  ({ weekly: 'Hebdomadaire', monthly: 'Mensuelle', quarterly: 'Trimestrielle', yearly: 'Annuelle' }[f] ?? f);
+
+/** Calcule la prochaine échéance à partir d'une date, d'une fréquence et d'un intervalle (≥ 1). */
+export function nextOccurrence(from: string | Date, frequency: RecurrenceFrequency, interval = 1): Date {
+  const d = new Date(from);
+  const step = Math.max(1, Math.floor(interval));
+  if (frequency === 'weekly') d.setUTCDate(d.getUTCDate() + 7 * step);
+  else if (frequency === 'monthly') d.setUTCMonth(d.getUTCMonth() + step);
+  else if (frequency === 'quarterly') d.setUTCMonth(d.getUTCMonth() + 3 * step);
+  else if (frequency === 'yearly') d.setUTCFullYear(d.getUTCFullYear() + step);
+  return d;
+}
+
+const recurringLineInput = z.object({
+  productId: z.string().optional(),
+  label: z.string().min(1),
+  quantity: z.number(),
+  unitPriceHt: z.number(),
+  taxRatePct: z.number().min(0),
+});
+export const recurringCreate = z.object({
+  companyId: z.string().min(1),
+  label: z.string().min(1),
+  frequency: z.enum(RECURRENCE_FREQUENCIES),
+  interval: z.number().int().min(1).default(1),
+  nextRunAt: z.string(),
+  active: z.boolean().default(true),
+  paymentTermId: z.string().nullable().optional(),
+  bankAccountId: z.string().nullable().optional(),
+  discountType: z.enum(['none', 'percent', 'amount']).default('none'),
+  discountValue: z.number().min(0).default(0),
+  lines: z.array(recurringLineInput).min(1),
+});
+export const recurringUpdate = recurringCreate.partial().extend({ id: z.string().min(1) });
+
 // ── Coordonnées bancaires (IBAN / BIC) ──
 /** Valide un IBAN (ISO 13616) par la clé de contrôle mod-97 (ISO 7064). Espaces tolérés. */
 export function isValidIban(iban?: string | null): boolean {

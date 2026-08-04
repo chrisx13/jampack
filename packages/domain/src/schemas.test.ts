@@ -9,7 +9,7 @@ import {
   isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs, auditLogCsv,
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
-  isValidIban, isValidBic, formatIban, ledgerCsv, depositLines,
+  isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -50,6 +50,20 @@ describe('computeInvoiceTotals', () => {
   it('remise ignorée si type none ou valeur nulle', () => {
     expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'none', discountValue: 10 }).totalHt).toBe(100);
     expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'percent', discountValue: 0 }).totalHt).toBe(100);
+  });
+});
+
+describe('factures récurrentes — nextOccurrence', () => {
+  it('avance selon la fréquence et l\'intervalle', () => {
+    expect(nextOccurrence('2026-01-15', 'weekly').toISOString().slice(0, 10)).toBe('2026-01-22');
+    expect(nextOccurrence('2026-01-15', 'monthly').toISOString().slice(0, 10)).toBe('2026-02-15');
+    expect(nextOccurrence('2026-01-15', 'quarterly').toISOString().slice(0, 10)).toBe('2026-04-15');
+    expect(nextOccurrence('2026-01-15', 'yearly').toISOString().slice(0, 10)).toBe('2027-01-15');
+    expect(nextOccurrence('2026-01-15', 'monthly', 2).toISOString().slice(0, 10)).toBe('2026-03-15');
+  });
+  it('libellés de fréquence', () => {
+    expect(recurrenceLabel('monthly')).toBe('Mensuelle');
+    expect(recurrenceLabel('yearly')).toBe('Annuelle');
   });
 });
 

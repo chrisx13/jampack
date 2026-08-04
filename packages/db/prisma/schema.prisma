@@ -51,6 +51,7 @@ model Organization {
   pdpTransmissions PdpTransmission[]
   viewNotes        ViewNote[]
   viewNoteRevisions ViewNoteRevision[]
+  recurringInvoices RecurringInvoice[]
 }
 
 // Journal d'audit : trace des mutations (qui, quoi, quand) — traçabilité sécurité/RGPD.
@@ -123,6 +124,7 @@ model Societe {
   journalEntries  JournalEntry[]
   pdpTransmissions PdpTransmission[]
   viewNotes       ViewNote[]
+  recurringInvoices RecurringInvoice[]
   @@unique([organizationId, name])
   @@index([organizationId])
 }
@@ -155,6 +157,32 @@ model User {
   societeRoles SocieteRole[]
   viewNotes         ViewNote[]
   viewNoteRevisions ViewNoteRevision[]
+}
+
+// ── Facture récurrente (abonnement) : modèle générant des factures brouillon à échéance. ──
+model RecurringInvoice {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  company        Company      @relation(fields: [companyId], references: [id])
+  companyId      String
+  label          String
+  frequency      String       // weekly | monthly | quarterly | yearly
+  interval       Int          @default(1)
+  nextRunAt      DateTime
+  lastRunAt      DateTime?
+  active         Boolean      @default(true)
+  paymentTermId  String?
+  bankAccountId  String?
+  discountType   String       @default("none")
+  discountValue  Decimal      @default(0) @db.Decimal(12, 2)
+  lines          Json         // [{ productId?, label, quantity, unitPriceHt, taxRatePct }]
+  createdById    String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId, societeId])
 }
 
 // ── Notes de vue : pense-bêtes partagés, ancrés à une vue (viewKey) et à une société. ──
@@ -262,6 +290,7 @@ model Company {
   establishments Establishment[]
   activities     Activity[]
   invoices       Invoice[]
+  recurringInvoices RecurringInvoice[]
   purchaseOrders PurchaseOrder[]
   supplierInvoices SupplierInvoice[]
   factor          Factor?      @relation(fields: [factorId], references: [id])

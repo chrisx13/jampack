@@ -11,6 +11,7 @@ import Factures from './pages/Factures';
 import Avoirs from './pages/Avoirs';
 import Echeancier from './pages/Echeancier';
 import Reminders from './pages/Reminders';
+import RecurringInvoices from './pages/RecurringInvoices';
 import PurchaseOrders from './pages/PurchaseOrders';
 import OverduePurchaseOrders from './pages/OverduePurchaseOrders';
 import SupplierInvoices from './pages/SupplierInvoices';
@@ -82,6 +83,7 @@ export const DOMAINS: Domain[] = [
       { id: 'credit-notes', label: 'Avoirs', icon: 'bi-file-earmark-minus', element: <Avoirs />, can: ['read', 'CreditNote'] },
       { id: 'echeancier', label: 'Échéancier', icon: 'bi-calendar-check', element: <Echeancier />, can: ['read', 'Payment'] },
       { id: 'reminders', label: 'Relances', icon: 'bi-envelope-exclamation', element: <Reminders />, can: ['read', 'Payment'] },
+      { id: 'recurring', label: 'Abonnements', icon: 'bi-arrow-repeat', element: <RecurringInvoices />, can: ['read', 'Invoice'] },
     ],
   },
   {

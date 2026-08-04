@@ -46,6 +46,7 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
   **`FixedAsset`** (immobilisation : `amountHt`, `acquisitionDate`, `durationYears`, `method` — plan d'amortissement calculé).
 
 ### Transverse
+- **`RecurringInvoice`** (abonnement : `label`, `frequency`, `interval`, `nextRunAt`, `lines` JSON, remise, sous RLS org+société) — génère des `Invoice` brouillon à échéance.
 - **`ViewNote`** (pense-bête de vue : `viewKey`, `content`, `color`, `x`/`y`, `createdBy`, sous RLS org+société) ·
   **`ViewNoteRevision`** (historisation du contenu : une entrée par modification, `author`, `createdAt`, sous RLS org).
 

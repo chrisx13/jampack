@@ -8,6 +8,7 @@ import { invoiceRouter } from '../invoice/invoice.router';
 import { quoteRouter } from '../invoice/quote.router';
 import { creditNoteRouter } from '../invoice/creditNote.router';
 import { paymentRouter } from '../invoice/payment.router';
+import { recurringRouter } from '../invoice/recurring.router';
 import { billingRouter } from '../billing/billing.router';
 import { stockRouter } from '../stock/stock.router';
 import { purchaseRouter } from '../purchases/purchase.router';
@@ -28,6 +29,7 @@ export const appRouter = router({
   invoices: invoiceRouter,
   creditNotes: creditNoteRouter,
   payments: paymentRouter,
+  recurring: recurringRouter,
   billing: billingRouter,
   stock: stockRouter,
   purchases: purchaseRouter,

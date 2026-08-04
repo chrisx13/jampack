@@ -20,6 +20,10 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 - `quotes` : + `accept · refuse · convertToInvoice · expiring` (expiring = devis émis par date de validité, avec jours avant expiration)
 - `invoices` : + `createCreditNote · facturx · sendToPdp · transmissions`
 
+### `recurring`
+Factures récurrentes (abonnements). `list · create · update · remove · generateDue`.
+`generateDue` crée en brouillon les factures des modèles actifs dont l'échéance est atteinte (rattrapage des périodes) et avance `nextRunAt`. Génération à la demande — sans cron externe.
+
 ### `payments`
 `listForInvoice · create · remove · echeancier · reminders · recordReminder · reminderLetter` (recalcule le statut *payée* ; relances = factures échues non soldées, incrément de niveau, lettre de relance texte)
 

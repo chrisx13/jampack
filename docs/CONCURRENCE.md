@@ -111,7 +111,7 @@ façon **découplée** (champ/lien/import) plutôt qu'intégrées à un prestata
 |---|---|---|---|---|
 | 1 | Remise globale (pied) | P1 | ✅ | FR-VEN-15 |
 | 2 | Facture d'acompte / solde | P1 | ✅ | FR-VEN-16 |
-| 3 | Factures récurrentes | P1 | ⏳ | FR-VEN-17 |
+| 3 | Factures récurrentes | P1 | ✅ | FR-VEN-17 |
 | 4 | Bon de livraison | P2 | ⏳ | FR-VEN-18 |
 | 5 | Notes de frais | P2 | ⏳ | FR-ACH-11 |
 | 6 | Grille tarifaire (quantité/client) | P2 | ⏳ | FR-REF-4 |
