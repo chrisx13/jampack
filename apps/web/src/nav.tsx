@@ -19,6 +19,7 @@ import Warehouses from './pages/Warehouses';
 import ChartOfAccounts from './pages/ChartOfAccounts';
 import JournalEntries from './pages/JournalEntries';
 import TrialBalance from './pages/TrialBalance';
+import Ledger from './pages/Ledger';
 import VatReturn from './pages/VatReturn';
 import Lettrage from './pages/Lettrage';
 import BankReconciliation from './pages/BankReconciliation';
@@ -105,6 +106,7 @@ export const DOMAINS: Domain[] = [
       { id: 'chart-of-accounts', label: 'Plan comptable', icon: 'bi-list-ol', element: <ChartOfAccounts />, can: ['read', 'Accounting'] },
       { id: 'journal-entries', label: 'Écritures', icon: 'bi-pencil-square', element: <JournalEntries />, can: ['read', 'Accounting'] },
       { id: 'trial-balance', label: 'Balance', icon: 'bi-bar-chart-steps', element: <TrialBalance />, can: ['read', 'Accounting'] },
+      { id: 'ledger', label: 'Grand livre', icon: 'bi-journal-text', element: <Ledger />, can: ['read', 'Accounting'] },
       { id: 'lettrage', label: 'Lettrage', icon: 'bi-link-45deg', element: <Lettrage />, can: ['read', 'Accounting'] },
       { id: 'bank-rec', label: 'Rapprochement bancaire', icon: 'bi-bank', element: <BankReconciliation />, can: ['read', 'Accounting'] },
       { id: 'fixed-assets', label: 'Immobilisations', icon: 'bi-buildings-fill', element: <FixedAssets />, can: ['read', 'Accounting'] },

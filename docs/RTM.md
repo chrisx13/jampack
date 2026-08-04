@@ -70,6 +70,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-CPT-1 | `accounting.router.ts` (`accounts`, `journals`, `initPcg`) | seed : 10 comptes + 4 journaux/société | ✅ |
 | FR-CPT-2 | `accounting.entries.create` + refine Zod `journalEntryCreate` | e2e : écriture équilibrée OK, déséquilibrée **rejetée** | ✅ |
 | FR-CPT-3 | `accounting.balance` (groupBy) | e2e : 411 débit 120, D=C | ✅ |
+| FR-CPT-3b | `accounting.ledger`, `Ledger.tsx` | e2e int : grand livre 411 → solde progressif = D−C | ✅ |
 | FR-CPT-4 | `accounting.postSalesInvoice`, `Invoice.journalEntryId` | e2e : facture→écriture 411/707/44571 équilibrée, idempotent | ✅ |
 | FR-CPT-4b | `accounting.postPayment` (BQ), `accounting.postSupplierInvoice` (AC), `accounting.postSupplierPayment` (BQ) | e2e int : 512↔411 ; 607+44566↔401 ; 401↔512 équilibrées, idempotentes | ✅ |
 | FR-CPT-5 | `accounting.vatReturn` (44571 − 44566) | e2e int : Δ collectée +20 / déductible +40 | ✅ |

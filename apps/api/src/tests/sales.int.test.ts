@@ -142,6 +142,22 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
   });
 });
 
+describe('Comptabilité — grand livre', () => {
+  it('liste les mouvements d’un compte avec solde progressif', async () => {
+    const companyId = await anyCustomer();
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'GL', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    await caller.accounting.postSalesInvoice({ id: inv.id }); // 411 débit 120
+    const acc411 = await C.prisma.account.findFirstOrThrow({ where: { societeId: C.soc.id, code: '411000' } });
+    const gl = await caller.accounting.ledger({ accountId: acc411.id });
+    expect(gl.account.code).toBe('411000');
+    expect(gl.rows.length).toBeGreaterThanOrEqual(1);
+    // Le solde progressif de la dernière ligne = total débit − total crédit.
+    expect(gl.rows[gl.rows.length - 1].solde).toBeCloseTo(gl.totalDebit - gl.totalCredit, 2);
+    expect(gl.totalDebit).toBeGreaterThanOrEqual(120);
+  });
+});
+
 describe('Analytics — balance âgée clients', () => {
   it('ventile les créances par tranche d’ancienneté', async () => {
     const companyId = await anyCustomer();

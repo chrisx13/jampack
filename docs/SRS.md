@@ -146,6 +146,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CPT-1 | **Plan comptable** (**PCG standard** TPE/PME, ≈ 52 comptes classes 1-7) et **journaux** par société. | M | ✅ |
 | FR-CPT-2 | **Écritures** manuelles multi-lignes, contrôle d'**équilibre** (débit = crédit). | M | ✅ |
 | FR-CPT-3 | **Balance générale** (totaux/soldes par compte). | M | ✅ |
+| FR-CPT-3b | **Grand livre** : détail des mouvements par compte avec solde progressif. | M | ✅ |
 | FR-CPT-4 | Écritures **générées automatiquement** depuis les **factures de vente** (411/707/44571). | M | ✅ |
 | FR-CPT-4b | Écritures auto depuis les **règlements clients** (journal banque 512/411), les **factures fournisseurs** (journal achat 607/44566/401) et les **règlements fournisseurs** (journal banque 401/512). | M | ✅ |
 | FR-CPT-5 | **Déclaration de TVA (CA3)** : collectée − déductible → à décaisser / crédit. | M | ✅ |
