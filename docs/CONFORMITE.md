@@ -92,8 +92,8 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 
 ### 3.8 Plan Comptable Général (PCG — règlement ANC 2014-03)
 - Le plan comptable et les journaux suivent le **PCG**. État : **PCG standard TPE/PME** (≈ 52 comptes,
-  classes 1 à 7 : capitaux, immobilisations + amortissements, tiers, financier, charges, produits) ✅
-  (`PCG_STANDARD`) ; **comptabilité analytique et immobilisations détaillées** ⏳.
+  classes 1 à 7) ✅ ; **immobilisations amortissables** + plan d'amortissement linéaire ✅
+  (`FixedAsset`) ; **comptabilité analytique** ⏳.
 - Principes : partie double (débit = crédit) ✅, **intangibilité** des écritures validées et **piste
   d'audit fiable** (PAF : lien pièce ↔ écriture ↔ règlement) 🔧 (auto-comptabilisation + journal d'audit).
   → FR-CPT-*, REG-8.

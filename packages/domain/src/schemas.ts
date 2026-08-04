@@ -260,6 +260,45 @@ export const VAT_REVERSE_CHARGE_MENTION = 'Autoliquidation — TVA due par le pr
 /** Mention obligatoire sous le régime « TVA sur les encaissements » (prestations de services). */
 export const VAT_ON_PAYMENTS_MENTION = "TVA acquittée d'après les encaissements";
 
+// ── Immobilisations & amortissement ──
+export const fixedAssetCreate = z.object({
+  name: z.string().min(1),
+  accountCode: z.string().optional(),
+  amountHt: z.number().positive(),
+  acquisitionDate: z.string().min(1),
+  durationYears: z.number().int().positive(),
+});
+export const fixedAssetUpdate = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).optional(),
+  accountCode: z.string().nullable().optional(),
+  amountHt: z.number().positive().optional(),
+  acquisitionDate: z.string().optional(),
+  durationYears: z.number().int().positive().optional(),
+});
+
+export type DepreciationRow = { year: number; annuity: number; cumulated: number; residual: number };
+/**
+ * Plan d'amortissement **linéaire** (prorata temporis au mois d'acquisition, base 12).
+ * Le mois d'acquisition compte pour un mois entier ; la 1re annuité est réduite au prorata,
+ * la dernière porte le solde. Retourne une ligne par exercice.
+ */
+export function depreciationSchedule(amountHt: number, durationYears: number, acquisitionDate: Date): DepreciationRow[] {
+  const r2 = (v: number) => Math.round(v * 100) / 100;
+  const annual = amountHt / durationYears;
+  const startYear = acquisitionDate.getFullYear();
+  const firstFraction = (13 - (acquisitionDate.getMonth() + 1)) / 12; // mois d'acquisition = 1er mois entier
+  const rows: DepreciationRow[] = [];
+  let cumulated = 0;
+  for (let i = 0; cumulated < amountHt - 0.005 && i <= durationYears + 1; i++) {
+    let annuity = r2(annual * (i === 0 ? firstFraction : 1));
+    if (cumulated + annuity > amountHt) annuity = r2(amountHt - cumulated); // dernière annuité : solde
+    cumulated = r2(cumulated + annuity);
+    rows.push({ year: startYear + i, annuity, cumulated, residual: r2(amountHt - cumulated) });
+  }
+  return rows;
+}
+
 export type BankStatementLine = { date: string; label: string; amount: number };
 /**
  * Parse un relevé bancaire CSV (format FR usuel) : une ligne par écriture,

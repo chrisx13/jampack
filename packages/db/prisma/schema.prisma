@@ -43,6 +43,7 @@ model Organization {
   purchaseOrders  PurchaseOrder[]
   supplierInvoices SupplierInvoice[]
   supplierPayments SupplierPayment[]
+  fixedAssets     FixedAsset[]
   accounts        Account[]
   journals        Journal[]
   journalEntries  JournalEntry[]
@@ -113,6 +114,7 @@ model Societe {
   purchaseOrders  PurchaseOrder[]
   supplierInvoices SupplierInvoice[]
   supplierPayments SupplierPayment[]
+  fixedAssets     FixedAsset[]
   accounts        Account[]
   journals        Journal[]
   journalEntries  JournalEntry[]
@@ -477,6 +479,26 @@ model SupplierInvoice {
   @@index([organizationId])
   @@index([societeId])
   @@index([supplierId])
+}
+
+// ── Immobilisations (amortissables) ──
+model FixedAsset {
+  id              String       @id @default(cuid())
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  organizationId  String
+  societe         Societe      @relation(fields: [societeId], references: [id])
+  societeId       String
+  name            String
+  accountCode     String?      // compte d'immobilisation (2xxxxx)
+  amountHt        Decimal      @db.Decimal(14, 2)
+  acquisitionDate DateTime
+  durationYears   Int          @default(5)
+  method          String       @default("linear") // linéaire
+  createdById     String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  @@index([organizationId])
+  @@index([societeId])
 }
 
 model SupplierPayment {

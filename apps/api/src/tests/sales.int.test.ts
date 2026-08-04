@@ -142,6 +142,17 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
   });
 });
 
+describe('Comptabilité — immobilisations & amortissement', () => {
+  it('plan d’amortissement linéaire (3000 € / 3 ans, 1er janvier → 1000/an)', async () => {
+    const a = await caller.accounting.fixedAssets.create({ name: '[INT] Matériel', accountCode: '215000', amountHt: 3000, acquisitionDate: '2026-01-05', durationYears: 3 });
+    const s = await caller.accounting.fixedAssets.schedule({ id: a.id });
+    expect(s.rows).toHaveLength(3);
+    expect(s.rows.map((r: { annuity: number }) => r.annuity)).toEqual([1000, 1000, 1000]);
+    expect(s.rows[2].residual).toBe(0);
+    await caller.accounting.fixedAssets.remove({ id: a.id });
+  });
+});
+
 describe('Comptabilité — déclaration de TVA (CA3)', () => {
   it('collectée/déductible reflètent les comptabilisations (Δ +20 / +40)', async () => {
     const before = await caller.accounting.vatReturn({});

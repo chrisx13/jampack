@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv } from '@jampack/domain';
+import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv, fixedAssetCreate, fixedAssetUpdate, depreciationSchedule } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -73,6 +73,36 @@ export const accountingRouter = router({
         return { created: DEFAULT_JOURNALS.length };
       });
     }),
+  }),
+
+  // ── Immobilisations & amortissement ──
+  fixedAssets: router({
+    list: authed('read', 'Accounting').query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.fixedAsset.findMany({ where: scope(ctx.societeId), orderBy: { acquisitionDate: 'desc' } }))
+    ),
+    create: authed('manage', 'all').input(fixedAssetCreate).mutation(({ ctx, input }) => {
+      const societeId = req(ctx.societeId);
+      const { acquisitionDate, ...rest } = input;
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.fixedAsset.create({ data: { ...rest, acquisitionDate: new Date(acquisitionDate), organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id } })
+      );
+    }),
+    update: authed('manage', 'all').input(fixedAssetUpdate).mutation(({ ctx, input }) => {
+      const { id, acquisitionDate, ...data } = input;
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.fixedAsset.update({ where: { id }, data: { ...data, ...(acquisitionDate ? { acquisitionDate: new Date(acquisitionDate) } : {}) } })
+      );
+    }),
+    remove: authed('manage', 'all').input(byId).mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.fixedAsset.delete({ where: { id: input.id } }))
+    ),
+    /** Plan d'amortissement linéaire d'une immobilisation. */
+    schedule: authed('read', 'Accounting').input(byId).query(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const a = await tx.fixedAsset.findUniqueOrThrow({ where: { id: input.id } });
+        return { asset: { id: a.id, name: a.name, amountHt: n(a.amountHt), acquisitionDate: a.acquisitionDate, durationYears: a.durationYears }, rows: depreciationSchedule(n(a.amountHt), a.durationYears, new Date(a.acquisitionDate)) };
+      })
+    ),
   }),
 
   // ── Écritures ──

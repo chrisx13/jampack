@@ -22,6 +22,7 @@ import TrialBalance from './pages/TrialBalance';
 import VatReturn from './pages/VatReturn';
 import Lettrage from './pages/Lettrage';
 import BankReconciliation from './pages/BankReconciliation';
+import FixedAssets from './pages/FixedAssets';
 import Tresorerie from './pages/Tresorerie';
 import Settings from './pages/Settings';
 import Appearance from './pages/Appearance';
@@ -105,6 +106,7 @@ export const DOMAINS: Domain[] = [
       { id: 'trial-balance', label: 'Balance', icon: 'bi-bar-chart-steps', element: <TrialBalance />, can: ['read', 'Accounting'] },
       { id: 'lettrage', label: 'Lettrage', icon: 'bi-link-45deg', element: <Lettrage />, can: ['read', 'Accounting'] },
       { id: 'bank-rec', label: 'Rapprochement bancaire', icon: 'bi-bank', element: <BankReconciliation />, can: ['read', 'Accounting'] },
+      { id: 'fixed-assets', label: 'Immobilisations', icon: 'bi-buildings-fill', element: <FixedAssets />, can: ['read', 'Accounting'] },
       { id: 'vat-return', label: 'Déclaration TVA', icon: 'bi-percent', element: <VatReturn />, can: ['read', 'Accounting'] },
     ],
   },

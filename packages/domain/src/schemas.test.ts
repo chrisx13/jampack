@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate, lmePaymentMention, parseBankStatementCsv,
+  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate, lmePaymentMention, parseBankStatementCsv, depreciationSchedule,
   PAYMENT_METHODS, PAYMENT_METHOD_LABELS, SALES_DOCS, STOCK_KINDS, STOCK_KIND_LABELS,
   stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
@@ -61,6 +61,21 @@ describe('productCreate — seuil de réapprovisionnement', () => {
   });
   it('refuse un reorderPoint négatif', () => {
     expect(productCreate.safeParse({ name: 'A', reorderPoint: -1 }).success).toBe(false);
+  });
+});
+
+describe('depreciationSchedule (amortissement linéaire)', () => {
+  it('1200 € sur 3 ans, acquisition 1er janvier → 3 annuités de 400', () => {
+    const s = depreciationSchedule(1200, 3, new Date('2026-01-15'));
+    expect(s).toHaveLength(3);
+    expect(s.map((r) => r.annuity)).toEqual([400, 400, 400]);
+    expect(s[2].residual).toBe(0);
+  });
+  it('prorata au 1er juillet → [200, 400, 400, 200]', () => {
+    const s = depreciationSchedule(1200, 3, new Date('2026-07-10'));
+    expect(s.map((r) => r.annuity)).toEqual([200, 400, 400, 200]);
+    expect(s[s.length - 1].residual).toBe(0);
+    expect(s[0].year).toBe(2026);
   });
 });
 
