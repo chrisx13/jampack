@@ -24,7 +24,7 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
 
 ### Ventes & encaissement
 - `Invoice` (**`docType` = devis|facture|avoir**, `status`, `source` self-relation = filiation,
-  `factor`/`bankAccount`/`paymentTerm`, `journalEntry` = comptabilisation) · `InvoiceLine` (qty/PU/TVA figés) · `Payment` (rattaché facture).
+  `factor`/`bankAccount`/`paymentTerm`, **`vatReverseCharge`** = autoliquidation, `journalEntry` = comptabilisation) · `InvoiceLine` (qty/PU/TVA figés) · `Payment` (rattaché facture).
 - Facturation : `SocieteAddress` · `Factor` (affactureur) · `BankAccount` · `PaymentTerm`.
 - E-invoicing : `PdpTransmission` (transmission Factur-X via PDP : `provider`, `status`, `providerRef`, sous RLS).
 
@@ -64,7 +64,7 @@ init → société → rôles → établissements → référentiels → factura
 billing_entities → **sales_documents** (docType) → **payments** → **stock** → **purchases** →
 **supplier_invoices** → **accounting** → invoice_accounting_link → posting_links → **audit_log** →
 **lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point** →
-**company_legal_ids** → **societe_vat_franchise** → **company_do_not_prospect**.
+**company_legal_ids** → **societe_vat_franchise** → **company_do_not_prospect** → **invoice_reverse_charge**.
 
 ## 7. Schéma (extrait relationnel)
 ```

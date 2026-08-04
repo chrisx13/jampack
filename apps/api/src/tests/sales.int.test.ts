@@ -238,6 +238,16 @@ describe('E-invoicing — Factur-X & PDP interne', () => {
     expect(tx[0].providerRef).toContain('INT-');
   });
 
+  it('autoliquidation : mention 283-2 → catégorie « AE » dans le Factur-X', async () => {
+    const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', vatReverseCharge: true, lines: [{ label: 'a', quantity: 1, unitPriceHt: 200, taxRatePct: 0 }] });
+    await caller.invoices.validate({ id: inv.id });
+    const fx = await caller.invoices.facturx({ id: inv.id });
+    expect(fx.xml).toContain('<ram:CategoryCode>AE</ram:CategoryCode>');
+    expect(fx.xml).toContain('Autoliquidation');
+    expect(fx.xml).not.toContain('<ram:CategoryCode>S</ram:CategoryCode>');
+  });
+
   it('franchise en base de TVA : mention 293 B → catégorie d’exonération « E » dans le Factur-X', async () => {
     const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
     await caller.societes.updateSettings({ vatFranchise: true });

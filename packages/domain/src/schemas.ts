@@ -251,6 +251,9 @@ export type SocieteSettingsUpdate = z.infer<typeof societeSettingsUpdate>;
 /** Mention obligatoire d'exonération en franchise en base de TVA (art. 293 B du CGI). */
 export const VAT_FRANCHISE_MENTION = 'TVA non applicable, art. 293 B du CGI';
 
+/** Mention obligatoire en cas d'autoliquidation de la TVA (TVA due par le preneur). */
+export const VAT_REVERSE_CHARGE_MENTION = 'Autoliquidation — TVA due par le preneur (art. 283-2 du CGI)';
+
 // ── Adresses de la société (plusieurs) ──
 export const societeAddressCreate = z.object({
   label: z.string().min(1),
@@ -300,6 +303,7 @@ export const invoiceCreate = z.object({
   factorId: z.string().nullable().optional(),
   bankAccountId: z.string().nullable().optional(),
   paymentTermId: z.string().nullable().optional(),
+  vatReverseCharge: z.boolean().optional(),
   lines: z.array(invoiceLineInput).default([]),
 });
 export type InvoiceCreate = z.infer<typeof invoiceCreate>;
@@ -315,6 +319,7 @@ export const invoiceUpdate = z.object({
   factorId: z.string().nullable().optional(),
   bankAccountId: z.string().nullable().optional(),
   paymentTermId: z.string().nullable().optional(),
+  vatReverseCharge: z.boolean().optional(),
   lines: z.array(invoiceLineInput).optional(),
 });
 export type InvoiceUpdate = z.infer<typeof invoiceUpdate>;

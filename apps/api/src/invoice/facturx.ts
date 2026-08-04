@@ -7,6 +7,7 @@ type Invoice = {
   number: string | null;
   issueDate: Date | null;
   dueDate: Date | null;
+  vatReverseCharge?: boolean | null;
   company: { name: string; siren?: string | null; siret?: string | null; tvaNumber?: string | null } | null;
   establishment: { addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
   lines: Line[];
@@ -37,10 +38,16 @@ function taxBreakdown(lines: Line[]) {
 /** Rendu du XML CII (Factur-X) d'une facture. */
 export function renderFacturXml(inv: Invoice, soc: Societe, totals: Totals): string {
   const bd = taxBreakdown(inv.lines);
-  // Franchise en base de TVA (art. 293 B CGI) → catégorie d'exonération EN 16931 « E ».
+  // Régime de TVA → catégorie d'exonération EN 16931 : franchise « E » (293 B), autoliquidation « AE ».
   const franchise = !!soc.vatFranchise;
-  const cat = franchise ? 'E' : 'S';
-  const exemption = franchise ? `<ram:ExemptionReasonCode>VATEX-EU-D</ram:ExemptionReasonCode><ram:ExemptionReason>Franchise en base de TVA (art. 293 B du CGI)</ram:ExemptionReason>` : '';
+  const reverse = !!inv.vatReverseCharge;
+  const zeroVat = franchise || reverse;
+  const cat = franchise ? 'E' : reverse ? 'AE' : 'S';
+  const exemption = franchise
+    ? `<ram:ExemptionReasonCode>VATEX-EU-D</ram:ExemptionReasonCode><ram:ExemptionReason>Franchise en base de TVA (art. 293 B du CGI)</ram:ExemptionReason>`
+    : reverse
+      ? `<ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode><ram:ExemptionReason>Autoliquidation — TVA due par le preneur (art. 283-2 du CGI)</ram:ExemptionReason>`
+      : '';
   const line = (l: Line, i: number) => {
     const qty = n(l.quantity), pu = n(l.unitPriceHt), rate = n(l.taxRatePct), ht = r2(qty * pu);
     return `      <ram:IncludedSupplyChainTradeLineItem>
@@ -49,13 +56,13 @@ export function renderFacturXml(inv: Invoice, soc: Societe, totals: Totals): str
         <ram:SpecifiedLineTradeAgreement><ram:NetPriceProductTradePrice><ram:ChargeAmount>${pu.toFixed(2)}</ram:ChargeAmount></ram:NetPriceProductTradePrice></ram:SpecifiedLineTradeAgreement>
         <ram:SpecifiedLineTradeDelivery><ram:BilledQuantity unitCode="C62">${qty}</ram:BilledQuantity></ram:SpecifiedLineTradeDelivery>
         <ram:SpecifiedLineTradeSettlement>
-          <ram:ApplicableTradeTax><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${cat}</ram:CategoryCode><ram:RateApplicablePercent>${franchise ? 0 : rate}</ram:RateApplicablePercent></ram:ApplicableTradeTax>
+          <ram:ApplicableTradeTax><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${cat}</ram:CategoryCode><ram:RateApplicablePercent>${zeroVat ? 0 : rate}</ram:RateApplicablePercent></ram:ApplicableTradeTax>
           <ram:SpecifiedTradeSettlementLineMonetarySummation><ram:LineTotalAmount>${ht.toFixed(2)}</ram:LineTotalAmount></ram:SpecifiedTradeSettlementLineMonetarySummation>
         </ram:SpecifiedLineTradeSettlement>
       </ram:IncludedSupplyChainTradeLineItem>`;
   };
   const taxLine = (t: { rate: number; base: number; tax: number }) =>
-    `        <ram:ApplicableTradeTax><ram:CalculatedAmount>${t.tax.toFixed(2)}</ram:CalculatedAmount><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${cat}</ram:CategoryCode>${exemption}<ram:BasisAmount>${t.base.toFixed(2)}</ram:BasisAmount><ram:RateApplicablePercent>${franchise ? 0 : t.rate}</ram:RateApplicablePercent></ram:ApplicableTradeTax>`;
+    `        <ram:ApplicableTradeTax><ram:CalculatedAmount>${t.tax.toFixed(2)}</ram:CalculatedAmount><ram:TypeCode>VAT</ram:TypeCode><ram:CategoryCode>${cat}</ram:CategoryCode>${exemption}<ram:BasisAmount>${t.base.toFixed(2)}</ram:BasisAmount><ram:RateApplicablePercent>${zeroVat ? 0 : t.rate}</ram:RateApplicablePercent></ram:ApplicableTradeTax>`;
   const buyerAddr = inv.establishment;
 
   return `<?xml version="1.0" encoding="UTF-8"?>

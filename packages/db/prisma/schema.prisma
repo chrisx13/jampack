@@ -657,6 +657,7 @@ model Invoice {
   issueDate       DateTime?
   dueDate         DateTime?      // facture : échéance de règlement
   validUntil      DateTime?      // devis : date de validité
+  vatReverseCharge Boolean       @default(false) // autoliquidation de TVA (TVA due par le preneur)
   notes           String?
   lines           InvoiceLine[]
   payments        Payment[]

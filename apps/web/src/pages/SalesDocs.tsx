@@ -69,6 +69,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const [paymentTermId, setPaymentTermId] = useState('');
   const [bankAccountId, setBankAccountId] = useState('');
   const [factorId, setFactorId] = useState('');
+  const [vatReverseCharge, setVatReverseCharge] = useState(false);
 
   useEffect(() => {
     const doc = existing.data;
@@ -77,6 +78,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     const dv = cfg.dateField ? doc[cfg.dateField] : null;
     setSecondDate(dv ? new Date(dv).toISOString().slice(0, 10) : '');
     setNotes(doc.notes ?? '');
+    setVatReverseCharge(!!doc.vatReverseCharge);
     setStatus(doc.status);
     setNumber(doc.number ?? null);
     setLines(doc.lines.map((l: Record<string, unknown>) => ({ productId: (l.productId as string) ?? undefined, label: l.label as string, quantity: num(l.quantity), unitPriceHt: num(l.unitPriceHt), taxRatePct: num(l.taxRatePct) })));
@@ -130,6 +132,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     factorId: factorForced ? (company?.factorId ?? null) : (factorId || null),
     bankAccountId: bankAccountId || null,
     paymentTermId: paymentTermId || null,
+    ...(cfg.key === 'invoices' ? { vatReverseCharge } : {}),
     lines: lines.map((l, i) => ({ productId: l.productId, label: l.label || 'Ligne', quantity: l.quantity, unitPriceHt: l.unitPriceHt, taxRatePct: l.taxRatePct, position: i })),
   });
   const persist = async () => {
@@ -312,6 +315,14 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
         <div className="col-md-7">
           <Form.Label>Notes</Form.Label>
           <Form.Control as="textarea" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} disabled={readOnly} />
+          {cfg.key === 'invoices' && (
+            <Form.Check
+              type="switch" id="vatReverseCharge" className="mt-3"
+              label="Autoliquidation de TVA (TVA due par le preneur — art. 283-2 CGI)"
+              checked={vatReverseCharge} disabled={readOnly}
+              onChange={(e) => setVatReverseCharge(e.target.checked)}
+            />
+          )}
         </div>
         <div className="col-md-5">
           <Card>
