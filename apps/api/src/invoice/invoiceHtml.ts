@@ -29,7 +29,7 @@ const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&
 const s = (soc: Societe, k: string) => (soc[k] ? String(soc[k]) : '');
 
 /** Mini-logo JAMPACK (attribution produit, pied de page). */
-const PRODUCT_MARK = '<svg width="13" height="13" viewBox="0 0 40 40" style="vertical-align:-2px"><defs><linearGradient id="fm" x1="10" y1="30" x2="30" y2="10" gradientUnits="userSpaceOnUse"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#0EA5E9"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="#0F172A"/><g fill="url(#fm)"><rect x="10.4" y="21" width="4.6" height="8" rx="2.3"/><rect x="17.7" y="15" width="4.6" height="14" rx="2.3"/><rect x="25" y="10.6" width="4.6" height="18.4" rx="2.3"/></g></svg>';
+const PRODUCT_MARK = '<svg width="13" height="13" viewBox="0 0 40 40" style="vertical-align:-2px"><defs><linearGradient id="fm" x1="10" y1="30" x2="30" y2="10" gradientUnits="userSpaceOnUse"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#0EA5E9"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="#3E3A52"/><g fill="url(#fm)"><rect x="10.4" y="21" width="4.6" height="8" rx="2.3"/><rect x="17.7" y="15" width="4.6" height="14" rx="2.3"/><rect x="25" y="10.6" width="4.6" height="18.4" rx="2.3"/></g></svg>';
 
 /** Rendu HTML A4 d'une pièce de vente (devis / facture / avoir). */
 export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): string {
