@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, Table, Button, Modal, Form, Spinner, Badge } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
+import { frTvaNumber, isValidSiren } from '@jampack/domain';
 
 type Company = {
   id: string; name: string; siren: string | null; siret?: string | null; tvaNumber?: string | null; doNotProspect?: boolean; processingRestricted?: boolean;
@@ -188,9 +189,20 @@ export default function Clients() {
         <Modal.Body>
           <Form.Group className="mb-3"><Form.Label>Nom</Form.Label><Form.Control autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Form.Group>
           <div className="row g-2 mb-3">
-            <div className="col-md-4"><Form.Label>SIREN</Form.Label><Form.Control value={form.siren} onChange={(e) => setForm({ ...form, siren: e.target.value })} placeholder="9 chiffres" /></div>
+            <div className="col-md-4">
+              <Form.Label>SIREN</Form.Label>
+              <Form.Control
+                value={form.siren}
+                isInvalid={!!form.siren.trim() && !isValidSiren(form.siren)}
+                onChange={(e) => setForm({ ...form, siren: e.target.value })}
+                // Auto-remplit le n° de TVA intracommunautaire (règle DGFiP) si le champ est vide.
+                onBlur={() => { const t = frTvaNumber(form.siren); if (t && !form.tvaNumber.trim()) setForm((f) => ({ ...f, tvaNumber: t })); }}
+                placeholder="9 chiffres"
+              />
+              <Form.Control.Feedback type="invalid">Clé de contrôle invalide.</Form.Control.Feedback>
+            </div>
             <div className="col-md-4"><Form.Label>SIRET</Form.Label><Form.Control value={form.siret} onChange={(e) => setForm({ ...form, siret: e.target.value })} placeholder="14 chiffres" /></div>
-            <div className="col-md-4"><Form.Label>N° TVA</Form.Label><Form.Control value={form.tvaNumber} onChange={(e) => setForm({ ...form, tvaNumber: e.target.value })} placeholder="FR…" /></div>
+            <div className="col-md-4"><Form.Label>N° TVA</Form.Label><Form.Control value={form.tvaNumber} onChange={(e) => setForm({ ...form, tvaNumber: e.target.value })} placeholder="FR… (auto depuis le SIREN)" /></div>
           </div>
           <Form.Check type="switch" id="doNotProspect" className="mb-2" label="Ne pas prospecter (droit d'opposition RGPD)" checked={form.doNotProspect} onChange={(e) => setForm({ ...form, doNotProspect: e.target.checked })} />
           <Form.Check type="switch" id="processingRestricted" className="mb-3" label="Traitement limité (RGPD art. 18) — aucune nouvelle pièce" checked={form.processingRestricted} onChange={(e) => setForm({ ...form, processingRestricted: e.target.checked })} />

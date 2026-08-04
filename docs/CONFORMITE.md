@@ -65,6 +65,9 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 ### 3.5 Mentions obligatoires des factures (art. 242 nonies A CGI · art. L441-9 C. com.)
 - **Vendeur** : dénomination, forme juridique + capital, adresse, **SIRET/SIREN**, **n° TVA
   intracommunautaire**, RCS/APE. → portés par le gabarit (`invoiceHtml.ts`) depuis les champs société. ✅
+- **Contrôle des identifiants** : SIREN (9 chiffres) et SIRET (14 chiffres) **validés par clé de Luhn**
+  (`isValidSiren`/`isValidSiret`) ; le **n° de TVA intracommunautaire est calculé automatiquement** depuis le
+  SIREN (`frTvaNumber` — clé = (12 + 3 × (SIREN mod 97)) mod 97) et pré-rempli dans les fiches société et client. ✅
 - **Acheteur** : identité + adresse ✅ ; **identifiants SIREN/TVA** (`Company.siren`/`siret`/`tvaNumber`)
   **portés sur la facture PDF et le Factur-X** (BuyerTradeParty : SIREN schemeID 0002, TVA schemeID VA). ✅
 - **Pièce** : numéro **séquentiel chronologique continu**, date d'émission, date de la vente/prestation,

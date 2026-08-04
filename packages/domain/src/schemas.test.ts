@@ -8,6 +8,7 @@ import {
   isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
   isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs, auditLogCsv,
   discountMention, DISCOUNT_MENTION_NONE,
+  isValidSiren, isValidSiret, frTvaNumber,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -342,5 +343,29 @@ describe('constantes & tables', () => {
   it('PCG minimal contient les comptes clés', () => {
     const codes = PCG_MINIMAL.map((a) => a.code);
     expect(codes).toEqual(expect.arrayContaining(['401000', '411000', '445710', '445660', '512000', '707000']));
+  });
+});
+
+describe('identifiants légaux FR (SIREN / SIRET / TVA intra)', () => {
+  it('valide un SIREN (9 chiffres + clé de Luhn)', () => {
+    expect(isValidSiren('732829320')).toBe(true);
+    expect(isValidSiren('732 829 320')).toBe(true); // espaces tolérés
+    expect(isValidSiren('732829321')).toBe(false);   // clé erronée
+    expect(isValidSiren('12345')).toBe(false);        // longueur
+    expect(isValidSiren(null)).toBe(false);
+  });
+
+  it('valide un SIRET (14 chiffres + clé de Luhn)', () => {
+    expect(isValidSiret('73282932000074')).toBe(true);
+    expect(isValidSiret('732829320')).toBe(false);   // c'est un SIREN, pas un SIRET
+    expect(isValidSiret('73282932000075')).toBe(false); // clé erronée
+  });
+
+  it('calcule le n° de TVA intracommunautaire depuis le SIREN (règle DGFiP)', () => {
+    // clé = (12 + 3 × (SIREN mod 97)) mod 97 ; 732829320 mod 97 = 43 → clé 44
+    expect(frTvaNumber('732829320')).toBe('FR44732829320');
+    expect(frTvaNumber('  732 829 320 ')).toBe('FR44732829320');
+    expect(frTvaNumber('732829321')).toBeNull(); // SIREN invalide
+    expect(frTvaNumber(null)).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, Button, Form, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
+import { frTvaNumber, isValidSiren } from '@jampack/domain';
 
 type Settings = Record<string, string | boolean | null | undefined>;
 
@@ -56,7 +57,22 @@ export default function SocieteSettings() {
           <Card className="mb-3"><Card.Header className="fw-semibold">Identité</Card.Header><Card.Body>
             <Text k="name" label="Raison sociale" />
             <Row><Col md={6}><Text k="legalForm" label="Forme juridique" /></Col><Col md={6}><Text k="capital" label="Capital social" /></Col></Row>
-            <Row><Col md={6}><Text k="siren" label="SIREN" /></Col><Col md={6}><Text k="siret" label="SIRET" /></Col></Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small text-secondary mb-1">SIREN</Form.Label>
+                  <Form.Control
+                    value={val('siren')} disabled={!editable}
+                    isInvalid={!!val('siren').trim() && !isValidSiren(val('siren'))}
+                    onChange={(e) => set('siren', e.target.value)}
+                    // Auto-remplit la TVA intracommunautaire (règle DGFiP) si le champ est vide.
+                    onBlur={() => { const t = frTvaNumber(val('siren')); if (t && !val('tvaNumber').trim()) set('tvaNumber', t); }}
+                  />
+                  <Form.Control.Feedback type="invalid">Clé de contrôle invalide.</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={6}><Text k="siret" label="SIRET" /></Col>
+            </Row>
             <Row><Col md={4}><Text k="tvaNumber" label="TVA intracom" /></Col><Col md={4}><Text k="rcs" label="RCS" /></Col><Col md={4}><Text k="ape" label="APE/NAF" /></Col></Row>
           </Card.Body></Card>
 

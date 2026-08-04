@@ -32,6 +32,47 @@ export function lmePaymentMention(penaltyRate?: string | null): string {
     `Pas d'escompte pour paiement anticipé.`;
 }
 
+// ── Identifiants légaux français (SIREN / SIRET / TVA intracommunautaire) ──
+/** Ne conserve que les chiffres d'une saisie (espaces/points tolérés). */
+const digitsOnly = (s: string) => s.replace(/\D/g, '');
+
+/** Clé de Luhn (SIREN à 9 chiffres, SIRET à 14) — algorithme officiel INSEE. */
+function luhnValid(num: string): boolean {
+  let sum = 0;
+  for (let i = 0; i < num.length; i++) {
+    let d = num.charCodeAt(num.length - 1 - i) - 48; // chiffre depuis la droite
+    if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9; }
+    sum += d;
+  }
+  return sum % 10 === 0;
+}
+
+/** Vrai si `siren` est un SIREN valide (9 chiffres + clé de Luhn). */
+export function isValidSiren(siren?: string | null): boolean {
+  if (!siren) return false;
+  const s = digitsOnly(siren);
+  return s.length === 9 && luhnValid(s);
+}
+
+/** Vrai si `siret` est un SIRET valide (14 chiffres + clé de Luhn). */
+export function isValidSiret(siret?: string | null): boolean {
+  if (!siret) return false;
+  const s = digitsOnly(siret);
+  return s.length === 14 && luhnValid(s);
+}
+
+/**
+ * Calcule le n° de TVA intracommunautaire français à partir du SIREN (règle DGFiP) :
+ * « FR » + clé à 2 chiffres + SIREN, où clé = (12 + 3 × (SIREN mod 97)) mod 97.
+ * Renvoie `null` si le SIREN est invalide.
+ */
+export function frTvaNumber(siren?: string | null): string | null {
+  if (!isValidSiren(siren)) return null;
+  const s = digitsOnly(siren!);
+  const key = (12 + 3 * (Number(s) % 97)) % 97;
+  return `FR${String(key).padStart(2, '0')}${s}`;
+}
+
 // ── Tiers (Company : client et/ou fournisseur) ──
 export const companyCreate = z.object({
   name: z.string().min(1),

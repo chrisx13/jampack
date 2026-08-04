@@ -101,6 +101,11 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-TRE-2 | rapprochement bancaire (voir FR-CPT-5d) | e2e int | ✅ |
 | FR-TRE-3 | `analytics.agedReceivables`, `AgedReceivables.tsx` | e2e int : facture à 45 j → tranche 31-60 | ✅ |
 
+## Conformité — identifiants légaux
+| Exigence | Code | Test / Preuve | État |
+|---|---|---|---|
+| Contrôle SIREN/SIRET (Luhn) + calcul TVA intra | `isValidSiren`/`isValidSiret`/`frTvaNumber` (domain), auto-remplissage + `isInvalid` dans `Clients.tsx` & `SocieteSettings.tsx` | unit : Luhn OK/KO, longueurs, espaces tolérés ; `frTvaNumber('732829320')='FR44732829320'`, invalide→null | ✅ |
+
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |
 |---|---|---|---|
