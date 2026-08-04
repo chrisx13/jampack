@@ -55,6 +55,9 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
     expect(cnRow.sourceId).toBe(conv.id);
     const cnv = await caller.creditNotes.validate({ id: cn.id });
     expect(cnv.number).toMatch(/^AV-/);
+    // L'avoir référence sa facture d'origine (exposée pour le PDF : « Se rapporte à la facture … »).
+    const cnFull = await caller.creditNotes.get({ id: cn.id });
+    expect(cnFull.source?.number).toMatch(/^FA-/);
   });
 
   it('règlements : acompte puis solde → statut payée, échéancier cohérent', async () => {

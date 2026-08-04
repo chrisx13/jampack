@@ -10,6 +10,7 @@ type Invoice = {
   validUntil?: Date | null;
   vatReverseCharge?: boolean | null;
   customerReference?: string | null;
+  source?: { number: string | null; issueDate: Date | null } | null;
   notes: string | null;
   company: { name: string; siren?: string | null; siret?: string | null; tvaNumber?: string | null } | null;
   establishment: { name?: string | null; addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
@@ -113,6 +114,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
       <div class="num">${esc(inv.number ?? '—')}</div>
       <div class="muted">Émission : ${d(inv.issueDate)}</div>
       ${secondDate ? `<div class="muted">${secondDate.lbl} : ${d(secondDate.val)}</div>` : ''}
+      ${docType === 'avoir' && inv.source ? `<div class="muted">Se rapporte à la facture <strong>${esc(inv.source.number ?? '—')}</strong>${inv.source.issueDate ? ` du ${d(inv.source.issueDate)}` : ''}</div>` : ''}
     </div>
   </div>
 

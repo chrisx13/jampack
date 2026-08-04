@@ -38,7 +38,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 |---|---|---|---|
 | FR-VEN-1/2 | `invoice/quote.router.ts`, `salesRouter.ts` | e2e : devis→sent→accepted→converted | ✅ |
 | FR-VEN-3 | `invoice/invoice.router.ts`, `invoiceHtml.ts` | e2e : FA-0001 validée ; PDF Chromium | ✅ |
-| FR-VEN-4 | `invoice.router.ts` (`createCreditNote`) | e2e : avoir source=facture | ✅ |
+| FR-VEN-4 | `invoice.router.ts` (`createCreditNote`), `fullInclude.source`, réf. structurée sur le PDF `invoiceHtml.ts` | e2e : avoir source=facture ; `get` expose `source.number` (« Se rapporte à la facture … ») | ✅ |
 | FR-VEN-5 | `billing.router.ts`, `resolveBilling` | subrogation dans le PDF | ✅ |
 | FR-VEN-6 | `invoice/payment.router.ts` | e2e : acompte→validée, solde→payée | ✅ |
 | FR-VEN-7 | `payment.router.ts` (`echeancier`) | e2e : reste dû, hors échéancier si payé | ✅ |

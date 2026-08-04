@@ -75,6 +75,8 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
   **portés sur la facture PDF et le Factur-X** (BuyerTradeParty : SIREN schemeID 0002, TVA schemeID VA). ✅
 - **Référence commande acheteur (BT-13)** : `Invoice.customerReference` → PDF + Factur-X
   (`BuyerOrderReferencedDocument/IssuerAssignedID`). ✅
+- **Avoir** : référence **structurée à la facture d'origine** (« Se rapporte à la facture N° … du … »)
+  sur le PDF, via `Invoice.source` (numéro + date). ✅
 - **Pièce** : numéro **séquentiel chronologique continu**, date d'émission, date de la vente/prestation,
   désignation, quantité, PU HT, **taux de TVA par ligne**, réductions, total HT/TVA/TTC. ✅ (numérotation
   atomique par société/type ; totaux par taux).

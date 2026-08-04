@@ -46,6 +46,7 @@ export const fullInclude = {
   factor: true,
   bankAccount: true,
   paymentTerm: true,
+  source: { select: { number: true, issueDate: true } },
 };
 
 async function htmlToPdf(html: string) {
