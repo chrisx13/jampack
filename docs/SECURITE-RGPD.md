@@ -74,7 +74,7 @@ des **données personnelles** (contacts des tiers, utilisateurs) ; la conformit�
 |---|---|---|
 | Accès / portabilité | **Export JSON** des données détenues sur un tiers (`crm.companies.exportData`, bouton « Export RGPD » sur la fiche client) | ✅ |
 | Rectification | Édition en libre-service (fiches tiers/contacts) | ✅ |
-| Effacement | Suppression du tiers/contact… **sauf réserve légale** (pièces comptables 10 ans) | 🔧 (partiel) |
+| Effacement (art. 17) | **Anonymisation** du tiers (`crm.companies.anonymize` : identité + contacts effacés) **en conservant les pièces comptables** (réserve légale 10 ans) | ✅ |
 | Opposition (prospection) | Drapeau **« ne pas prospecter »** (`Company.doNotProspect`, art. 21) | ✅ |
 | Limitation | Gel d'un enregistrement | ⏳ |
 - **Réserve légale** : les factures (valeur comptable) sont conservées 10 ans et ne peuvent être effacées
@@ -130,7 +130,7 @@ profilage, décision automatisée ou données sensibles.
 |---|---|---|
 | Immuabilité stricte du journal d'audit | Falsification théorique | Append-only + signature (à venir) |
 | InvoiceLine sans RLS société propre | Accès seulement via pièce parente (protégée) | TODO Jalon A (`rls.sql`) |
-| Outillage droits RGPD : accès/portabilité ✅ (export), opposition ✅ ; effacement anonymisant & limitation restants | Exercice des droits partiel | Anonymisation vs réserve légale + gel d'enregistrement (⏳) |
+| Outillage droits RGPD : accès/portabilité ✅, opposition ✅, effacement anonymisant ✅ ; **limitation** restante | Droit de limitation à outiller | Gel/verrouillage d'un enregistrement (⏳) |
 | Purge/anonymisation à échéance (prospects 3 ans, audit 12 mois) | Sur-conservation | Tâche de purge configurable (⏳) |
 | Procédure de violation de données formelle | Délai de notification 72 h | Runbook + registre des violations (⏳) |
 | Politique de confidentialité / mentions d'information | Information des personnes | Gabarit + emplacements (⏳) |

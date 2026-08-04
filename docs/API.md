@@ -10,7 +10,7 @@ transaction RLS (`withTenant`).
 ## Routeurs
 
 ### `crm`
-`companies.{list,create,update,remove,exportData}` (exportData = export RGPD accès/portabilité) · `contacts.{list,create,update,remove}` · `establishments.{list,create,update,remove}` · `opportunities.{list,create,update,move,remove}` · `stages.list` · `activities.{list,create}`
+`companies.{list,create,update,remove,exportData,anonymize}` (exportData = export RGPD ; anonymize = effacement art. 17) · `contacts.{list,create,update,remove}` · `establishments.{list,create,update,remove}` · `opportunities.{list,create,update,move,remove}` · `stages.list` · `activities.{list,create}`
 
 ### `catalog`
 `products.{list,create,update,remove}` · `taxRates.{list,create,update,remove}` · `categories.{list,create,update,archive}` · `sequences.list`

@@ -103,6 +103,7 @@ export default function Clients() {
 
   const [edit, setEdit] = useState<null | Partial<Company>>(null);
   const [del, setDel] = useState<Company | null>(null);
+  const [anon, setAnon] = useState<Company | null>(null);
   const [estab, setEstab] = useState<Company | null>(null);
   const [form, setForm] = useState({ name: '', siren: '', siret: '', tvaNumber: '', doNotProspect: false, factorId: '', factorMandatory: false, paymentTermId: '' });
 
@@ -110,6 +111,7 @@ export default function Clients() {
   const create = trpc.crm.companies.create.useMutation({ onSuccess: () => { invalidate(); setEdit(null); } });
   const update = trpc.crm.companies.update.useMutation({ onSuccess: () => { invalidate(); setEdit(null); } });
   const remove = trpc.crm.companies.remove.useMutation({ onSuccess: () => { invalidate(); setDel(null); } });
+  const anonymize = trpc.crm.companies.anonymize.useMutation({ onSuccess: () => { invalidate(); setAnon(null); } });
 
   const open = (row?: Company) => { setForm({ name: row?.name ?? '', siren: row?.siren ?? '', siret: row?.siret ?? '', tvaNumber: row?.tvaNumber ?? '', doNotProspect: !!row?.doNotProspect, factorId: row?.factorId ?? '', factorMandatory: !!row?.factorMandatory, paymentTermId: row?.paymentTermId ?? '' }); setEdit(row ?? {}); };
   const submit = () => {
@@ -153,6 +155,7 @@ export default function Clients() {
                   <td className="text-end pe-3">
                     <Button variant="light" size="sm" className="me-1" title="Export RGPD (données personnelles)" onClick={() => exportRgpd(c as Company)}><i className="bi bi-download" /></Button>
                     {can('update', 'Company') && <Button variant="light" size="sm" className="me-1" onClick={() => open(c as Company)}><i className="bi bi-pencil" /></Button>}
+                    {can('delete', 'Company') && <Button variant="light" size="sm" className="me-1 text-warning" title="Anonymiser (RGPD — conserve les pièces comptables)" onClick={() => setAnon(c as Company)}><i className="bi bi-person-x" /></Button>}
                     {can('delete', 'Company') && <Button variant="light" size="sm" className="text-danger" onClick={() => setDel(c as Company)}><i className="bi bi-trash" /></Button>}
                   </td>
                 </tr>
@@ -202,6 +205,19 @@ export default function Clients() {
         <Modal.Footer>
           <Button variant="light" onClick={() => setDel(null)}>Annuler</Button>
           <Button variant="danger" onClick={() => del && remove.mutate({ id: del.id })} disabled={remove.isPending}>{remove.isPending ? <Spinner size="sm" /> : 'Supprimer'}</Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={anon !== null} onHide={() => setAnon(null)} centered>
+        <Modal.Header closeButton><Modal.Title>Anonymiser (RGPD)</Modal.Title></Modal.Header>
+        <Modal.Body>
+          Anonymiser <strong>{anon?.name}</strong> : l'identité (nom, SIREN/SIRET/TVA) et les contacts sont
+          effacés définitivement, mais les <strong>pièces comptables</strong> sont conservées (réserve
+          légale 10 ans). Répond au droit à l'effacement (art. 17 RGPD). Action irréversible.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="light" onClick={() => setAnon(null)}>Annuler</Button>
+          <Button variant="warning" onClick={() => anon && anonymize.mutate({ id: anon.id })} disabled={anonymize.isPending}>{anonymize.isPending ? <Spinner size="sm" /> : 'Anonymiser'}</Button>
         </Modal.Footer>
       </Modal>
 

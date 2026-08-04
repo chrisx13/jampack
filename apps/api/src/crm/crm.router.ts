@@ -53,6 +53,16 @@ export const crmRouter = router({
       })
     ),
 
+    /** Effacement RGPD (droit à l'oubli, art. 17) : anonymise l'identité et les contacts en conservant
+     *  les pièces comptables (réserve légale 10 ans). Réversibilité impossible = effacement effectif. */
+    anonymize: authed('delete', 'Company').input(byId).mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        await tx.contact.updateMany({ where: { companyId: input.id }, data: { firstName: 'Contact', lastName: 'anonymisé', email: null, phone: null } });
+        await tx.establishment.updateMany({ where: { companyId: input.id }, data: { email: null, phone: null } });
+        return tx.company.update({ where: { id: input.id }, data: { name: 'Client anonymisé', siren: null, siret: null, tvaNumber: null, doNotProspect: true } });
+      })
+    ),
+
     /** Export RGPD (droit d'accès / portabilité, art. 15/20) : données personnelles détenues sur un tiers. */
     exportData: authed('read', 'Company').input(byId).query(({ ctx, input }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {

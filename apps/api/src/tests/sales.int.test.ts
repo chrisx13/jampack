@@ -275,4 +275,19 @@ describe('CRM — RGPD (opposition & export des données)', () => {
     await caller.crm.companies.remove({ id: co.id }); // nettoyage (contact détaché puis société supprimée)
     await C.prisma.contact.deleteMany({ where: { email: 'jean@int-rgpd.fr' } });
   });
+
+  it('effacement anonymisant (art. 17) : identité et contacts neutralisés', async () => {
+    const co = await caller.crm.companies.create({ name: '[INT] À anonymiser', siren: '987654321', siret: '98765432100011', tvaNumber: 'FR00987654321' });
+    await caller.crm.contacts.create({ companyId: co.id, firstName: 'Marie', lastName: 'Perso', email: 'marie@int-anon.fr', phone: '0102030405' });
+    await caller.crm.companies.anonymize({ id: co.id });
+    const after = await C.prisma.company.findUniqueOrThrow({ where: { id: co.id }, include: { contacts: true } });
+    expect(after.name).toBe('Client anonymisé');
+    expect(after.siren).toBeNull();
+    expect(after.tvaNumber).toBeNull();
+    expect(after.doNotProspect).toBe(true);
+    expect(after.contacts.every((c) => c.email === null && c.lastName === 'anonymisé')).toBe(true);
+    // nettoyage
+    await C.prisma.contact.deleteMany({ where: { companyId: co.id } });
+    await C.prisma.company.delete({ where: { id: co.id } });
+  });
 });
