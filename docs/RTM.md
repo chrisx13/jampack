@@ -83,7 +83,8 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | Exigence | Code | Test / Preuve | État |
 |---|---|---|---|
 | FR-TRE-1 | `analytics.tresorerie`, `Tresorerie.tsx` | e2e int : reste dû clients (encaissements) + fournisseurs (décaissements), position nette | ✅ |
-| FR-TRE-2 | rapprochement bancaire (relevé ↔ 512, DO-4) | — | ⏳ |
+| FR-TRE-2 | rapprochement bancaire (voir FR-CPT-5d) | e2e int | ✅ |
+| FR-TRE-3 | `analytics.agedReceivables`, `AgedReceivables.tsx` | e2e int : facture à 45 j → tranche 31-60 | ✅ |
 
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |

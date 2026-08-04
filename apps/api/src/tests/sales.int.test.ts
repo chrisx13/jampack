@@ -142,6 +142,20 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
   });
 });
 
+describe('Analytics — balance âgée clients', () => {
+  it('ventile les créances par tranche d’ancienneté', async () => {
+    const companyId = await anyCustomer();
+    const day = 86400000;
+    const overdue45 = new Date(Date.now() - 45 * day).toISOString().slice(0, 10);
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', dueDate: overdue45, lines: [{ label: 'AR', quantity: 1, unitPriceHt: 100, taxRatePct: 0 }] });
+    await caller.invoices.validate({ id: inv.id });
+    const aged = await caller.analytics.agedReceivables();
+    // Le total de la tranche 31–60 j inclut au moins nos 100 € (facture à 45 j d'échéance).
+    expect(aged.totals.d31_60).toBeGreaterThanOrEqual(100);
+    expect(aged.rows.some((r: { company: string; d31_60: number }) => r.d31_60 >= 100)).toBe(true);
+  });
+});
+
 describe('Comptabilité — immobilisations & amortissement', () => {
   it('plan d’amortissement linéaire (3000 € / 3 ans, 1er janvier → 1000/an)', async () => {
     const a = await caller.accounting.fixedAssets.create({ name: '[INT] Matériel', accountCode: '215000', amountHt: 3000, acquisitionDate: '2026-01-05', durationYears: 3 });

@@ -24,6 +24,7 @@ import Lettrage from './pages/Lettrage';
 import BankReconciliation from './pages/BankReconciliation';
 import FixedAssets from './pages/FixedAssets';
 import Tresorerie from './pages/Tresorerie';
+import AgedReceivables from './pages/AgedReceivables';
 import Settings from './pages/Settings';
 import Appearance from './pages/Appearance';
 import SocieteSettings from './pages/SocieteSettings';
@@ -116,6 +117,7 @@ export const DOMAINS: Domain[] = [
     icon: 'bi-graph-up-arrow',
     views: [
       { id: 'cashflow', label: 'Prévisionnel', icon: 'bi-wallet2', element: <Tresorerie />, can: ['read', 'Invoice'] },
+      { id: 'aged-receivables', label: 'Balance âgée', icon: 'bi-hourglass-split', element: <AgedReceivables />, can: ['read', 'Invoice'] },
     ],
   },
   {

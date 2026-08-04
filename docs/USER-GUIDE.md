@@ -50,6 +50,7 @@
 
 ## 7. Trésorerie
 - **Prévisionnel** : projection des encaissements et décaissements à partir des échéanciers client et fournisseur (position nette, retards).
+- **Balance âgée** : créances clients non soldées ventilées par ancienneté (non échu, 1-30, 31-60, 61-90, +90 jours) — pilotage du recouvrement.
 
 ## 8. Administration
 - **Paramètres**, **Société (facturation)** (en-tête, mentions légales, CGV), **Facturation** (banques,

@@ -101,4 +101,33 @@ export const analyticsRouter = router({
       return { encaissements, decaissements, toReceive, toPay, net: r2(toReceive - toPay) };
     })
   ),
+
+  /** Balance âgée clients : créances non soldées ventilées par tranche d'ancienneté (échéance dépassée). */
+  agedReceivables: protectedProcedure.query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const now = Date.now();
+      const factures = await tx.invoice.findMany({
+        where: { ...scope(ctx.societeId), docType: 'facture', status: 'validated' },
+        include: { company: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } },
+      });
+      type Bucket = { notDue: number; d1_30: number; d31_60: number; d61_90: number; d90p: number; total: number };
+      const empty = (): Bucket => ({ notDue: 0, d1_30: 0, d31_60: 0, d61_90: 0, d90p: 0, total: 0 });
+      const byCompany = new Map<string, Bucket>();
+      const totals = empty();
+      for (const f of factures) {
+        const remaining = totalsOf(f.lines).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0);
+        if (remaining <= 0.005) continue;
+        const days = f.dueDate ? Math.floor((now - new Date(f.dueDate).getTime()) / 86400000) : -1;
+        const bucket: keyof Bucket = days <= 0 ? 'notDue' : days <= 30 ? 'd1_30' : days <= 60 ? 'd31_60' : days <= 90 ? 'd61_90' : 'd90p';
+        const name = f.company?.name ?? '—';
+        const b = byCompany.get(name) ?? empty();
+        b[bucket] += remaining; b.total += remaining;
+        totals[bucket] += remaining; totals.total += remaining;
+        byCompany.set(name, b);
+      }
+      const round = (b: Bucket): Bucket => ({ notDue: r2(b.notDue), d1_30: r2(b.d1_30), d31_60: r2(b.d31_60), d61_90: r2(b.d61_90), d90p: r2(b.d90p), total: r2(b.total) });
+      const rows = [...byCompany.entries()].map(([company, b]) => ({ company, ...round(b) })).sort((a, b) => b.total - a.total);
+      return { rows, totals: round(totals) };
+    })
+  ),
 });
