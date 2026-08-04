@@ -76,7 +76,7 @@ export const crmRouter = router({
         });
         return {
           generatedAt: new Date(),
-          subject: { name: c.name, siren: c.siren, siret: c.siret, tvaNumber: c.tvaNumber, doNotProspect: c.doNotProspect, isCustomer: c.isCustomer, isSupplier: c.isSupplier, createdAt: c.createdAt },
+          subject: { name: c.name, siren: c.siren, siret: c.siret, tvaNumber: c.tvaNumber, doNotProspect: c.doNotProspect, processingRestricted: c.processingRestricted, isCustomer: c.isCustomer, isSupplier: c.isSupplier, createdAt: c.createdAt },
           contacts: c.contacts,
           establishments: c.establishments,
           opportunities: c.opportunities,

@@ -4,7 +4,7 @@ import { trpc } from '../trpc';
 import { useCan } from '../ability';
 
 type Company = {
-  id: string; name: string; siren: string | null; siret?: string | null; tvaNumber?: string | null; doNotProspect?: boolean;
+  id: string; name: string; siren: string | null; siret?: string | null; tvaNumber?: string | null; doNotProspect?: boolean; processingRestricted?: boolean;
   factorId?: string | null; factorMandatory?: boolean; paymentTermId?: string | null;
   societe?: { name: string } | null;
   _count?: { establishments: number; contacts: number };
@@ -105,7 +105,7 @@ export default function Clients() {
   const [del, setDel] = useState<Company | null>(null);
   const [anon, setAnon] = useState<Company | null>(null);
   const [estab, setEstab] = useState<Company | null>(null);
-  const [form, setForm] = useState({ name: '', siren: '', siret: '', tvaNumber: '', doNotProspect: false, factorId: '', factorMandatory: false, paymentTermId: '' });
+  const [form, setForm] = useState({ name: '', siren: '', siret: '', tvaNumber: '', doNotProspect: false, processingRestricted: false, factorId: '', factorMandatory: false, paymentTermId: '' });
 
   const invalidate = () => utils.crm.companies.list.invalidate();
   const create = trpc.crm.companies.create.useMutation({ onSuccess: () => { invalidate(); setEdit(null); } });
@@ -113,13 +113,13 @@ export default function Clients() {
   const remove = trpc.crm.companies.remove.useMutation({ onSuccess: () => { invalidate(); setDel(null); } });
   const anonymize = trpc.crm.companies.anonymize.useMutation({ onSuccess: () => { invalidate(); setAnon(null); } });
 
-  const open = (row?: Company) => { setForm({ name: row?.name ?? '', siren: row?.siren ?? '', siret: row?.siret ?? '', tvaNumber: row?.tvaNumber ?? '', doNotProspect: !!row?.doNotProspect, factorId: row?.factorId ?? '', factorMandatory: !!row?.factorMandatory, paymentTermId: row?.paymentTermId ?? '' }); setEdit(row ?? {}); };
+  const open = (row?: Company) => { setForm({ name: row?.name ?? '', siren: row?.siren ?? '', siret: row?.siret ?? '', tvaNumber: row?.tvaNumber ?? '', doNotProspect: !!row?.doNotProspect, processingRestricted: !!row?.processingRestricted, factorId: row?.factorId ?? '', factorMandatory: !!row?.factorMandatory, paymentTermId: row?.paymentTermId ?? '' }); setEdit(row ?? {}); };
   const submit = () => {
     if (!form.name.trim()) return;
     const billing = { factorMandatory: form.factorMandatory };
     const ids = { siren: form.siren || null, siret: form.siret || null, tvaNumber: form.tvaNumber || null };
-    if (edit && 'id' in edit && edit.id) update.mutate({ id: edit.id, name: form.name.trim(), ...ids, doNotProspect: form.doNotProspect, factorId: form.factorId || null, paymentTermId: form.paymentTermId || null, ...billing });
-    else create.mutate({ name: form.name.trim(), siren: form.siren || undefined, siret: form.siret || undefined, tvaNumber: form.tvaNumber || undefined, doNotProspect: form.doNotProspect, factorId: form.factorId || undefined, paymentTermId: form.paymentTermId || undefined, ...billing });
+    if (edit && 'id' in edit && edit.id) update.mutate({ id: edit.id, name: form.name.trim(), ...ids, doNotProspect: form.doNotProspect, processingRestricted: form.processingRestricted, factorId: form.factorId || null, paymentTermId: form.paymentTermId || null, ...billing });
+    else create.mutate({ name: form.name.trim(), siren: form.siren || undefined, siret: form.siret || undefined, tvaNumber: form.tvaNumber || undefined, doNotProspect: form.doNotProspect, processingRestricted: form.processingRestricted, factorId: form.factorId || undefined, paymentTermId: form.paymentTermId || undefined, ...billing });
   };
   const exportRgpd = async (c: Company) => {
     const data = await utils.crm.companies.exportData.fetch({ id: c.id });
@@ -144,7 +144,10 @@ export default function Clients() {
             <tbody>
               {list.data?.map((c) => (
                 <tr key={c.id}>
-                  <td className="ps-3 fw-medium">{c.name}{(c as Company).doNotProspect && <Badge bg="warning-subtle" text="warning" className="fw-normal ms-2"><i className="bi bi-slash-circle me-1" />ne pas prospecter</Badge>}</td>
+                  <td className="ps-3 fw-medium">{c.name}
+                    {(c as Company).doNotProspect && <Badge bg="warning-subtle" text="warning" className="fw-normal ms-2"><i className="bi bi-slash-circle me-1" />ne pas prospecter</Badge>}
+                    {(c as Company).processingRestricted && <Badge bg="secondary-subtle" text="secondary" className="fw-normal ms-2"><i className="bi bi-lock me-1" />traitement limité</Badge>}
+                  </td>
                   <td className="text-secondary">{c.siren ?? '—'}</td>
                   <td>
                     <Button variant="light" size="sm" onClick={() => setEstab(c as Company)}>
@@ -175,7 +178,8 @@ export default function Clients() {
             <div className="col-md-4"><Form.Label>SIRET</Form.Label><Form.Control value={form.siret} onChange={(e) => setForm({ ...form, siret: e.target.value })} placeholder="14 chiffres" /></div>
             <div className="col-md-4"><Form.Label>N° TVA</Form.Label><Form.Control value={form.tvaNumber} onChange={(e) => setForm({ ...form, tvaNumber: e.target.value })} placeholder="FR…" /></div>
           </div>
-          <Form.Check type="switch" id="doNotProspect" className="mb-3" label="Ne pas prospecter (droit d'opposition RGPD)" checked={form.doNotProspect} onChange={(e) => setForm({ ...form, doNotProspect: e.target.checked })} />
+          <Form.Check type="switch" id="doNotProspect" className="mb-2" label="Ne pas prospecter (droit d'opposition RGPD)" checked={form.doNotProspect} onChange={(e) => setForm({ ...form, doNotProspect: e.target.checked })} />
+          <Form.Check type="switch" id="processingRestricted" className="mb-3" label="Traitement limité (RGPD art. 18) — aucune nouvelle pièce" checked={form.processingRestricted} onChange={(e) => setForm({ ...form, processingRestricted: e.target.checked })} />
           <Form.Group className="mb-3">
             <Form.Label>Condition de paiement (défaut pour ce client)</Form.Label>
             <Form.Select value={form.paymentTermId} onChange={(e) => setForm({ ...form, paymentTermId: e.target.value })}>

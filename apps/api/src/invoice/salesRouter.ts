@@ -92,6 +92,9 @@ export function makeSalesRouter(meta: SalesDocMeta, extra: Record<string, any> =
       const societeId = requireSociete(ctx.societeId);
       const { lines, issueDate, dueDate, validUntil, factorId, bankAccountId, paymentTermId, ...rest } = input;
       return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        // Droit de limitation RGPD (art. 18) : aucun nouveau traitement (pièce) sur un tiers gelé.
+        const co = await tx.company.findUniqueOrThrow({ where: { id: rest.companyId }, select: { processingRestricted: true } });
+        if (co.processingRestricted) throw new TRPCError({ code: 'FORBIDDEN', message: "Traitement limité (RGPD art. 18) : ce tiers ne peut pas faire l'objet de nouvelles pièces." });
         const b = await resolveBilling(tx, societeId, rest.companyId, { factorId, bankAccountId, paymentTermId });
         return tx.invoice.create({
           data: {

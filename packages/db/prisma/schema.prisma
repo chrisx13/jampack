@@ -210,6 +210,7 @@ model Company {
   siret          String?       // établissement principal (14 chiffres)
   tvaNumber      String?       // n° TVA intracommunautaire
   doNotProspect  Boolean       @default(false) // droit d'opposition RGPD (art. 21) : exclu de la prospection
+  processingRestricted Boolean  @default(false) // droit de limitation RGPD (art. 18) : donnees gelees, pas de nouvelle piece
   isCustomer     Boolean       @default(true)
   isSupplier     Boolean       @default(false)
   contacts       Contact[]

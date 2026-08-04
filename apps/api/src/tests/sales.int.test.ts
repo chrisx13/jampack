@@ -290,4 +290,15 @@ describe('CRM — RGPD (opposition & export des données)', () => {
     await C.prisma.contact.deleteMany({ where: { companyId: co.id } });
     await C.prisma.company.delete({ where: { id: co.id } });
   });
+
+  it('limitation du traitement (art. 18) : bloque toute nouvelle pièce', async () => {
+    const co = await caller.crm.companies.create({ name: '[INT] Limité', processingRestricted: true });
+    await expect(caller.invoices.create({ companyId: co.id, notes: '[INT]', lines: [{ label: 'x', quantity: 1, unitPriceHt: 10, taxRatePct: 20 }] })).rejects.toThrow(/limité/i);
+    // levée de la limitation → création à nouveau possible
+    await caller.crm.companies.update({ id: co.id, processingRestricted: false });
+    const inv = await caller.invoices.create({ companyId: co.id, notes: '[INT]', lines: [{ label: 'x', quantity: 1, unitPriceHt: 10, taxRatePct: 20 }] });
+    expect(inv.id).toBeTruthy();
+    await C.prisma.invoice.deleteMany({ where: { companyId: co.id } });
+    await C.prisma.company.delete({ where: { id: co.id } });
+  });
 });

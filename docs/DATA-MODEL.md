@@ -16,7 +16,8 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
 
 ### CRM
 - `Company` (`isCustomer`/`isSupplier`, **`siren`/`siret`/`tvaNumber`** = identifiants légaux,
-  **`doNotProspect`** = opposition RGPD, `factorId`, `paymentTermId`) · `Contact` · `Establishment`
+  **`doNotProspect`** = opposition RGPD, **`processingRestricted`** = limitation RGPD, `factorId`,
+  `paymentTermId`) · `Contact` · `Establishment`
   (siège/facturation/livraison) · `PipelineStage` · `Opportunity` · `Activity`.
 
 ### Référentiels
@@ -65,7 +66,7 @@ init → société → rôles → établissements → référentiels → factura
 billing_entities → **sales_documents** (docType) → **payments** → **stock** → **purchases** →
 **supplier_invoices** → **accounting** → invoice_accounting_link → posting_links → **audit_log** →
 **lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point** →
-**company_legal_ids** → **societe_vat_franchise** → **company_do_not_prospect** → **invoice_reverse_charge** → **societe_vat_on_payments** → **stock_lots**.
+**company_legal_ids** → **societe_vat_franchise** → **company_do_not_prospect** → **invoice_reverse_charge** → **societe_vat_on_payments** → **stock_lots** → **company_processing_restricted**.
 
 ## 7. Schéma (extrait relationnel)
 ```
