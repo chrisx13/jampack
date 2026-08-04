@@ -132,6 +132,19 @@ describe('Achats — commande → réception → stock ; factures fournisseurs',
     expect(after - before).toBeCloseTo(200, 3);
   });
 
+  it('commande en retard : envoyée + date prévue dépassée → listée, puis sort après réception', async () => {
+    const [pid, sid] = [await product(), await supplier()];
+    const wh = await caller.stock.warehouses.create({ name: '[INT] Retard' });
+    const past = new Date(Date.now() - 10 * 86400000).toISOString().slice(0, 10);
+    const po = await caller.purchases.orders.create({ supplierId: sid, warehouseId: wh.id, notes: '[INT]', expectedDate: past, lines: [{ productId: pid, label: 'Baguette', quantity: 10, unitPriceHt: 0.5 }] });
+    await caller.purchases.orders.validate({ id: po.id });
+    const late = (await caller.purchases.orders.overdue()).find((r: { id: string; daysLate: number }) => r.id === po.id);
+    expect(late).toBeTruthy();
+    expect(late.daysLate).toBeGreaterThanOrEqual(9);
+    await caller.purchases.orders.receive({ id: po.id });
+    expect((await caller.purchases.orders.overdue()).some((r: { id: string }) => r.id === po.id)).toBe(false);
+  });
+
   it('facture fournisseur : validée → échéancier, payée → hors échéancier', async () => {
     const sid = await supplier();
     const inv = await caller.supplierInvoices.create({ supplierId: sid, reference: '[INT] F', notes: '[INT]', dueDate: '2026-09-01', lines: [{ label: 'Marchandises', quantity: 1, unitPriceHt: 200, taxRatePct: 20 }] });

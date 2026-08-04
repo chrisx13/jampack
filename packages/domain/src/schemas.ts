@@ -518,6 +518,17 @@ export const stockMovementCreate = z.object({
 });
 export type StockMovementCreate = z.infer<typeof stockMovementCreate>;
 
+/** Une commande fournisseur est en retard si envoyée (non réceptionnée) et sa date prévue est dépassée. */
+export function isPurchaseOrderOverdue(po: { status: string; expectedDate?: Date | string | null }, now = new Date()): boolean {
+  if (po.status !== 'sent' || !po.expectedDate) return false;
+  return new Date(po.expectedDate).getTime() < now.getTime();
+}
+/** Nombre de jours de retard (positif) d'une commande fournisseur ; 0 si non applicable. */
+export function purchaseOrderDaysLate(po: { status: string; expectedDate?: Date | string | null }, now = new Date()): number {
+  if (!isPurchaseOrderOverdue(po, now)) return 0;
+  return Math.floor((now.getTime() - new Date(po.expectedDate as string | Date).getTime()) / 86400000);
+}
+
 // ── Transfert inter-entrepôts (sortie source + entrée destination, atomique) ──
 export const stockTransfer = z.object({
   productId: z.string().min(1),

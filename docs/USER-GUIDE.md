@@ -28,6 +28,8 @@
 ## 4. Achats
 - **Commandes fournisseurs** : choisir un fournisseur (tiers marqué fournisseur) et un **entrepôt de
   réception** → **Valider & envoyer** (numéro CM-) → **Réceptionner** (entre la marchandise en stock).
+- **Commandes en retard** : commandes envoyées non encore réceptionnées dont la date de livraison prévue
+  est dépassée, avec le nombre de jours de retard — pour relancer le fournisseur.
 - **Factures fournisseurs** : saisir (n° du fournisseur, TVA) → **Valider** → **Marquer payée**.
 - **Règlements fournisseurs** : enregistrer les paiements émis (acompte, solde) et suivre le reste dû.
 - **Échéancier fournisseur** : factures à payer, reste dû, retard.

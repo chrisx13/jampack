@@ -46,6 +46,23 @@ export const purchaseRouter = router({
       })
     ),
 
+    /** Commandes en retard : envoyées, non réceptionnées, date de livraison prévue dépassée (plus en retard d'abord). */
+    overdue: authed('read', 'PurchaseOrder').query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const now = new Date();
+        const rows = await tx.purchaseOrder.findMany({
+          where: { ...scope(ctx.societeId), status: 'sent', expectedDate: { lt: now } },
+          include: { supplier: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true } } },
+          orderBy: [{ expectedDate: 'asc' }],
+        });
+        return rows.map((r) => ({
+          id: r.id, number: r.number, expectedDate: r.expectedDate, supplierId: r.supplierId, supplier: r.supplier,
+          daysLate: Math.floor((now.getTime() - new Date(r.expectedDate as Date).getTime()) / 86400000),
+          totalHt: Math.round(r.lines.reduce((s, l) => s + n(l.quantity) * n(l.unitPriceHt), 0) * 100) / 100,
+        }));
+      })
+    ),
+
     get: authed('read', 'PurchaseOrder').input(byId).query(({ ctx, input }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.purchaseOrder.findUniqueOrThrow({ where: { id: input.id }, include: fullInclude }))
     ),

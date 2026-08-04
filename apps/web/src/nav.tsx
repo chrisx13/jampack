@@ -11,6 +11,7 @@ import Avoirs from './pages/Avoirs';
 import Echeancier from './pages/Echeancier';
 import Reminders from './pages/Reminders';
 import PurchaseOrders from './pages/PurchaseOrders';
+import OverduePurchaseOrders from './pages/OverduePurchaseOrders';
 import SupplierInvoices from './pages/SupplierInvoices';
 import SupplierEcheancier from './pages/SupplierEcheancier';
 import StockLevels from './pages/StockLevels';
@@ -86,6 +87,7 @@ export const DOMAINS: Domain[] = [
     icon: 'bi-cart',
     views: [
       { id: 'purchase-orders', label: 'Commandes', icon: 'bi-cart-check', element: <PurchaseOrders />, can: ['read', 'PurchaseOrder'] },
+      { id: 'purchase-overdue', label: 'Commandes en retard', icon: 'bi-clock-history', element: <OverduePurchaseOrders />, can: ['read', 'PurchaseOrder'] },
       { id: 'supplier-invoices', label: 'Factures fournisseurs', icon: 'bi-receipt-cutoff', element: <SupplierInvoices />, can: ['read', 'SupplierInvoice'] },
       { id: 'supplier-echeancier', label: 'Échéancier fournisseur', icon: 'bi-calendar-minus', element: <SupplierEcheancier />, can: ['read', 'SupplierInvoice'] },
     ],

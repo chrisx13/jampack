@@ -129,6 +129,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-ACH-5 | **Échéancier fournisseur** : factures à payer, reste dû, retard. | M | ✅ |
 | FR-ACH-6 | **Règlements fournisseurs** partiels rattachés à une facture ; statut *payée* recalculé au cumul ; comptabilisation (401 débit = 512 crédit). | M | ✅ |
 | FR-ACH-7 | **Rapprochement 3 voies** : commande ↔ réception ↔ facture fournisseur ; écarts de montant et de réception signalés. | C | ✅ |
+| FR-ACH-8 | **Suivi des commandes en retard** : commandes envoyées non réceptionnées dont la date de livraison prévue est dépassée (jours de retard). | C | ✅ |
 
 ### 3.6 Stock
 | ID | Exigence | Prio | Statut |

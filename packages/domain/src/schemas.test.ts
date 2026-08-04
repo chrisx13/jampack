@@ -5,6 +5,7 @@ import {
   stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
+  isPurchaseOrderOverdue, purchaseOrderDaysLate,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -112,6 +113,20 @@ describe('activités CRM', () => {
     expect(isActivityOverdue({ type: 'tache', done: true, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(false);
     expect(isActivityOverdue({ type: 'tache', done: false, dueAt: '2026-08-10T00:00:00Z' }, now)).toBe(false);
     expect(isActivityOverdue({ type: 'note', done: false, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(false);
+  });
+});
+
+describe('commandes fournisseurs en retard', () => {
+  const now = new Date('2026-08-04T12:00:00Z');
+  it('en retard : envoyée + date prévue dépassée', () => {
+    expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: '2026-08-01T00:00:00Z' }, now)).toBe(true);
+    expect(purchaseOrderDaysLate({ status: 'sent', expectedDate: '2026-08-01T00:00:00Z' }, now)).toBe(3);
+  });
+  it('pas en retard : réceptionnée, sans date, ou date future', () => {
+    expect(isPurchaseOrderOverdue({ status: 'received', expectedDate: '2026-08-01T00:00:00Z' }, now)).toBe(false);
+    expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: null }, now)).toBe(false);
+    expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: '2026-08-10T00:00:00Z' }, now)).toBe(false);
+    expect(purchaseOrderDaysLate({ status: 'received', expectedDate: '2026-08-01T00:00:00Z' }, now)).toBe(0);
   });
 });
 

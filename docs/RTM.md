@@ -53,6 +53,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-ACH-5 | `supplierInvoice.router.ts` (`echeancier`, reste dû) | e2e : reste dû, hors échéancier si soldée | ✅ |
 | FR-ACH-6 | `supplierPayment.router.ts`, `accounting.postSupplierPayment`, `SupplierPayment` | e2e : partiel→reste dû, solde→payée, écriture 401=512, suppression→validée | ✅ |
 | FR-ACH-7 | `supplierInvoices.match`, `SupplierInvoice.purchaseOrderId`, panneau rapprochement (`SupplierInvoices.tsx`) | e2e int : facture conforme = OK ; facture surévaluée = écart détecté | ✅ |
+| FR-ACH-8 | `purchases.orders.overdue`, `isPurchaseOrderOverdue`/`purchaseOrderDaysLate`, `OverduePurchaseOrders.tsx` | unit : retard si envoyée+date dépassée, jours de retard ; e2e int : commande J−10 listée, sort après réception | ✅ |
 
 ## Stock
 | Exigence | Code | Test / Preuve | État |
