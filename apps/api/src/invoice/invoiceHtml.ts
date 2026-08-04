@@ -9,6 +9,7 @@ type Invoice = {
   dueDate: Date | null;
   validUntil?: Date | null;
   vatReverseCharge?: boolean | null;
+  customerReference?: string | null;
   notes: string | null;
   company: { name: string; siren?: string | null; siret?: string | null; tvaNumber?: string | null } | null;
   establishment: { name?: string | null; addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
@@ -122,6 +123,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
       <div><strong>${esc(inv.company?.name ?? '')}</strong></div>
       <div class="muted">${clientAddr.map(esc).join('<br>')}</div>
       <div class="muted">${[inv.company?.siret && `SIRET ${esc(inv.company.siret)}`, inv.company?.tvaNumber && `TVA ${esc(inv.company.tvaNumber)}`].filter(Boolean).join(' · ')}</div>
+      ${inv.customerReference ? `<div class="muted" style="margin-top:4px"><strong>Réf. commande :</strong> ${esc(inv.customerReference)}</div>` : ''}
     </div>
   </div>
 

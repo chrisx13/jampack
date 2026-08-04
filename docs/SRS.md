@@ -122,6 +122,8 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-VEN-10 | **Validité & expiration des devis** : suivi des devis émis par date de validité (valide / expire bientôt / expiré) pour relance avant caducité. | C | ✅ |
 | FR-VEN-11 | **Mention d'escompte** (art. L441-10) : conditions d'escompte pour paiement anticipé sur facture, ou mention « Pas d'escompte » par défaut. | M | ✅ |
 | FR-VEN-12 | **Duplication de pièce** : créer un brouillon identique (client, lignes) depuis un devis/facture/avoir. | C | ✅ |
+| FR-VEN-13 | **Mentions du devis** sur le PDF : validité (« valable jusqu'au »), CGV, cartouche **« Bon pour accord »** (date + signature client). | S | ✅ |
+| FR-VEN-14 | **Référence commande client** (B2B) : champ porté sur la pièce et affiché sur le PDF. | C | ✅ |
 | FR-VEN-8 | **E-invoicing Factur-X / PDP** : génération **Factur-X (XML CII, EN 16931)**, connecteur **PDP** (interface + adaptateur interne), journal des transmissions (`PdpTransmission`, sous RLS). Émission/réception effective via PDP **immatriculée** ou **partenaire**. | M | 🔧 (génération + connecteur ✅ ; immatriculation DGFiP / PPF / e-reporting ⛔ hors périmètre logiciel) |
 
 ### 3.5 Achats

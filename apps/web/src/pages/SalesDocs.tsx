@@ -71,6 +71,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const [bankAccountId, setBankAccountId] = useState('');
   const [factorId, setFactorId] = useState('');
   const [vatReverseCharge, setVatReverseCharge] = useState(false);
+  const [customerReference, setCustomerReference] = useState('');
 
   useEffect(() => {
     const doc = existing.data;
@@ -80,6 +81,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     setSecondDate(dv ? new Date(dv).toISOString().slice(0, 10) : '');
     setNotes(doc.notes ?? '');
     setVatReverseCharge(!!doc.vatReverseCharge);
+    setCustomerReference(doc.customerReference ?? '');
     setStatus(doc.status);
     setNumber(doc.number ?? null);
     setLines(doc.lines.map((l: Record<string, unknown>) => ({ productId: (l.productId as string) ?? undefined, label: l.label as string, quantity: num(l.quantity), unitPriceHt: num(l.unitPriceHt), taxRatePct: num(l.taxRatePct) })));
@@ -138,6 +140,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const payload = () => ({
     companyId,
     notes: notes || undefined,
+    customerReference: customerReference || null,
     ...(cfg.dateField === 'dueDate' ? { dueDate: secondDate || undefined } : {}),
     ...(cfg.dateField === 'validUntil' ? { validUntil: secondDate || undefined } : {}),
     factorId: factorForced ? (company?.factorId ?? null) : (factorId || null),
@@ -267,6 +270,10 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
                 <Form.Control type="date" value={secondDate} onChange={(e) => setSecondDate(e.target.value)} disabled={readOnly} />
               </div>
             )}
+            <div className="col-md-3">
+              <Form.Label>Réf. commande client</Form.Label>
+              <Form.Control value={customerReference} maxLength={80} placeholder="Bon de commande…" onChange={(e) => setCustomerReference(e.target.value)} disabled={readOnly} />
+            </div>
           </div>
           {cfg.showBilling && (
             <div className="row g-3 mt-1">

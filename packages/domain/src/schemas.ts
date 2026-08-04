@@ -534,6 +534,7 @@ export const invoiceCreate = z.object({
   bankAccountId: z.string().nullable().optional(),
   paymentTermId: z.string().nullable().optional(),
   vatReverseCharge: z.boolean().optional(),
+  customerReference: z.string().max(80).nullable().optional(),
   lines: z.array(invoiceLineInput).default([]),
 });
 export type InvoiceCreate = z.infer<typeof invoiceCreate>;
@@ -550,6 +551,7 @@ export const invoiceUpdate = z.object({
   bankAccountId: z.string().nullable().optional(),
   paymentTermId: z.string().nullable().optional(),
   vatReverseCharge: z.boolean().optional(),
+  customerReference: z.string().max(80).nullable().optional(),
   lines: z.array(invoiceLineInput).optional(),
 });
 export type InvoiceUpdate = z.infer<typeof invoiceUpdate>;

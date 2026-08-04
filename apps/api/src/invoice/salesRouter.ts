@@ -179,6 +179,7 @@ export function makeSalesRouter(meta: SalesDocMeta, extra: Record<string, any> =
             companyId: src.companyId,
             notes: src.notes,
             vatReverseCharge: src.vatReverseCharge,
+            customerReference: src.customerReference,
             paymentTermId: src.paymentTermId,
             bankAccountId: src.bankAccountId,
             factorId: src.factorId,

@@ -52,6 +52,7 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
 ## 3. Relations clés
 - `ViewNote 1─* ViewNoteRevision` : historique des modifications d'une note (édition tracée).
 - `Invoice.source → Invoice` : traçabilité devis→facture→avoir.
+- `Invoice.customerReference` : référence commande/marché du client (B2B), portée sur le PDF.
 - `PurchaseOrder.receive` → crée des `StockMovement` d'entrée (intégration Achats↔Stock).
 - `Payment → Invoice` : recalcul du statut *payée*.
 - `Company` est à la fois client (`Invoice.company`) et fournisseur (`PurchaseOrder.supplier`,

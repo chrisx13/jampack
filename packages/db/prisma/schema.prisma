@@ -735,6 +735,7 @@ model Invoice {
   vatReverseCharge Boolean       @default(false) // autoliquidation de TVA (TVA due par le preneur)
   reminderLevel   Int            @default(0) // niveau de relance client atteint (0 = aucune)
   lastReminderAt  DateTime?      // date de la dernière relance
+  customerReference String?      // référence commande / marché du client (B2B) portée sur la pièce
   notes           String?
   lines           InvoiceLine[]
   payments        Payment[]

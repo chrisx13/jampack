@@ -28,6 +28,8 @@
 - **Devis** : créer → **Envoyer** (numéro DE-) → **Accepter/Refuser** → **Convertir en facture**.
 - **Devis à échéance** : liste des devis émis par date de validité (valide / expire sous 7 j / expiré) — pour relancer avant caducité de l'offre.
 - **Dupliquer** : depuis une pièce ouverte, le bouton **Dupliquer** crée un brouillon identique (client, lignes) — pratique pour une facturation récurrente.
+- **Réf. commande client** : saisir le n° de bon de commande / marché du client ; il apparaît sur le PDF (exigence fréquente en B2B).
+- **Devis** : le PDF porte la **date de validité**, les **CGV** et un cartouche **« Bon pour accord »** (date + signature) pour l'acceptation par le client.
 - **Escompte** (Administration ▸ Société) : renseigner vos conditions d'escompte pour paiement anticipé ; laissé vide,
   la facture porte automatiquement la mention légale « Pas d'escompte pour paiement anticipé » (art. L441-10).
 - **Factures** : créer → **Valider** (numéro FA-, échéance) → **PDF**. Depuis une facture validée :

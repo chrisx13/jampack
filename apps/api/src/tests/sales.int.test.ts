@@ -183,15 +183,17 @@ describe('CRM — activités & tâches', () => {
 });
 
 describe('Ventes — duplication de pièce', () => {
-  it('duplique une facture en brouillon (mêmes lignes, sans numéro)', async () => {
+  it('duplique une facture en brouillon (mêmes lignes + réf. commande, sans numéro)', async () => {
     const companyId = await anyCustomer();
-    const inv = await caller.invoices.create({ companyId, notes: '[INT] source', lines: [{ label: 'DUP', quantity: 2, unitPriceHt: 50, taxRatePct: 20 }] });
+    const inv = await caller.invoices.create({ companyId, notes: '[INT] source', customerReference: 'BC-2026-042', lines: [{ label: 'DUP', quantity: 2, unitPriceHt: 50, taxRatePct: 20 }] });
+    expect(inv.customerReference).toBe('BC-2026-042');
     await caller.invoices.validate({ id: inv.id });
     const copy = await caller.invoices.duplicate({ id: inv.id });
     expect(copy.id).not.toBe(inv.id);
     expect(copy.status).toBe('draft');
     expect(copy.number).toBeNull();
     expect(copy.companyId).toBe(companyId);
+    expect(copy.customerReference).toBe('BC-2026-042');
     expect(copy.lines).toHaveLength(1);
     expect(Number(copy.lines[0].unitPriceHt)).toBeCloseTo(50, 2);
     await C.prisma.invoice.delete({ where: { id: copy.id } });
