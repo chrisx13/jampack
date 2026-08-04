@@ -73,6 +73,34 @@ export function frTvaNumber(siren?: string | null): string | null {
   return `FR${String(key).padStart(2, '0')}${s}`;
 }
 
+// ── Coordonnées bancaires (IBAN / BIC) ──
+/** Valide un IBAN (ISO 13616) par la clé de contrôle mod-97 (ISO 7064). Espaces tolérés. */
+export function isValidIban(iban?: string | null): boolean {
+  if (!iban) return false;
+  const s = iban.replace(/\s+/g, '').toUpperCase();
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(s)) return false;
+  // Déplace les 4 premiers caractères à la fin, puis convertit les lettres (A=10 … Z=35).
+  const rearranged = s.slice(4) + s.slice(0, 4);
+  let remainder = 0;
+  for (const ch of rearranged) {
+    const code = ch >= 'A' && ch <= 'Z' ? (ch.charCodeAt(0) - 55).toString() : ch;
+    for (const d of code) remainder = (remainder * 10 + (d.charCodeAt(0) - 48)) % 97;
+  }
+  return remainder === 1;
+}
+
+/** Valide le format d'un BIC/SWIFT (ISO 9362) : 8 ou 11 caractères alphanumériques. */
+export function isValidBic(bic?: string | null): boolean {
+  if (!bic) return false;
+  return /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic.replace(/\s+/g, '').toUpperCase());
+}
+
+/** Formate un IBAN par groupes de 4 pour l'affichage (ex. FR76 3000 6000 01…). */
+export function formatIban(iban?: string | null): string {
+  if (!iban) return '';
+  return iban.replace(/\s+/g, '').toUpperCase().replace(/(.{4})/g, '$1 ').trim();
+}
+
 // ── Tiers (Company : client et/ou fournisseur) ──
 export const companyCreate = z.object({
   name: z.string().min(1),

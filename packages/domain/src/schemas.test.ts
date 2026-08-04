@@ -9,6 +9,7 @@ import {
   isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs, auditLogCsv,
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
+  isValidIban, isValidBic, formatIban,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -367,5 +368,27 @@ describe('identifiants légaux FR (SIREN / SIRET / TVA intra)', () => {
     expect(frTvaNumber('  732 829 320 ')).toBe('FR44732829320');
     expect(frTvaNumber('732829321')).toBeNull(); // SIREN invalide
     expect(frTvaNumber(null)).toBeNull();
+  });
+});
+
+describe('coordonnées bancaires (IBAN / BIC)', () => {
+  it('valide un IBAN par la clé mod-97', () => {
+    expect(isValidIban('FR7630006000011234567890189')).toBe(true);
+    expect(isValidIban('FR76 3000 6000 0112 3456 7890 189')).toBe(true); // espaces tolérés
+    expect(isValidIban('FR7630006000011234567890188')).toBe(false);      // clé erronée
+    expect(isValidIban('XX00')).toBe(false);                              // format
+    expect(isValidIban(null)).toBe(false);
+  });
+
+  it('valide le format d\'un BIC', () => {
+    expect(isValidBic('BNPAFRPP')).toBe(true);       // 8 caractères
+    expect(isValidBic('BNPAFRPPXXX')).toBe(true);    // 11 caractères
+    expect(isValidBic('BNPA')).toBe(false);
+    expect(isValidBic('1234FRPP')).toBe(false);      // les 6 premiers doivent être des lettres
+  });
+
+  it('formate un IBAN par groupes de 4', () => {
+    expect(formatIban('FR7630006000011234567890189')).toBe('FR76 3000 6000 0112 3456 7890 189');
+    expect(formatIban('')).toBe('');
   });
 });

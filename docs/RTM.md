@@ -105,6 +105,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | Exigence | Code | Test / Preuve | État |
 |---|---|---|---|
 | Contrôle SIREN/SIRET (Luhn) + calcul TVA intra | `isValidSiren`/`isValidSiret`/`frTvaNumber` (domain), auto-remplissage + `isInvalid` dans `Clients.tsx` & `SocieteSettings.tsx` | unit : Luhn OK/KO, longueurs, espaces tolérés ; `frTvaNumber('732829320')='FR44732829320'`, invalide→null | ✅ |
+| Validation IBAN (mod-97) / BIC + formatage | `isValidIban`/`isValidBic`/`formatIban` (domain), `BillingSettings.tsx` (comptes+affactureurs), RIB `invoiceHtml.ts` | unit : IBAN FR canonique OK, clé erronée KO, espaces tolérés ; BIC 8/11 ; formatage par groupes de 4 | ✅ |
 
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |

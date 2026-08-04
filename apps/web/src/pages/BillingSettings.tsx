@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, Button, Form, Row, Col, Badge, InputGroup, Spinner } from 'react-bootstrap';
 import { trpc } from '../trpc';
+import { isValidIban, isValidBic, formatIban } from '@jampack/domain';
 
 function DefaultBadge({ on }: { on: boolean }) {
   return on ? <Badge bg="primary-subtle" text="primary" className="fw-normal">défaut</Badge> : null;
@@ -19,7 +20,7 @@ function BankAccounts() {
     <Card className="mb-3"><Card.Header className="fw-semibold">Comptes bancaires</Card.Header><Card.Body>
       {(q.data ?? []).filter((b) => b.isActive).map((b) => (
         <div key={b.id} className="d-flex align-items-center gap-2 mb-2">
-          <div className="flex-grow-1"><span className="fw-medium">{b.label}</span> <span className="text-secondary small">{b.iban}{b.bic ? ` · ${b.bic}` : ''}</span></div>
+          <div className="flex-grow-1"><span className="fw-medium">{b.label}</span> <span className="text-secondary small">{formatIban(b.iban)}{b.bic ? ` · ${b.bic}` : ''}</span></div>
           <DefaultBadge on={b.isDefault} />
           {!b.isDefault && <Button size="sm" variant="light" title="Définir par défaut" onClick={() => update.mutate({ id: b.id, isDefault: true })}><i className="bi bi-star" /></Button>}
           <Button size="sm" variant="light" className="text-danger" title="Archiver" onClick={() => archive.mutate({ id: b.id })}><i className="bi bi-archive" /></Button>
@@ -27,10 +28,11 @@ function BankAccounts() {
       ))}
       <Row className="g-2 mt-1">
         <Col md={4}><Form.Control size="sm" placeholder="Libellé" value={f.label} onChange={(e) => setF({ ...f, label: e.target.value })} /></Col>
-        <Col md={4}><Form.Control size="sm" placeholder="IBAN" value={f.iban} onChange={(e) => setF({ ...f, iban: e.target.value })} /></Col>
-        <Col md={2}><Form.Control size="sm" placeholder="BIC" value={f.bic} onChange={(e) => setF({ ...f, bic: e.target.value })} /></Col>
-        <Col md={2}><Button size="sm" disabled={!f.label.trim() || !f.iban.trim() || create.isPending} onClick={() => { create.mutate({ label: f.label.trim(), iban: f.iban.trim(), bic: f.bic || undefined, isDefault: (q.data ?? []).length === 0 }); setF({ label: '', iban: '', bic: '', isDefault: false }); }}><i className="bi bi-plus-lg" /></Button></Col>
+        <Col md={4}><Form.Control size="sm" placeholder="IBAN" value={f.iban} isInvalid={!!f.iban.trim() && !isValidIban(f.iban)} onChange={(e) => setF({ ...f, iban: e.target.value })} /></Col>
+        <Col md={2}><Form.Control size="sm" placeholder="BIC" value={f.bic} isInvalid={!!f.bic.trim() && !isValidBic(f.bic)} onChange={(e) => setF({ ...f, bic: e.target.value })} /></Col>
+        <Col md={2}><Button size="sm" disabled={!f.label.trim() || !isValidIban(f.iban) || (!!f.bic.trim() && !isValidBic(f.bic)) || create.isPending} onClick={() => { create.mutate({ label: f.label.trim(), iban: f.iban.replace(/\s+/g, '').toUpperCase(), bic: f.bic ? f.bic.replace(/\s+/g, '').toUpperCase() : undefined, isDefault: (q.data ?? []).length === 0 }); setF({ label: '', iban: '', bic: '', isDefault: false }); }}><i className="bi bi-plus-lg" /></Button></Col>
       </Row>
+      {!!f.iban.trim() && !isValidIban(f.iban) && <div className="text-danger small mt-1">IBAN invalide (clé de contrôle).</div>}
     </Card.Body></Card>
   );
 }
@@ -77,16 +79,16 @@ function Factors() {
       <p className="text-secondary small">Plusieurs affactureurs possibles ; s'attribuent par client (optionnel ou obligatoire) et se choisissent par facture.</p>
       {(q.data ?? []).filter((x) => x.isActive).map((x) => (
         <div key={x.id} className="d-flex align-items-center gap-2 mb-2">
-          <div className="flex-grow-1"><span className="fw-medium">{x.name}</span> <span className="text-secondary small">{x.iban ?? ''}</span></div>
+          <div className="flex-grow-1"><span className="fw-medium">{x.name}</span> <span className="text-secondary small">{formatIban(x.iban)}</span></div>
           <Badge bg="secondary-subtle" text="secondary" className="fw-normal">{x._count.companies} client(s)</Badge>
           <Button size="sm" variant="light" className="text-danger" title="Archiver" onClick={() => archive.mutate({ id: x.id })}><i className="bi bi-archive" /></Button>
         </div>
       ))}
       <Row className="g-2 mt-1">
         <Col md={4}><Form.Control size="sm" placeholder="Nom" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Col>
-        <Col md={4}><Form.Control size="sm" placeholder="IBAN" value={f.iban} onChange={(e) => setF({ ...f, iban: e.target.value })} /></Col>
-        <Col md={2}><Form.Control size="sm" placeholder="BIC" value={f.bic} onChange={(e) => setF({ ...f, bic: e.target.value })} /></Col>
-        <Col md={2}><Button size="sm" disabled={!f.name.trim() || create.isPending} onClick={() => { create.mutate({ name: f.name.trim(), iban: f.iban || undefined, bic: f.bic || undefined }); setF({ name: '', iban: '', bic: '' }); }}><i className="bi bi-plus-lg" /></Button></Col>
+        <Col md={4}><Form.Control size="sm" placeholder="IBAN (optionnel)" value={f.iban} isInvalid={!!f.iban.trim() && !isValidIban(f.iban)} onChange={(e) => setF({ ...f, iban: e.target.value })} /></Col>
+        <Col md={2}><Form.Control size="sm" placeholder="BIC" value={f.bic} isInvalid={!!f.bic.trim() && !isValidBic(f.bic)} onChange={(e) => setF({ ...f, bic: e.target.value })} /></Col>
+        <Col md={2}><Button size="sm" disabled={!f.name.trim() || (!!f.iban.trim() && !isValidIban(f.iban)) || (!!f.bic.trim() && !isValidBic(f.bic)) || create.isPending} onClick={() => { create.mutate({ name: f.name.trim(), iban: f.iban ? f.iban.replace(/\s+/g, '').toUpperCase() : undefined, bic: f.bic ? f.bic.replace(/\s+/g, '').toUpperCase() : undefined }); setF({ name: '', iban: '', bic: '' }); }}><i className="bi bi-plus-lg" /></Button></Col>
       </Row>
     </Card.Body></Card>
   );

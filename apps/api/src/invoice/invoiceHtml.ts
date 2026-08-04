@@ -1,4 +1,4 @@
-import { lmePaymentMention, discountMention, VAT_FRANCHISE_MENTION, VAT_REVERSE_CHARGE_MENTION, VAT_ON_PAYMENTS_MENTION } from '@jampack/domain';
+import { lmePaymentMention, discountMention, VAT_FRANCHISE_MENTION, VAT_REVERSE_CHARGE_MENTION, VAT_ON_PAYMENTS_MENTION, formatIban } from '@jampack/domain';
 
 type Line = { label: string; quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown };
 type Invoice = {
@@ -56,7 +56,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
   ].filter(Boolean).join(' · ');
 
   const subrogation = showSubrogation && inv.factor
-    ? `<div class="subro"><strong>Subrogation — affacturage.</strong> Le règlement de cette facture doit être effectué à <strong>${esc(inv.factor.name)}</strong>${inv.factor.iban ? `, IBAN <strong>${esc(inv.factor.iban)}</strong>` : ''}, subrogé dans nos droits, à qui vous devez payer valablement.</div>`
+    ? `<div class="subro"><strong>Subrogation — affacturage.</strong> Le règlement de cette facture doit être effectué à <strong>${esc(inv.factor.name)}</strong>${inv.factor.iban ? `, IBAN <strong>${esc(formatIban(inv.factor.iban))}</strong>` : ''}, subrogé dans nos droits, à qui vous devez payer valablement.</div>`
     : '';
 
   const rows = inv.lines.map((l) => {
@@ -140,7 +140,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
 
   <div class="pay">
     ${inv.paymentTerm ? `<div><strong>Conditions de paiement :</strong> ${esc(inv.paymentTerm.label)}</div>` : ''}
-    ${inv.bankAccount ? `<div class="muted">IBAN ${esc(inv.bankAccount.iban)}${inv.bankAccount.bic ? ` · BIC ${esc(inv.bankAccount.bic)}` : ''}</div>` : ''}
+    ${inv.bankAccount ? `<div class="muted">IBAN ${esc(formatIban(inv.bankAccount.iban))}${inv.bankAccount.bic ? ` · BIC ${esc(inv.bankAccount.bic)}` : ''}</div>` : ''}
     ${inv.notes ? `<div class="muted" style="margin-top:6px">${esc(inv.notes)}</div>` : ''}
     ${soc.vatFranchise ? `<div class="muted" style="margin-top:6px"><strong>${esc(VAT_FRANCHISE_MENTION)}</strong></div>` : ''}
     ${inv.vatReverseCharge ? `<div class="muted" style="margin-top:6px"><strong>${esc(VAT_REVERSE_CHARGE_MENTION)}</strong></div>` : ''}
