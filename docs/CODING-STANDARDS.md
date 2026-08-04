@@ -31,5 +31,5 @@
 - Chaque feature : migration + RLS + router + UI + **permissions CASL** + seed démo + **preuve e2e** + doc (SRS/RTM).
 
 ## 6. Définition de « terminé » (DoD)
-- `typecheck` + build verts ; e2e du parcours vert ; RLS de toute nouvelle table ; RTM/SRS à jour ;
-  seed idempotent ; PR ouverte avec description et preuve.
+- lint + `typecheck` + tests unitaires (couverture ≥ 90 %) + tests d'intégration + build verts ; e2e du
+  parcours vert ; RLS de toute nouvelle table ; RTM/SRS à jour ; seed idempotent ; PR ouverte avec description et preuve.

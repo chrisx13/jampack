@@ -17,24 +17,42 @@
 - **Devis** : créer → **Envoyer** (numéro DE-) → **Accepter/Refuser** → **Convertir en facture**.
 - **Factures** : créer → **Valider** (numéro FA-, échéance) → **PDF**. Depuis une facture validée :
   **Créer un avoir** ; saisir des **Règlements** (acompte, reste dû, passage *payée*).
+- **Facturation électronique** : sur une facture validée, **Factur-X** (télécharge le XML CII/EN 16931) et
+  **Envoyer via PDP** ; le **statut de transmission** s'affiche ensuite sur la facture.
 - **Échéancier** : factures non soldées, retard.
 
 ## 4. Achats
 - **Commandes fournisseurs** : choisir un fournisseur (tiers marqué fournisseur) et un **entrepôt de
   réception** → **Valider & envoyer** (numéro CM-) → **Réceptionner** (entre la marchandise en stock).
 - **Factures fournisseurs** : saisir (n° du fournisseur, TVA) → **Valider** → **Marquer payée**.
-- **Échéancier fournisseur** : factures à payer, retard.
+- **Règlements fournisseurs** : enregistrer les paiements émis (acompte, solde) et suivre le reste dû.
+- **Échéancier fournisseur** : factures à payer, reste dû, retard.
 
 ## 5. Stock
 - **Entrepôts** : gérer les lieux de stockage (un par défaut).
 - **Mouvements** : entrée / sortie / ajustement (quantité signée pour l'ajustement).
 - **Niveaux** : quantité nette par article et entrepôt.
+- **Valorisation** : valeur du stock au **PMP** (prix moyen pondéré) par article et entrepôt.
 
-## 6. Administration
+## 6. Comptabilité
+- **Plan comptable** : consulter/gérer les comptes (PCG).
+- **Écritures** : saisir et consulter les écritures (générées automatiquement depuis les pièces validées).
+- **Balance** : soldes par compte.
+- **Lettrage** : rapprocher débits/crédits d'un même tiers.
+- **Déclaration de TVA (CA3)** : collectée − déductible ; écriture de clôture.
+- **FEC** : export du Fichier des Écritures Comptables.
+
+## 7. Trésorerie
+- **Prévisionnel** : projection des encaissements et décaissements à partir des échéanciers client et fournisseur (position nette, retards).
+
+## 8. Administration
 - **Paramètres**, **Société (facturation)** (en-tête, mentions légales, CGV), **Facturation** (banques,
   affacturage, conditions de paiement), **Apparence** (couleurs de marque du compte).
+- **Sociétés** : gérer les sociétés du compte.
+- **Utilisateurs & rôles** : gérer les membres et leurs rôles par société (RBAC cumulable).
+- **Journal d'audit** : consulter les mutations tracées (utilisateur, action, société, horodatage).
 
-## 7. Bonnes pratiques
+## 9. Bonnes pratiques
 - Une pièce **validée** n'est plus modifiable (créer un avoir / une nouvelle pièce si besoin).
 - Renseigner l'**entrepôt de réception** sur une commande avant de la réceptionner.
 - Vérifier les **droits** : certaines actions dépendent de votre rôle sur la société active.

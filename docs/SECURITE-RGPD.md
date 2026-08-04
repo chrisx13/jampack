@@ -67,7 +67,7 @@ ajout de scoring, profilage, ou données sensibles.
 
 ## 7. Gestion des vulnérabilités
 - Dépendances : audit régulier (`pnpm audit`), mises à jour de sécurité.
-- CI : `typecheck` + build sur chaque push ; à compléter par lint + tests + SAST (⏳).
+- CI : lint + `typecheck` + tests unitaires (couverture ≥ 90 %) + tests d'intégration + build sur chaque push ; à compléter par SAST (⏳).
 - Divulgation responsable : point de contact sécurité (à définir dans l'offre).
 
 ## 8. Conformité sectorielle
@@ -79,5 +79,4 @@ ajout de scoring, profilage, ou données sensibles.
 | Écart | Impact | Plan |
 |---|---|---|
 | Immuabilité stricte du journal d'audit | Falsification théorique | Append-only + signature (à venir) |
-| Lint absent de la CI (tests ✅) | Qualité | Ajout du lint en CI |
 | InvoiceLine sans RLS société propre | Accès seulement via pièce parente (protégée) | TODO Jalon A (`rls.sql`) |

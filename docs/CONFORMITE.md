@@ -47,7 +47,7 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 
 ### 3.2 Fichier des Écritures Comptables (FEC)
 - Exigé dès qu'un module comptable tient les écritures ; format normé (art. A47 A-1 LPF).
-- Impact : export FEC conforme. → FR-CPT-3, REG-2. **⏳ Jalon 4.**
+- Impact : export FEC conforme. → FR-CPT-6, REG-2. **✅ Jalon 4 livré.**
 
 ### 3.3 Logiciels de caisse (NF525)
 - Concerne l'encaissement B2C d'espèces. La loi de finances 2026 réadmet l'**attestation individuelle
@@ -68,7 +68,7 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | Connecteur PDP (interface + adaptateur interne + journal `PdpTransmission`) | FR-VEN-8 | — | ✅ |
 | Immatriculation PDP DGFiP + raccordement PPF + e-reporting | FR-VEN-8 | 09/2026-09/2027 | ⛔ hors périmètre logiciel |
 | Émission/réception via PDP agréée (interne immatriculée **ou** partenaire) | FR-VEN-8 | 09/2027 | ⏳ |
-| Export FEC | FR-CPT-3 | À la mise en service compta | ⏳ |
+| Export FEC | FR-CPT-6 | À la mise en service compta | ✅ |
 | RGPD (registre, UE, effacement) | REG-3 | Continu | 🔧 |
 | Hébergement UE | C-1 | Continu | ✅ (choix imposé) |
 
@@ -77,6 +77,6 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 2. **Trancher la voie PDP** *(décision business)* : soit **s'immatriculer PDP** auprès de la DGFiP et se
    **raccorder au PPF** (programme réglementaire lourd, hors code), soit **brancher une PDP partenaire**
    sur l'adaptateur existant.
-3. Ouvrir le module **Comptabilité** et l'**export FEC**.
+3. ✅ Ouvrir le module **Comptabilité** et l'**export FEC**. *(fait)*
 4. Compléter le **journal d'audit** et l'outillage RGPD (export/effacement).
 5. Audit **RGAA/WCAG** de l'UI.

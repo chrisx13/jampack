@@ -16,7 +16,7 @@ TPE/PME françaises, accessible en web (et à terme desktop/mobile).
 ### 1.2 Portée
 Le produit couvre le cycle de gestion de l'entreprise dans un socle unique **multi-tenant** et
 **multi-société**, conforme à la réglementation française. Le périmètre est livré par jalons
-(voir [BRD](BRD.md) §5). Ce SRS décrit l'état **livré** et **planifié**, chaque exigence portant un statut.
+(voir [BRD](BRD.md) §7). Ce SRS décrit l'état **livré** et **planifié**, chaque exigence portant un statut.
 
 ### 1.3 Définitions
 Voir le [Glossaire](GLOSSAIRE.md). Termes clés : **Compte** (tenant/abonnement, `Organization`),
@@ -41,9 +41,11 @@ SPA React (react-bootstrap, thème Jampack). Isolation par compte via **Row-Leve
 Voir [SAD](ARCHITECTURE.md).
 
 ### 2.2 Fonctions principales
-Gestion des tiers et du CRM ; chaîne de vente devis→facture→avoir avec règlements ; achats
-(commandes→réception→factures fournisseurs) ; stock (entrepôts, mouvements, niveaux) ; référentiels
-(articles, TVA, numérotation) ; administration (comptes, sociétés, rôles, thème).
+Gestion des tiers et du CRM ; chaîne de vente devis→facture→avoir avec règlements et **e-invoicing
+Factur-X/PDP** ; achats (commandes→réception→factures **et règlements** fournisseurs) ; stock (entrepôts,
+mouvements, niveaux, valorisation PMP) ; **comptabilité** (écritures auto, lettrage, TVA/CA3, FEC) ;
+**trésorerie** (prévisionnel) ; référentiels (articles, TVA, numérotation) ; administration (comptes,
+sociétés, rôles, thème, journal d'audit).
 
 ### 2.3 Classes d'utilisateurs
 | Classe | Description | Rôle type |
@@ -209,8 +211,8 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 ---
 
 ## 5. Exigences réglementaires (France)
-- **REG-1 (M)** Facturation électronique : réception obligatoire **09/2026**, émission échelonnée jusqu'à **09/2027** (Factur-X via PDP). ⏳ — voir [Conformité](CONFORMITE.md).
-- **REG-2 (M)** Export **FEC** dès qu'un module comptable tient les écritures. ⏳
+- **REG-1 (M)** Facturation électronique : réception obligatoire **09/2026**, émission échelonnée jusqu'à **09/2027** (Factur-X via PDP). 🔧 (génération Factur-X CII + connecteur PDP interne ✅ ; immatriculation DGFiP/PPF/e-reporting ⛔ hors périmètre logiciel — DO-1) — voir [Conformité](CONFORMITE.md).
+- **REG-2 (M)** Export **FEC** dès qu'un module comptable tient les écritures. ✅ — voir FR-CPT-6.
 - **REG-3 (M)** **RGPD** : registre des traitements, minimisation, droit à l'effacement, hébergement UE. 🔧 — voir [Sécurité & RGPD](SECURITE-RGPD.md).
 - **REG-4 (C)** **NF525** si encaissement B2C d'espèces (attestation éditeur). Hors périmètre B2B actuel.
 

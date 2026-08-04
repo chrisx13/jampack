@@ -39,7 +39,7 @@ ressaisie ; un achat devient une réception qui alimente le stock.
 ### 4.1 Dans le périmètre
 Tiers & CRM · Ventes (devis→facture→avoir, règlements) · Achats (commandes→réception, factures
 fournisseurs) · Stock (entrepôts, mouvements, niveaux) · Référentiels · Administration multi-société ·
-(à venir) e-invoicing, comptabilité, trésorerie.
+e-invoicing (Factur-X + connecteur PDP) · comptabilité (écritures auto, TVA/CA3, FEC) · trésorerie (prévisionnel).
 
 ### 4.2 Hors périmètre (initial)
 Paie/RH (externalisée), production/MRP (optionnel/tardif), devenir soi-même une PDP, moteur comptable
@@ -71,7 +71,7 @@ Paie/RH (externalisée), production/MRP (optionnel/tardif), devenir soi-même un
 | BRD-5 | Passer commandes et réceptionner en stock | Must | FR-ACH-1..3, FR-STK-1..3 |
 | BRD-6 | Suivre les factures fournisseurs à payer | Must | FR-ACH-4/5 |
 | BRD-7 | Être conforme à la facturation électronique | Must | FR-VEN-8, REG-1 |
-| BRD-8 | Produire le FEC et les déclarations de TVA | Must | FR-CPT-1..3, REG-2 |
+| BRD-8 | Produire le FEC et les déclarations de TVA | Must | FR-CPT-5/5c, FR-CPT-6, REG-2 |
 | BRD-9 | Respecter le RGPD | Must | REG-3, NFR-SEC-* |
 | BRD-10 | Personnaliser l'identité visuelle par compte | Should | FR-TRV-2 |
 
@@ -81,9 +81,9 @@ Paie/RH (externalisée), production/MRP (optionnel/tardif), devenir soi-même un
 | 0 — Socle | Multi-société, auth OIDC, RBAC, RLS | Fondations sûres | ✅ |
 | 1 — CRM & Référentiels | Clients/contacts/pipeline, articles/TVA/numérotation | Produit démontrable | ✅ |
 | 2 — Ventes | Devis→facture→avoir, règlements, e-invoicing | Valeur commerciale + conformité | 🔧 (Factur-X + connecteur PDP ✅ ; immatriculation DGFiP/PPF ⛔ hors périmètre logiciel) |
-| 3 — Achats & Stock | Commandes→réception, factures fournisseurs, mouvements/niveaux | Cycle marchandises | 🔧 (valorisation ⏳) |
-| 4 — Comptabilité | Écritures auto, TVA, FEC | Domaine réglementé | ⏳ |
-| 5 — Trésorerie & BI | Banque, prévisionnel, tableaux de bord | Pilotage | ⏳ |
+| 3 — Achats & Stock | Commandes→réception, factures fournisseurs, règlements fournisseurs, mouvements/niveaux/valorisation PMP | Cycle marchandises | 🔧 (valorisation PMP ✅ ; FIFO/lots ⏳ DO-5, 3-way match ⏳ DO-6) |
+| 4 — Comptabilité | Écritures auto, TVA/CA3, lettrage, clôture TVA, FEC | Domaine réglementé | ✅ (rapprochement bancaire ⏳ DO-4) |
+| 5 — Trésorerie & BI | Prévisionnel encaissements/décaissements, tableaux de bord | Pilotage | ✅ (rapprochement bancaire ⏳ DO-4) |
 
 ## 8. Risques métier (synthèse)
 Voir le [Registre des risques](RISK-REGISTER.md). Principaux : périmètre trop large pour un dev solo

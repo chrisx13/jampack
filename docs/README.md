@@ -13,7 +13,7 @@ Documents versionnés avec le code, tenus à jour à chaque incrément.
 | — | [Vision & cadrage](../../../OneDrive/Documents/jampack/Note%20de%20cadrage%20JAMPACK.docx) | Vision produit, périmètre, contexte réglementaire | — |
 | 01 | [BRD](BRD.md) | Besoins métier, parties prenantes, processus, objectifs | BABOK v3 |
 | 02 | [SRS](SRS.md) | Exigences logicielles (fonctionnelles + non-fonctionnelles) | ISO/IEC/IEEE 29148 · ISO 25010 |
-| 03 | [SAD — Architecture](ARCHITECTURE.md) | Architecture logicielle, décisions, vues C4 | ISO/IEC/IEEE 42010 |
+| 03 | [SAD — Architecture](ARCHITECTURE.md) | Architecture logicielle, **registre de décisions (ADR-1..8 + décisions ouvertes DO-1..6, §2)**, vues C4 | ISO/IEC/IEEE 42010 |
 | 04 | [Modèle de données](DATA-MODEL.md) | Entités, relations, isolation multi-tenant | — |
 | 05 | [API Reference](API.md) | Routeurs tRPC, procédures, contrats | — |
 | 06 | [Sécurité & RGPD](SECURITE-RGPD.md) | Menaces, contrôles, registre des traitements, DPIA | RGPD · ISO 27001 (aligné) |

@@ -70,12 +70,17 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-CPT-3 | `accounting.balance` (groupBy) | e2e : 411 débit 120, D=C | ✅ |
 | FR-CPT-4 | `accounting.postSalesInvoice`, `Invoice.journalEntryId` | e2e : facture→écriture 411/707/44571 équilibrée, idempotent | ✅ |
 | FR-CPT-4b | `accounting.postPayment` (BQ), `accounting.postSupplierInvoice` (AC), `accounting.postSupplierPayment` (BQ) | e2e int : 512↔411 ; 607+44566↔401 ; 401↔512 équilibrées, idempotentes | ✅ |
-| FR-TRE-1 | `analytics.tresorerie`, `Tresorerie.tsx` | e2e int : reste dû clients (encaissements) + fournisseurs (décaissements), position nette | ✅ |
-| FR-CPT-6 | `accounting.fec` (18 colonnes normées, tabulé) | e2e int : entête FEC + lignes 411000, filename .txt | ✅ |
 | FR-CPT-5 | `accounting.vatReturn` (44571 − 44566) | e2e int : Δ collectée +20 / déductible +40 | ✅ |
 | FR-CPT-5b | `accounting.accountLines`/`letter`/`unletter`, `Lettrage.tsx` | e2e int : lettrage équilibré, rejet déséquilibre, délettrage | ✅ |
 | FR-CPT-5c | `accounting.closeVat` (journal OD) | e2e int : clôture → 44571/44566 soldés à 0 | ✅ |
-| FR-CPT-5d | rapprochement bancaire, déclaration périodique | — | ⏳ |
+| FR-CPT-5d | rapprochement bancaire (DO-4) | — | ⏳ |
+| FR-CPT-6 | `accounting.fec` (18 colonnes normées, tabulé) | e2e int : entête FEC + lignes 411000, filename .txt | ✅ |
+
+## Trésorerie
+| Exigence | Code | Test / Preuve | État |
+|---|---|---|---|
+| FR-TRE-1 | `analytics.tresorerie`, `Tresorerie.tsx` | e2e int : reste dû clients (encaissements) + fournisseurs (décaissements), position nette | ✅ |
+| FR-TRE-2 | rapprochement bancaire (relevé ↔ 512, DO-4) | — | ⏳ |
 
 ## Transverse & NFR
 | Exigence | Code | Preuve | État |
@@ -88,7 +93,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | NFR-SEC-1 | `rls.sql`, rôle `jampack_app` | RLS actif au boot (policies vérifiées) | ✅ |
 | NFR-SEC-3 | `authed()` | mutations FORBIDDEN sans droit | ✅ |
 | NFR-MNT-1 | `packages/domain` (Zod partagé) | typecheck 5 packages verts | ✅ |
-| NFR-MNT-3 | `.github/workflows/ci.yml` | migrate→typecheck→build (lint/tests ⏳) | 🔧 |
+| NFR-MNT-3 | `.github/workflows/ci.yml` | install→migrate→seed→lint→typecheck→test:cov (≥90 %)→test:int→build | ✅ |
 
 ## Couverture
 - Exigences **Must** livrées : socle, CRM, référentiels, ventes (dont génération Factur-X + connecteur PDP), achats, stock, comptabilité/FEC.
