@@ -62,6 +62,12 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
     utils.purchases.orders.list.invalidate();
     setId(copy.id);
   };
+  const invoiceFrom = trpc.supplierInvoices.fromOrder.useMutation();
+  const onInvoice = async () => {
+    await invoiceFrom.mutateAsync({ id: id as string });
+    utils.supplierInvoices.list.invalidate();
+    alert('Facture fournisseur (brouillon) créée depuis cette commande — voir l’onglet Factures fournisseurs. Complétez la référence et la TVA.');
+  };
   const busy = create.isPending || update.isPending || validate.isPending || receive.isPending || receivePartial.isPending;
   const readOnly = status !== 'draft';
   const canReceive = status === 'sent' || status === 'partial';
@@ -132,6 +138,9 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
           )}
           {id !== 'new' && can('create', 'PurchaseOrder') && (
             <Button variant="light" title="Dupliquer en brouillon" disabled={duplicate.isPending} onClick={onDuplicate}><i className="bi bi-files me-1" />Dupliquer</Button>
+          )}
+          {id !== 'new' && status !== 'draft' && status !== 'cancelled' && can('create', 'SupplierInvoice') && (
+            <Button variant="outline-primary" title="Créer une facture fournisseur depuis cette commande" disabled={invoiceFrom.isPending} onClick={onInvoice}><i className="bi bi-receipt-cutoff me-1" />Facturer</Button>
           )}
           {!readOnly && (
             <>

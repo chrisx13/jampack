@@ -183,6 +183,20 @@ describe('Achats — commande → réception → stock ; factures fournisseurs',
     expect(after - before).toBeCloseTo(100, 3);
   });
 
+  it('facture une commande : brouillon fournisseur pré-rempli (fournisseur, lignes, lien commande)', async () => {
+    const [pid, sid] = [await product(), await supplier()];
+    const wh = await caller.stock.warehouses.create({ name: '[INT] FactCmd' });
+    const po = await caller.purchases.orders.create({ supplierId: sid, warehouseId: wh.id, notes: '[INT]', lines: [{ productId: pid, label: 'Farine', quantity: 10, unitPriceHt: 1.2 }] });
+    await caller.purchases.orders.validate({ id: po.id });
+    const inv = await caller.supplierInvoices.fromOrder({ id: po.id });
+    expect(inv.status).toBe('draft');
+    expect(inv.supplierId).toBe(sid);
+    expect(inv.purchaseOrderId).toBe(po.id);
+    expect(inv.lines).toHaveLength(1);
+    expect(Number(inv.lines[0].quantity)).toBeCloseTo(10, 2);
+    expect(Number(inv.lines[0].taxRatePct)).toBeCloseTo(20, 2);
+  });
+
   it('duplique une commande en brouillon (mêmes lignes, sans numéro)', async () => {
     const [pid, sid] = [await product(), await supplier()];
     const wh = await caller.stock.warehouses.create({ name: '[INT] DupCmd' });

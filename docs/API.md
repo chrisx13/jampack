@@ -27,7 +27,7 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 `suppliers` · `orders.{list,get,create,update,validate,cancel,duplicate,receive,receivePartial,overdue}` (duplicate = copie en brouillon) (receive = tout réceptionner ; receivePartial = livraisons échelonnées par ligne, statut *partial* → *received* ; overdue = commandes envoyées/partielles en retard de livraison)
 
 ### `supplierInvoices`
-`list · get · create · update · validate · markPaid · markUnpaid · cancel · echeancier · match` (match = rapprochement 3 voies commande/réception/facture)
+`list · get · create · fromOrder · update · validate · markPaid · markUnpaid · cancel · echeancier · match` (fromOrder = brouillon pré-rempli depuis une commande ; match = rapprochement 3 voies commande/réception/facture)
 
 ### `supplierPayments`
 `listForInvoice · create · remove` (recalcule le statut *payée* de la facture fournisseur)

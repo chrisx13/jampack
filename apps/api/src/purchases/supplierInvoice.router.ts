@@ -66,6 +66,25 @@ export const supplierInvoiceRouter = router({
     })
   ),
 
+  /** Pré-remplit une facture fournisseur (brouillon) depuis une commande : fournisseur + lignes reprises,
+   *  liée à la commande. La référence (n° du fournisseur) et la TVA restent à compléter par l'utilisateur. */
+  fromOrder: authed('create', 'SupplierInvoice').input(byId).mutation(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const po = await tx.purchaseOrder.findUniqueOrThrow({ where: { id: input.id }, include: { lines: { orderBy: { position: 'asc' } } } });
+      return tx.supplierInvoice.create({
+        data: {
+          organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id,
+          supplierId: po.supplierId,
+          purchaseOrderId: po.id,
+          notes: po.notes,
+          lines: { create: po.lines.map((l, i) => ({ label: l.label, quantity: l.quantity, unitPriceHt: l.unitPriceHt, taxRatePct: 20, position: i })) },
+        },
+        include: { lines: true },
+      });
+    });
+  }),
+
   create: authed('create', 'SupplierInvoice').input(supplierInvoiceCreate).mutation(({ ctx, input }) => {
     const societeId = req(ctx.societeId);
     const { lines, issueDate, dueDate, ...rest } = input;
