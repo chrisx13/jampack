@@ -142,6 +142,22 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
   });
 });
 
+describe('Ventes — relances clients (dunning)', () => {
+  it('facture échue → relance ; niveau incrémenté ; lettre au bon niveau', async () => {
+    const companyId = await anyCustomer();
+    const overdue = new Date(Date.now() - 20 * 86400000).toISOString().slice(0, 10);
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', dueDate: overdue, lines: [{ label: 'REL', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    expect((await caller.payments.reminders()).some((r: { id: string }) => r.id === inv.id)).toBe(true);
+    await caller.payments.recordReminder({ id: inv.id });
+    const after = (await caller.payments.reminders()).find((r: { id: string; reminderLevel: number }) => r.id === inv.id);
+    expect(after.reminderLevel).toBe(1);
+    const letter = await caller.payments.reminderLetter({ id: inv.id });
+    expect(letter.level).toBe(2); // niveau suivant
+    expect(letter.content).toContain('indemnité forfaitaire');
+  });
+});
+
 describe('Comptabilité — grand livre', () => {
   it('liste les mouvements d’un compte avec solde progressif', async () => {
     const companyId = await anyCustomer();

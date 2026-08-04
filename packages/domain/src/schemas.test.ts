@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate, lmePaymentMention, parseBankStatementCsv, depreciationSchedule,
+  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate, lmePaymentMention, parseBankStatementCsv, depreciationSchedule, reminderLevelLabel, dunningMessage,
   PAYMENT_METHODS, PAYMENT_METHOD_LABELS, SALES_DOCS, STOCK_KINDS, STOCK_KIND_LABELS,
   stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
@@ -76,6 +76,22 @@ describe('depreciationSchedule (amortissement linéaire)', () => {
     expect(s.map((r) => r.annuity)).toEqual([200, 400, 400, 200]);
     expect(s[s.length - 1].residual).toBe(0);
     expect(s[0].year).toBe(2026);
+  });
+});
+
+describe('relances (dunning)', () => {
+  it('libellés de niveau', () => {
+    expect(reminderLevelLabel(0)).toBe('Aucune relance');
+    expect(reminderLevelLabel(1)).toContain('Relance 1');
+    expect(reminderLevelLabel(3)).toContain('mise en demeure');
+    expect(reminderLevelLabel(9)).toContain('mise en demeure'); // borné
+  });
+  it('message de relance : ton progressif + données', () => {
+    const m2 = dunningMessage(2, { number: 'FA-0001', amount: '120,00 €', dueDate: '01/09/2026' });
+    expect(m2).toContain('FA-0001');
+    expect(m2).toContain('120,00 €');
+    expect(m2).toContain('indemnité forfaitaire');
+    expect(dunningMessage(3, { number: 'X', amount: '1 €', dueDate: 'x' })).toContain('mise en demeure');
   });
 });
 

@@ -299,6 +299,24 @@ export function depreciationSchedule(amountHt: number, durationYears: number, ac
   return rows;
 }
 
+/** Niveaux de relance client (dunning). */
+export const REMINDER_LEVELS = ['Relance 1 — rappel', 'Relance 2 — relance ferme', 'Relance 3 — mise en demeure'] as const;
+export function reminderLevelLabel(level: number): string {
+  if (level <= 0) return 'Aucune relance';
+  return REMINDER_LEVELS[Math.min(level, REMINDER_LEVELS.length) - 1];
+}
+/** Corps de la lettre de relance selon le niveau (ton progressif). */
+export function dunningMessage(level: number, opts: { number: string; amount: string; dueDate: string }): string {
+  const l = Math.min(Math.max(level, 1), 3);
+  const head = `Objet : ${reminderLevelLabel(l)} — facture ${opts.number}\n\n`;
+  const common = `Notre facture ${opts.number}, échue le ${opts.dueDate}, d'un montant de ${opts.amount}, demeure impayée à ce jour.\n\n`;
+  const tail =
+    l === 1 ? `Nous vous remercions de bien vouloir procéder à son règlement dans les meilleurs délais. Si le paiement a été effectué entretemps, merci de ne pas tenir compte de ce rappel.`
+    : l === 2 ? `Sauf régularisation sous huitaine, nous nous verrons contraints d'appliquer les pénalités de retard prévues ainsi que l'indemnité forfaitaire de recouvrement de 40 €.`
+    : `À défaut de règlement sous 8 jours, cette lettre vaut mise en demeure et le dossier sera transmis au recouvrement contentieux, sans autre avis.`;
+  return head + common + tail + '\n\nNous restons à votre disposition. Veuillez agréer nos salutations distinguées.';
+}
+
 export type BankStatementLine = { date: string; label: string; amount: number };
 /**
  * Parse un relevé bancaire CSV (format FR usuel) : une ligne par écriture,

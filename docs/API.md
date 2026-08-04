@@ -21,7 +21,7 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 - `invoices` : + `createCreditNote · facturx · sendToPdp · transmissions`
 
 ### `payments`
-`listForInvoice · create · remove · echeancier` (recalcule le statut *payée* de la facture)
+`listForInvoice · create · remove · echeancier · reminders · recordReminder · reminderLetter` (recalcule le statut *payée* ; relances = factures échues non soldées, incrément de niveau, lettre de relance texte)
 
 ### `purchases`
 `suppliers` · `orders.{list,get,create,update,validate,cancel,receive}` (la réception génère les entrées de stock)

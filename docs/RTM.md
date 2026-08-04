@@ -40,6 +40,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-VEN-5 | `billing.router.ts`, `resolveBilling` | subrogation dans le PDF | ✅ |
 | FR-VEN-6 | `invoice/payment.router.ts` | e2e : acompte→validée, solde→payée | ✅ |
 | FR-VEN-7 | `payment.router.ts` (`echeancier`) | e2e : reste dû, hors échéancier si payé | ✅ |
+| FR-VEN-9 | `payment.router.ts` (`reminders`/`recordReminder`/`reminderLetter`), `dunningMessage`, `Invoice.reminderLevel`, `Reminders.tsx` | unit : libellés + message ; e2e int : échue → relance niveau 1, lettre niveau 2 | ✅ |
 | FR-VEN-8 | `invoice/facturx.ts`, `invoice/pdp.ts`, `invoice.router.ts` (`facturx`/`sendToPdp`/`transmissions`), `PdpTransmission` | `sales.int.test.ts` › *E-invoicing — Factur-X & PDP interne* | 🔧 (génération CII + connecteur ✅ ; immatriculation DGFiP/PPF/e-reporting ⛔ hors périmètre logiciel) |
 
 ## Achats

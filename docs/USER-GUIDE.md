@@ -20,6 +20,8 @@
 - **Facturation électronique** : sur une facture validée, **Factur-X** (télécharge le XML CII/EN 16931) et
   **Envoyer via PDP** ; le **statut de transmission** s'affiche ensuite sur la facture.
 - **Échéancier** : factures non soldées, retard.
+- **Relances** : factures échues non soldées, triées par niveau. Bouton **Relancer** (rappel → relance ferme →
+  mise en demeure) et téléchargement de la **lettre de relance** conforme (mention pénalités + indemnité forfaitaire 40 €).
 
 ## 4. Achats
 - **Commandes fournisseurs** : choisir un fournisseur (tiers marqué fournisseur) et un **entrepôt de
