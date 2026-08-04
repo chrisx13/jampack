@@ -1,3 +1,5 @@
+import { lmePaymentMention } from '@jampack/domain';
+
 type Line = { label: string; quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown };
 type Invoice = {
   number: string | null;
@@ -131,6 +133,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
     ${inv.paymentTerm ? `<div><strong>Conditions de paiement :</strong> ${esc(inv.paymentTerm.label)}</div>` : ''}
     ${inv.bankAccount ? `<div class="muted">IBAN ${esc(inv.bankAccount.iban)}${inv.bankAccount.bic ? ` · BIC ${esc(inv.bankAccount.bic)}` : ''}</div>` : ''}
     ${inv.notes ? `<div class="muted" style="margin-top:6px">${esc(inv.notes)}</div>` : ''}
+    ${docType === 'facture' ? `<div class="muted" style="margin-top:6px">${esc(lmePaymentMention(s(soc, 'penaltyRate')))}</div>` : ''}
     ${s(soc, 'legalMentions') ? `<div class="muted" style="margin-top:6px">${esc(s(soc, 'legalMentions'))}</div>` : ''}
   </div>
 

@@ -78,8 +78,10 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 ### 3.6 Délais de paiement (LME · art. L441-10 C. com.)
 - Délai légal **≤ 60 jours** (ou 45 j fin de mois) ; la facture doit indiquer la **date d'échéance**, le
   **taux des pénalités de retard** et l'**indemnité forfaitaire de recouvrement de 40 €**.
-- État : échéance calculée ✅ (conditions de paiement) ; **pénalités + indemnité 40 €** via champ libre
-  `legalMentions`/`cgv` 🔧 — à normaliser (gabarit standard). → FR-TRV-1, REG-6.
+- État : échéance calculée ✅ ; **mention LME standard** (pénalités de retard + **indemnité forfaitaire
+  40 €** + escompte) **rendue automatiquement sur chaque facture** ✅ (`lmePaymentMention`, `invoiceHtml.ts`).
+  Taux des pénalités **configurable par société** (champ `penaltyRate`, défaut « trois fois le taux d'intérêt
+  légal ») ⏳. → FR-TRV-1, REG-6.
 
 ### 3.7 TVA — taux & régimes France
 - **Taux** : 20 % / 10 % / 5,5 % / 2,1 % paramétrables (référentiel société). ✅
@@ -140,7 +142,7 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | Mentions obligatoires facture (vendeur, pièce, subrogation) | FR-VEN-3, FR-TRV-1 | Continu | ✅ |
 | Identifiants acheteur (SIREN/TVA) sur facture & Factur-X | FR-VEN-3/8 | 09/2026 | ✅ |
 | Mentions spéciales TVA (autoliquidation, franchise 293 B) | FR-VEN-3 | Continu | 🔧 (DO-7) |
-| Délais de paiement LME (échéance, pénalités, indemnité 40 €) | FR-TRV-1, REG-6 | Continu | 🔧 |
+| Délais de paiement LME (échéance, pénalités, indemnité 40 €) | FR-TRV-1, REG-6 | Continu | ✅ (taux configurable ⏳) |
 | TVA — taux FR paramétrables + CA3 | FR-CPT-5, REG-7 | Continu | ✅ |
 | TVA — CA12 / franchise / autoliquidation / débits-encaissements | REG-7 | — | ⏳ (DO-8) |
 | PCG (ANC 2014-03) + piste d'audit fiable | FR-CPT-*, REG-8 | Continu | 🔧 |

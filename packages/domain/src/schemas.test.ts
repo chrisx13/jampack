@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate,
+  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate, lmePaymentMention,
   PAYMENT_METHODS, PAYMENT_METHOD_LABELS, SALES_DOCS, STOCK_KINDS, STOCK_KIND_LABELS,
   stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
@@ -61,6 +61,20 @@ describe('productCreate — seuil de réapprovisionnement', () => {
   });
   it('refuse un reorderPoint négatif', () => {
     expect(productCreate.safeParse({ name: 'A', reorderPoint: -1 }).success).toBe(false);
+  });
+});
+
+describe('lmePaymentMention', () => {
+  it('porte l’indemnité 40 € et le taux par défaut (LME)', () => {
+    const m = lmePaymentMention();
+    expect(m).toContain('40 €');
+    expect(m).toContain('indemnité forfaitaire');
+    expect(m).toContain("trois fois le taux d'intérêt légal");
+    expect(m).toContain('L441-10');
+  });
+  it('utilise le taux fourni par la société', () => {
+    expect(lmePaymentMention('10 % annuel')).toContain('au taux de 10 % annuel');
+    expect(lmePaymentMention('   ')).toContain("trois fois le taux d'intérêt légal"); // blanc → défaut
   });
 });
 

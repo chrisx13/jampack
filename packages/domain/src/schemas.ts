@@ -3,6 +3,18 @@ import { z } from 'zod';
 export const byId = z.object({ id: z.string().min(1) });
 export type ById = z.infer<typeof byId>;
 
+/**
+ * Mentions légales de paiement obligatoires sur une facture (LME — art. L441-10 C. com.) :
+ * taux des pénalités de retard et indemnité forfaitaire de recouvrement de 40 €.
+ * `penaltyRate` : formulation du taux applicable (défaut : trois fois le taux d'intérêt légal).
+ */
+export function lmePaymentMention(penaltyRate?: string | null): string {
+  const rate = (penaltyRate && penaltyRate.trim()) || "trois fois le taux d'intérêt légal";
+  return `En cas de retard de paiement, application de pénalités au taux de ${rate}, ` +
+    `ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 € (art. L441-10 du Code de commerce). ` +
+    `Pas d'escompte pour paiement anticipé.`;
+}
+
 // ── Tiers (Company : client et/ou fournisseur) ──
 export const companyCreate = z.object({
   name: z.string().min(1),
