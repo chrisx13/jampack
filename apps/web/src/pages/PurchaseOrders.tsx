@@ -11,6 +11,7 @@ const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-F
 const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
   draft: { bg: 'secondary-subtle', text: 'secondary' },
   sent: { bg: 'info-subtle', text: 'info' },
+  partial: { bg: 'warning-subtle', text: 'warning' },
   received: { bg: 'success-subtle', text: 'success' },
   cancelled: { bg: 'danger-subtle', text: 'danger' },
 };
@@ -53,8 +54,25 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const update = trpc.purchases.orders.update.useMutation();
   const validate = trpc.purchases.orders.validate.useMutation();
   const receive = trpc.purchases.orders.receive.useMutation();
-  const busy = create.isPending || update.isPending || validate.isPending || receive.isPending;
+  const receivePartial = trpc.purchases.orders.receivePartial.useMutation();
+  const busy = create.isPending || update.isPending || validate.isPending || receive.isPending || receivePartial.isPending;
   const readOnly = status !== 'draft';
+  const canReceive = status === 'sent' || status === 'partial';
+
+  // Réception par ligne : reste dû (commandé − déjà reçu) et quantité reçue lors de cette livraison.
+  const poLines = existing.data?.lines ?? [];
+  const [receiptQty, setReceiptQty] = useState<Record<string, string>>({});
+  const outstanding = (l: { quantity: unknown; quantityReceived: unknown }) => Math.round((num(l.quantity) - num(l.quantityReceived)) * 1000) / 1000;
+  const onReceivePartial = async () => {
+    const linesIn = poLines
+      .map((l) => ({ lineId: l.id, quantity: Number(receiptQty[l.id] ?? '') }))
+      .filter((x) => Number.isFinite(x.quantity) && x.quantity > 0);
+    if (linesIn.length === 0) return;
+    await receivePartial.mutateAsync({ id: id as string, lines: linesIn });
+    setReceiptQty({});
+    utils.purchases.orders.list.invalidate(); utils.purchases.orders.get.invalidate({ id: id as string });
+    utils.stock.levels.invalidate(); utils.stock.movements.list.invalidate();
+  };
 
   const totalHt = useMemo(() => Math.round(lines.reduce((s, l) => s + l.quantity * l.unitPriceHt, 0) * 100) / 100, [lines]);
 
@@ -89,7 +107,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
     alert('Réception enregistrée — le stock a été mis à jour (voir Stock ▸ Niveaux).');
   };
 
-  const err = create.error || update.error || validate.error || receive.error;
+  const err = create.error || update.error || validate.error || receive.error || receivePartial.error;
 
   return (
     <>
@@ -102,8 +120,8 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
           </div>
         </div>
         <div className="d-flex gap-2">
-          {status === 'sent' && (
-            <Button variant="success" onClick={onReceive} disabled={busy}><i className="bi bi-box-arrow-in-down me-1" />Réceptionner</Button>
+          {canReceive && (
+            <Button variant="success" onClick={onReceive} disabled={busy}><i className="bi bi-box-arrow-in-down me-1" />Tout réceptionner</Button>
           )}
           {!readOnly && (
             <>
@@ -168,6 +186,39 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
           {!readOnly && <div className="p-2 border-top"><Button variant="light" size="sm" onClick={addLine}><i className="bi bi-plus-lg me-1" />Ajouter une ligne</Button></div>}
         </Card.Body>
       </Card>
+
+      {canReceive && poLines.some((l) => outstanding(l) > 0) && (
+        <Card className="mb-3 border-success">
+          <Card.Header className="bg-transparent fw-semibold"><i className="bi bi-box-arrow-in-down text-success me-2" />Réception échelonnée — saisir les quantités reçues</Card.Header>
+          <Card.Body className="p-0">
+            <Table className="mb-0 align-middle">
+              <thead className="text-secondary small">
+                <tr><th className="ps-3">Article</th><th className="text-end">Commandé</th><th className="text-end">Déjà reçu</th><th className="text-end">Reste dû</th><th className="text-end pe-3" style={{ width: 140 }}>Reçu maintenant</th></tr>
+              </thead>
+              <tbody>
+                {poLines.map((l) => {
+                  const rem = outstanding(l);
+                  return (
+                    <tr key={l.id}>
+                      <td className="ps-3">{l.label}</td>
+                      <td className="text-end">{num(l.quantity)}</td>
+                      <td className="text-end text-secondary">{num(l.quantityReceived)}</td>
+                      <td className="text-end fw-medium">{rem}</td>
+                      <td className="text-end pe-3">
+                        <Form.Control size="sm" type="number" step="0.001" min={0} max={rem} className="text-end" placeholder="0" disabled={rem <= 0}
+                          value={receiptQty[l.id] ?? ''} onChange={(e) => setReceiptQty((q) => ({ ...q, [l.id]: e.target.value }))} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+            <div className="p-2 border-top text-end">
+              <Button variant="success" size="sm" onClick={onReceivePartial} disabled={busy}><i className="bi bi-check2 me-1" />Valider la réception</Button>
+            </div>
+          </Card.Body>
+        </Card>
+      )}
 
       <div className="row">
         <div className="col-md-7">

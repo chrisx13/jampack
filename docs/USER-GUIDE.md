@@ -30,7 +30,9 @@
 
 ## 4. Achats
 - **Commandes fournisseurs** : choisir un fournisseur (tiers marqué fournisseur) et un **entrepôt de
-  réception** → **Valider & envoyer** (numéro CM-) → **Réceptionner** (entre la marchandise en stock).
+  réception** → **Valider & envoyer** (numéro CM-) → **Tout réceptionner** (entre la marchandise en stock).
+  **Réception échelonnée** : saisir les quantités reçues par ligne (reste dû affiché) ; la commande passe en
+  *réception partielle* puis *réceptionnée* une fois toutes les lignes soldées.
 - **Commandes en retard** : commandes envoyées non encore réceptionnées dont la date de livraison prévue
   est dépassée, avec le nombre de jours de retard — pour relancer le fournisseur.
 - **Factures fournisseurs** : saisir (n° du fournisseur, TVA) → **Valider** → **Marquer payée**.

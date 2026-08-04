@@ -24,7 +24,7 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 `listForInvoice · create · remove · echeancier · reminders · recordReminder · reminderLetter` (recalcule le statut *payée* ; relances = factures échues non soldées, incrément de niveau, lettre de relance texte)
 
 ### `purchases`
-`suppliers` · `orders.{list,get,create,update,validate,cancel,receive,overdue}` (la réception génère les entrées de stock ; overdue = commandes envoyées non réceptionnées en retard de livraison)
+`suppliers` · `orders.{list,get,create,update,validate,cancel,receive,receivePartial,overdue}` (receive = tout réceptionner ; receivePartial = livraisons échelonnées par ligne, statut *partial* → *received* ; overdue = commandes envoyées/partielles en retard de livraison)
 
 ### `supplierInvoices`
 `list · get · create · update · validate · markPaid · markUnpaid · cancel · echeancier · match` (match = rapprochement 3 voies commande/réception/facture)

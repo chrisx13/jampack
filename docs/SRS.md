@@ -133,6 +133,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-ACH-6 | **Règlements fournisseurs** partiels rattachés à une facture ; statut *payée* recalculé au cumul ; comptabilisation (401 débit = 512 crédit). | M | ✅ |
 | FR-ACH-7 | **Rapprochement 3 voies** : commande ↔ réception ↔ facture fournisseur ; écarts de montant et de réception signalés. | C | ✅ |
 | FR-ACH-8 | **Suivi des commandes en retard** : commandes envoyées non réceptionnées dont la date de livraison prévue est dépassée (jours de retard). | C | ✅ |
+| FR-ACH-9 | **Réception partielle** : livraisons échelonnées par ligne (reste dû, statut « réception partielle » puis « réceptionnée »), sans dépassement du reste dû. | C | ✅ |
 
 ### 3.6 Stock
 | ID | Exigence | Prio | Statut |

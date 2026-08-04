@@ -601,7 +601,7 @@ export type StockTransfer = z.infer<typeof stockTransfer>;
 
 // ── Achats : commandes fournisseurs ──
 export const PO_STATUS_LABELS: Record<string, string> = {
-  draft: 'Brouillon', sent: 'Envoyée', received: 'Réceptionnée', cancelled: 'Annulée',
+  draft: 'Brouillon', sent: 'Envoyée', partial: 'Réception partielle', received: 'Réceptionnée', cancelled: 'Annulée',
 };
 
 export const poLineInput = z.object({
@@ -622,6 +622,13 @@ export const purchaseOrderCreate = z.object({
   lines: z.array(poLineInput).default([]),
 });
 export type PurchaseOrderCreate = z.infer<typeof purchaseOrderCreate>;
+
+/** Réception partielle : quantités reçues par ligne de commande (livraisons échelonnées). */
+export const purchaseReceipt = z.object({
+  id: z.string().min(1),
+  lines: z.array(z.object({ lineId: z.string().min(1), quantity: z.number().nonnegative() })).min(1),
+});
+export type PurchaseReceipt = z.infer<typeof purchaseReceipt>;
 
 export const purchaseOrderUpdate = z.object({
   id: z.string().min(1),

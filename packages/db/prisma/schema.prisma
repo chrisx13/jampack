@@ -444,7 +444,7 @@ model PurchaseOrder {
   warehouse      Warehouse?   @relation(fields: [warehouseId], references: [id])
   warehouseId    String?      // entrepôt de destination des réceptions
   number         String?      // null tant que brouillon ; attribué à la validation
-  status         String       @default("draft") // draft | sent | received | cancelled
+  status         String       @default("draft") // draft | sent | partial | received | cancelled
   orderDate      DateTime?
   expectedDate   DateTime?
   notes          String?

@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { withTenant, nextDocumentNumber } from '@jampack/db';
-import { purchaseOrderCreate, purchaseOrderUpdate, byId } from '@jampack/domain';
+import { purchaseOrderCreate, purchaseOrderUpdate, purchaseReceipt, byId } from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -51,7 +51,7 @@ export const purchaseRouter = router({
       withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
         const now = new Date();
         const rows = await tx.purchaseOrder.findMany({
-          where: { ...scope(ctx.societeId), status: 'sent', expectedDate: { lt: now } },
+          where: { ...scope(ctx.societeId), status: { in: ['sent', 'partial'] }, expectedDate: { lt: now } },
           include: { supplier: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true } } },
           orderBy: [{ expectedDate: 'asc' }],
         });
@@ -143,6 +143,41 @@ export const purchaseRouter = router({
           if (outstanding > 0) await tx.purchaseOrderLine.update({ where: { id: l.id }, data: { quantityReceived: l.quantity } });
         }
         return tx.purchaseOrder.update({ where: { id: input.id }, data: { status: 'received' }, include: { lines: true } });
+      });
+    }),
+
+    /**
+     * Réception partielle : entre en stock les quantités reçues par ligne (livraisons échelonnées).
+     * Statut « received » si toutes les lignes sont soldées, sinon « partial ». Refuse de dépasser le reste dû.
+     */
+    receivePartial: authed('update', 'PurchaseOrder').input(purchaseReceipt).mutation(({ ctx, input }) => {
+      const societeId = req(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const po = await tx.purchaseOrder.findUniqueOrThrow({ where: { id: input.id }, include: { lines: true } });
+        if (po.status === 'draft') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Validez la commande avant réception.' });
+        if (po.status === 'cancelled') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Commande annulée.' });
+        if (po.status === 'received') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Commande déjà soldée.' });
+        if (!po.warehouseId) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Renseignez un entrepôt de destination.' });
+        const lineById = new Map(po.lines.map((l) => [l.id, l]));
+        for (const r of input.lines) {
+          const l = lineById.get(r.lineId);
+          if (!l) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Ligne inconnue pour cette commande.' });
+          const outstanding = n(l.quantity) - n(l.quantityReceived);
+          if (r.quantity > outstanding + 1e-6) throw new TRPCError({ code: 'BAD_REQUEST', message: `Quantité reçue (${r.quantity}) supérieure au reste à recevoir (${outstanding}).` });
+          if (r.quantity <= 0) continue;
+          if (l.productId) {
+            await tx.stockMovement.create({
+              data: {
+                organizationId: po.organizationId, societeId, warehouseId: po.warehouseId, productId: l.productId,
+                kind: 'entree', quantity: r.quantity, unitCost: l.unitPriceHt, note: `Réception partielle ${po.number ?? ''}`.trim(), createdById: ctx.user.id,
+              },
+            });
+          }
+          await tx.purchaseOrderLine.update({ where: { id: l.id }, data: { quantityReceived: n(l.quantityReceived) + r.quantity } });
+        }
+        const fresh = await tx.purchaseOrderLine.findMany({ where: { orderId: po.id } });
+        const fullyReceived = fresh.every((l) => n(l.quantityReceived) >= n(l.quantity) - 1e-6);
+        return tx.purchaseOrder.update({ where: { id: input.id }, data: { status: fullyReceived ? 'received' : 'partial' }, include: { lines: true } });
       });
     }),
   }),

@@ -162,6 +162,27 @@ describe('Achats — commande → réception → stock ; factures fournisseurs',
     expect(after - before).toBeCloseTo(200, 3);
   });
 
+  it('réception partielle : statut partial puis received ; stock cumulé ; dépassement refusé', async () => {
+    const [pid, sid] = [await product(), await supplier()];
+    const wh = await caller.stock.warehouses.create({ name: '[INT] RecPart' });
+    const before = ((await caller.stock.levels()).find((l: { productId: string; warehouseId: string; quantity: number }) => l.productId === pid && l.warehouseId === wh.id)?.quantity) ?? 0;
+    const po = await caller.purchases.orders.create({ supplierId: sid, warehouseId: wh.id, notes: '[INT]', lines: [{ productId: pid, label: 'Baguette', quantity: 100, unitPriceHt: 0.5 }] });
+    const sent = await caller.purchases.orders.validate({ id: po.id });
+    const lineId = sent.lines[0].id;
+
+    // 1re livraison : 60 / 100 → statut partial
+    const r1 = await caller.purchases.orders.receivePartial({ id: po.id, lines: [{ lineId, quantity: 60 }] });
+    expect(r1.status).toBe('partial');
+    // Refus si on dépasse le reste (40 restant)
+    await expect(caller.purchases.orders.receivePartial({ id: po.id, lines: [{ lineId, quantity: 50 }] })).rejects.toBeTruthy();
+    // 2e livraison : 40 → soldée
+    const r2 = await caller.purchases.orders.receivePartial({ id: po.id, lines: [{ lineId, quantity: 40 }] });
+    expect(r2.status).toBe('received');
+
+    const after = ((await caller.stock.levels()).find((l: { productId: string; warehouseId: string; quantity: number }) => l.productId === pid && l.warehouseId === wh.id)?.quantity) ?? 0;
+    expect(after - before).toBeCloseTo(100, 3);
+  });
+
   it('commande en retard : envoyée + date prévue dépassée → listée, puis sort après réception', async () => {
     const [pid, sid] = [await product(), await supplier()];
     const wh = await caller.stock.warehouses.create({ name: '[INT] Retard' });

@@ -6,7 +6,7 @@ import {
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
   isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
-  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv,
+  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -130,6 +130,16 @@ describe('devis — validité & expiration', () => {
   it('non applicable : accepté, converti, ou sans date', () => {
     expect(isQuoteExpired({ status: 'accepted', validUntil: '2026-08-01T00:00:00Z' }, now)).toBe(false);
     expect(quoteDaysToExpiry({ status: 'sent', validUntil: null }, now)).toBeNull();
+  });
+});
+
+describe('purchaseReceipt (réception partielle)', () => {
+  it('accepte des quantités reçues par ligne', () => {
+    expect(purchaseReceipt.safeParse({ id: 'po1', lines: [{ lineId: 'l1', quantity: 5 }] }).success).toBe(true);
+  });
+  it('rejette une liste vide ou une quantité négative', () => {
+    expect(purchaseReceipt.safeParse({ id: 'po1', lines: [] }).success).toBe(false);
+    expect(purchaseReceipt.safeParse({ id: 'po1', lines: [{ lineId: 'l1', quantity: -1 }] }).success).toBe(false);
   });
 });
 
