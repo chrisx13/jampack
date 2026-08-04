@@ -84,6 +84,9 @@ Le document reste **à la marque de la société cliente** ; JAMPACK n'appose qu
 
 ## 8. Application produit
 
-- **Barre supérieure** : signe + wordmark (le wordmark s'adapte au thème clair/sombre).
-- **Favicon / onglet** : signe dégradé.
-- **Modes clair et sombre** pilotés par `data-bs-theme` (variables `--bs-*` et surfaces `--*`).
+- **Chrome de marque** : la **barre supérieure** et la **barre d'activité** sont en **violet-ardoise
+  `#3E3A52`** (texte/icônes clairs `#EDEBF4`), donnant une identité forte au shell ; l'**indigo `#4F46E5`**
+  reste l'accent d'action (boutons, états actifs, indicateur de domaine).
+- **Documents** (facture/devis/avoir) : barre d'accent **violet → indigo → sky** en tête de page.
+- **Favicon / onglet** : le signe (tuile violet-ardoise + barres dégradées).
+- **Modes clair et sombre** : le contenu s'adapte via `data-bs-theme` ; le chrome de marque reste constant.

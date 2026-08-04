@@ -73,7 +73,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>
   * { box-sizing: border-box; }
   body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A; font-size: 12px; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .accent { height: 5px; background: linear-gradient(90deg, #6366F1, #0EA5E9); }
+  .accent { height: 5px; background: linear-gradient(90deg, #3E3A52, #6366F1, #0EA5E9); }
   .wrap { padding: 34px 40px; }
   .head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 26px; }
   .brand { max-width: 55%; }

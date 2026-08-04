@@ -155,18 +155,24 @@ body {
 hr { border-color: var(--border); opacity: 1; }
 
 // ── Navbar ──
+// ── Chrome de marque (violet-ardoise) : barre du haut + barre d'activité ──
+:root { --brand: #3E3A52; --on-brand: #EDEBF4; --on-brand-muted: #B7B1CE; }
+
 .hk-navbar {
   position: fixed; inset: 0 0 auto 0; z-index: 1030;
   height: var(--hk-navbar-height);
   display: flex; align-items: center; gap: .5rem;
   padding: 0 1rem;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: saturate(180%) blur(8px);
+  background: color-mix(in srgb, var(--brand) 94%, transparent);
+  border-bottom: 1px solid rgba(0, 0, 0, .28);
+  backdrop-filter: saturate(160%) blur(8px);
 }
 .hk-navbar .brand-lockup { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
-.hk-navbar .brand-mark { display: block; border-radius: 7px; box-shadow: 0 2px 6px rgba(79, 70, 229, .28); }
-.hk-navbar .brand { font-weight: 700; font-size: 1.12rem; letter-spacing: -.02em; color: var(--text); }
+.hk-navbar .brand-mark { display: block; border-radius: 7px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .14), 0 2px 8px rgba(0, 0, 0, .35); }
+.hk-navbar .brand { font-weight: 700; font-size: 1.12rem; letter-spacing: -.02em; color: var(--on-brand); }
+// Contrôles de la barre du haut fondus dans le chrome (verre clair sur violet).
+.hk-navbar .btn-light { background: rgba(255, 255, 255, .10); color: var(--on-brand); border-color: rgba(255, 255, 255, .18); }
+.hk-navbar .btn-light:hover, .hk-navbar .btn-light:focus { background: rgba(255, 255, 255, .20); color: #fff; }
 
 // ── Barre d'activité (grands domaines) ──
 .hk-activity {
@@ -174,15 +180,16 @@ hr { border-color: var(--border); opacity: 1; }
   width: var(--hk-activity-width);
   display: flex; flex-direction: column; align-items: center; gap: .2rem;
   padding: .6rem 0;
-  background: var(--surface); border-right: 1px solid var(--border);
+  background: var(--brand); border-right: 1px solid rgba(0, 0, 0, .28);
 }
+.hk-activity hr { border-color: rgba(255, 255, 255, .22); opacity: 1; }
 .hk-activity .act {
   position: relative; width: 42px; height: 42px; border: 0; border-radius: .7rem;
   display: grid; place-items: center; font-size: 1.2rem;
-  color: var(--text-muted); background: transparent; transition: background-color .15s ease, color .15s ease;
+  color: var(--on-brand-muted); background: transparent; transition: background-color .15s ease, color .15s ease;
 }
-.hk-activity .act:hover { background: var(--surface-2); color: var(--text); }
-.hk-activity .act.active { color: var(--active-text); background: var(--active-bg); }
+.hk-activity .act:hover { background: rgba(255, 255, 255, .10); color: #fff; }
+.hk-activity .act.active { color: #fff; background: rgba(255, 255, 255, .15); }
 .hk-activity .act.active::before {
   content: ''; position: absolute; left: -.6rem; top: 9px; bottom: 9px; width: 3px;
   border-radius: 0 3px 3px 0; background: var(--bs-primary);
