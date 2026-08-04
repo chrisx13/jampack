@@ -58,6 +58,54 @@ function CategoriesModal({ show, onHide }: { show: boolean; onHide: () => void }
   );
 }
 
+const euro2 = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+
+function PricingModal({ product, onHide }: { product: { id: string; name: string }; onHide: () => void }) {
+  const utils = trpc.useUtils();
+  const rules = trpc.catalog.priceRules.list.useQuery();
+  const companies = trpc.crm.companies.list.useQuery();
+  const inv = () => utils.catalog.priceRules.list.invalidate();
+  const create = trpc.catalog.priceRules.create.useMutation({ onSuccess: inv });
+  const remove = trpc.catalog.priceRules.remove.useMutation({ onSuccess: inv });
+  const [f, setF] = useState({ companyId: '', minQuantity: '1', unitPriceHt: '' });
+  const mine = (rules.data ?? []).filter((r) => r.productId === product.id);
+
+  return (
+    <Modal show onHide={onHide} centered>
+      <Modal.Header closeButton><Modal.Title>Grille tarifaire — {product.name}</Modal.Title></Modal.Header>
+      <Modal.Body>
+        <p className="text-secondary small">Priorité : tarif <strong>client</strong> puis <strong>palier de quantité</strong> le plus élevé atteint. Sans règle, le prix de base de l'article s'applique.</p>
+        <Table size="sm" className="align-middle mb-3">
+          <thead className="text-secondary small"><tr><th>Client</th><th>À partir de (qté)</th><th className="text-end">PU HT</th><th /></tr></thead>
+          <tbody>
+            {mine.map((r) => (
+              <tr key={r.id}>
+                <td>{r.company?.name ?? <span className="text-secondary">Tous</span>}</td>
+                <td>{Number(r.minQuantity)}</td>
+                <td className="text-end">{euro2.format(Number(r.unitPriceHt))}</td>
+                <td className="text-end"><Button variant="link" size="sm" className="text-danger p-0" onClick={() => remove.mutate({ id: r.id })}><i className="bi bi-x-lg" /></Button></td>
+              </tr>
+            ))}
+            {mine.length === 0 && <tr><td colSpan={4} className="text-center text-secondary py-2">Aucune règle</td></tr>}
+          </tbody>
+        </Table>
+        <div className="row g-2 align-items-end">
+          <div className="col-md-5"><Form.Label className="small">Client</Form.Label>
+            <Form.Select size="sm" value={f.companyId} onChange={(e) => setF({ ...f, companyId: e.target.value })}>
+              <option value="">Tous les clients</option>
+              {(companies.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </Form.Select>
+          </div>
+          <div className="col-md-3"><Form.Label className="small">Qté mini</Form.Label><Form.Control size="sm" type="number" min={0} value={f.minQuantity} onChange={(e) => setF({ ...f, minQuantity: e.target.value })} /></div>
+          <div className="col-md-3"><Form.Label className="small">PU HT</Form.Label><Form.Control size="sm" type="number" min={0} step="0.01" value={f.unitPriceHt} onChange={(e) => setF({ ...f, unitPriceHt: e.target.value })} /></div>
+          <div className="col-md-1"><Button size="sm" disabled={!(Number(f.unitPriceHt) >= 0) || f.unitPriceHt === '' || create.isPending} onClick={() => { create.mutate({ productId: product.id, companyId: f.companyId || null, minQuantity: Number(f.minQuantity) || 1, unitPriceHt: Number(f.unitPriceHt) }); setF({ companyId: '', minQuantity: '1', unitPriceHt: '' }); }}><i className="bi bi-plus-lg" /></Button></div>
+        </div>
+      </Modal.Body>
+      <Modal.Footer><Button variant="light" onClick={onHide}>Fermer</Button></Modal.Footer>
+    </Modal>
+  );
+}
+
 export default function Catalogue() {
   const utils = trpc.useUtils();
   const list = trpc.catalog.products.list.useQuery();
@@ -66,6 +114,7 @@ export default function Catalogue() {
   const can = useCan();
 
   const [edit, setEdit] = useState<null | { id?: string }>(null);
+  const [pricing, setPricing] = useState<{ id: string; name: string } | null>(null);
   const [del, setDel] = useState<{ id: string; name: string } | null>(null);
   const [form, setForm] = useState(blank);
   const [showCats, setShowCats] = useState(false);
@@ -158,6 +207,7 @@ export default function Catalogue() {
                   <td className="text-end">{euro.format(num(p.priceHt))}</td>
                   <td className="text-secondary">{p.taxRate?.name ?? '—'}</td>
                   <td className="text-end pe-3">
+                    {can('update', 'Product') && <Button variant="light" size="sm" className="me-1" title="Grille tarifaire" onClick={() => setPricing({ id: p.id, name: p.name })}><i className="bi bi-tags" /></Button>}
                     {can('update', 'Product') && <Button variant="light" size="sm" className="me-1" onClick={() => open(p as unknown as Row)}><i className="bi bi-pencil" /></Button>}
                     {can('delete', 'Product') && <Button variant="light" size="sm" className="text-danger" onClick={() => setDel({ id: p.id, name: p.name })}><i className="bi bi-trash" /></Button>}
                   </td>
@@ -212,6 +262,7 @@ export default function Catalogue() {
       </Modal>
 
       <CategoriesModal show={showCats} onHide={() => setShowCats(false)} />
+      {pricing && <PricingModal product={pricing} onHide={() => setPricing(null)} />}
     </>
   );
 }

@@ -31,6 +31,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-REF-1 | `catalog.router.ts` (products, categories) | seed | ✅ |
 | FR-REF-2 | `catalog.router.ts` (taxRates) | seed (5 taux) | ✅ |
 | FR-REF-3 | `NumberSequence`, `nextDocumentNumber` | e2e : DE/FA/AV/CM-0001 atomiques | ✅ |
+| FR-REF-5 | `resolvePrice` (domain), `PriceRule` (+ RLS org/société), `catalog.priceRules` (`list`/`create`/`remove`), résolution dans `SalesDocs.tsx` (onPickProduct + qté), gestion `Catalogue.tsx` | unit : priorité client/palier/base ; e2e int : règles créées/listées/supprimées | ✅ |
 | FR-REF-4 | `catalog.products.importCsv`, `parseProductsCsv`, bouton import `Catalogue.tsx` | unit : parse réf/nom/prix/unité/type + en-tête ignoré + prix invalide ; e2e int : import crée puis met à jour par référence (pas de doublon) | ✅ |
 
 ## Ventes

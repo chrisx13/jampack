@@ -73,6 +73,35 @@ export function frTvaNumber(siren?: string | null): string | null {
   return `FR${String(key).padStart(2, '0')}${s}`;
 }
 
+// ── Grille tarifaire (prix par quantité / par client) ──
+export const priceRuleCreate = z.object({
+  productId: z.string().min(1),
+  companyId: z.string().nullable().optional(), // null = tous les clients
+  minQuantity: z.number().min(0).default(1),
+  unitPriceHt: z.number().min(0),
+});
+
+/**
+ * Résout le prix unitaire HT applicable selon la grille tarifaire :
+ * priorité au tarif **client** (vs générique), puis au **palier de quantité** le plus élevé
+ * atteint, puis au prix le plus bas. Renvoie `basePrice` si aucune règle ne s'applique.
+ */
+export function resolvePrice(
+  rules: { companyId: string | null; minQuantity: number; unitPriceHt: number }[],
+  opts: { companyId?: string | null; quantity: number },
+  basePrice: number,
+): number {
+  const applicable = rules.filter((r) => (r.companyId == null || r.companyId === opts.companyId) && r.minQuantity <= opts.quantity);
+  if (applicable.length === 0) return basePrice;
+  applicable.sort((a, b) => {
+    const ca = a.companyId ? 1 : 0, cb = b.companyId ? 1 : 0;
+    if (ca !== cb) return cb - ca;                                    // tarif client d'abord
+    if (a.minQuantity !== b.minQuantity) return b.minQuantity - a.minQuantity; // palier le plus élevé
+    return a.unitPriceHt - b.unitPriceHt;                             // sinon le moins cher
+  });
+  return applicable[0].unitPriceHt;
+}
+
 // ── Notes de frais (dépenses salariés) ──
 /** Catégories de frais → compte de charge PCG (classe 6) par défaut. */
 export const EXPENSE_CATEGORIES = [

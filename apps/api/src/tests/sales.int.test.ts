@@ -185,6 +185,21 @@ describe('CRM — activités & tâches', () => {
   });
 });
 
+describe('Ventes — grille tarifaire', () => {
+  it('crée des règles de prix (palier générique + tarif client) et les liste', async () => {
+    const product = await caller.catalog.products.create({ name: '[INT] Article grille', priceHt: 10, unit: 'u' });
+    const companyId = await anyCustomer();
+    const r1 = await caller.catalog.priceRules.create({ productId: product.id, minQuantity: 10, unitPriceHt: 8 });
+    const r2 = await caller.catalog.priceRules.create({ productId: product.id, companyId, minQuantity: 1, unitPriceHt: 9 });
+    const rules = (await caller.catalog.priceRules.list()).filter((x: { productId: string }) => x.productId === product.id);
+    expect(rules).toHaveLength(2);
+    expect(rules.some((x: { companyId: string | null }) => x.companyId === companyId)).toBe(true);
+    await caller.catalog.priceRules.remove({ id: r1.id });
+    await caller.catalog.priceRules.remove({ id: r2.id });
+    await C.prisma.product.delete({ where: { id: product.id } });
+  });
+});
+
 describe('Ventes — bon de livraison', () => {
   it('attribue un n° BL séquentiel + date, de façon idempotente', async () => {
     const companyId = await anyCustomer();

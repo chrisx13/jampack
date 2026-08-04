@@ -34,6 +34,9 @@
 - **Facture d'acompte** : sur un devis émis, bouton **Facture d'acompte** → saisir le pourcentage ; une facture
   d'acompte (brouillon) est créée, ventilée par taux de TVA. À la **conversion** du devis en facture, les acomptes
   déjà facturés (validés) sont **automatiquement déduits** : la facture obtenue est la facture de solde.
+- **Grille tarifaire** : dans le Catalogue, bouton **Tarifs** (icône étiquettes) sur un article → définir des prix
+  par **palier de quantité** et/ou par **client**. À la saisie d'une pièce, le prix unitaire est résolu
+  automatiquement (tarif client prioritaire, puis palier de quantité atteint ; sinon prix de base).
 - **Bon de livraison** : sur une facture validée, bouton **Bon de livraison** → télécharge un BL (PDF) numéroté
   (BL-…), sans prix (désignation, quantités, adresse de livraison, cartouche « Reçu conforme » à signer par le client).
 - **Abonnements** (Ventes ▸ Abonnements) : définir un modèle récurrent (client, lignes, fréquence, prochaine

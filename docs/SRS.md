@@ -107,6 +107,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-REF-2 | Taux de **TVA** paramétrables (référentiel compte). | M | ✅ |
 | FR-REF-3 | **Numérotation des pièces** par société et type (facture/devis/avoir/commande), atomique. | M | ✅ |
 | FR-REF-4 | **Import CSV du catalogue** (`référence ; nom ; prix HT ; unité ; type`) : création + mise à jour par référence (upsert). | C | ✅ |
+| FR-REF-5 | **Grille tarifaire** : prix par palier de quantité et/ou par client ; résolution automatique du PU HT dans l'éditeur de vente (priorité tarif client puis palier atteint). | S | ✅ |
 
 ### 3.4 Ventes
 | ID | Exigence | Prio | Statut |

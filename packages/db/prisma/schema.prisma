@@ -53,6 +53,7 @@ model Organization {
   viewNoteRevisions ViewNoteRevision[]
   recurringInvoices RecurringInvoice[]
   expenses          Expense[]
+  priceRules        PriceRule[]
 }
 
 // Journal d'audit : trace des mutations (qui, quoi, quand) — traçabilité sécurité/RGPD.
@@ -127,6 +128,7 @@ model Societe {
   viewNotes       ViewNote[]
   recurringInvoices RecurringInvoice[]
   expenses          Expense[]
+  priceRules        PriceRule[]
   @@unique([organizationId, name])
   @@index([organizationId])
 }
@@ -160,6 +162,24 @@ model User {
   viewNotes         ViewNote[]
   viewNoteRevisions ViewNoteRevision[]
   expenses          Expense[]         @relation("ExpenseIncurredBy")
+}
+
+// ── Grille tarifaire : prix par quantité (palier) et/ou par client, pour un article. ──
+model PriceRule {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId      String
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId      String?      // null = tous les clients
+  minQuantity    Decimal      @default(1) @db.Decimal(12, 3)
+  unitPriceHt    Decimal      @db.Decimal(12, 2)
+  createdAt      DateTime     @default(now())
+  @@index([organizationId, societeId])
+  @@index([productId])
 }
 
 // ── Note de frais (dépense salarié) : comptabilisée 6xx/44566 ↔ 421 (dû au salarié). ──
@@ -330,6 +350,7 @@ model Company {
   @@index([organizationId])
   @@index([societeId])
   @@index([factorId])
+  priceRules     PriceRule[]
 }
 
 model Contact {
@@ -480,6 +501,7 @@ model Product {
   @@index([organizationId])
   @@index([societeId])
   @@index([categoryId])
+  priceRules     PriceRule[]
 }
 
 // ── Stock : entrepôts et mouvements (par société) ──

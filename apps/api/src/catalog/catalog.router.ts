@@ -5,7 +5,7 @@ import {
   productCreate, productUpdate,
   productCategoryCreate, productCategoryUpdate,
   taxRateCreate, taxRateUpdate, byId,
-  parseProductsCsv,
+  parseProductsCsv, priceRuleCreate,
 } from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
@@ -16,6 +16,25 @@ function requireSociete(societeId: string | null): string {
 }
 
 export const catalogRouter = router({
+  // ── Grille tarifaire : prix par quantité / par client (résolution côté éditeur de vente) ──
+  priceRules: router({
+    /** Toutes les règles de la société (jeu réduit) — l'éditeur résout le prix localement. */
+    list: protectedProcedure.query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.priceRule.findMany({ where: scope(ctx.societeId), include: { company: { select: { name: true } } }, orderBy: [{ productId: 'asc' }, { minQuantity: 'asc' }] })
+      )
+    ),
+    create: authed('update', 'Product').input(priceRuleCreate).mutation(({ ctx, input }) => {
+      const societeId = requireSociete(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.priceRule.create({ data: { organizationId: ctx.user.organizationId, societeId, productId: input.productId, companyId: input.companyId ?? null, minQuantity: input.minQuantity, unitPriceHt: input.unitPriceHt } })
+      );
+    }),
+    remove: authed('update', 'Product').input(byId).mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.priceRule.delete({ where: { id: input.id } }))
+    ),
+  }),
+
   // ── Articles & services (par société) ──
   products: router({
     list: authed('read', 'Product').query(({ ctx }) =>

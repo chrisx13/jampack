@@ -9,7 +9,7 @@ import {
   isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs, auditLogCsv,
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
-  isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel,
+  isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -50,6 +50,26 @@ describe('computeInvoiceTotals', () => {
   it('remise ignorée si type none ou valeur nulle', () => {
     expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'none', discountValue: 10 }).totalHt).toBe(100);
     expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'percent', discountValue: 0 }).totalHt).toBe(100);
+  });
+});
+
+describe('grille tarifaire — resolvePrice', () => {
+  const rules = [
+    { companyId: null, minQuantity: 10, unitPriceHt: 8 },
+    { companyId: null, minQuantity: 50, unitPriceHt: 6 },
+    { companyId: 'cli1', minQuantity: 1, unitPriceHt: 9 },
+  ];
+  it('prix de base si aucune règle applicable', () => {
+    expect(resolvePrice(rules, { quantity: 1 }, 10)).toBe(10);
+  });
+  it('palier de quantité générique', () => {
+    expect(resolvePrice(rules, { quantity: 10 }, 10)).toBe(8);
+    expect(resolvePrice(rules, { quantity: 60 }, 10)).toBe(6);
+  });
+  it('tarif client prioritaire sur le générique', () => {
+    expect(resolvePrice(rules, { companyId: 'cli1', quantity: 1 }, 10)).toBe(9);
+    // à quantité 10 : générique 8 vs client 9 → le tarif client prime.
+    expect(resolvePrice(rules, { companyId: 'cli1', quantity: 10 }, 10)).toBe(9);
   });
 });
 

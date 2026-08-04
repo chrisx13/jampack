@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, Table, Button, Form, Spinner, Badge } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
-import { computeInvoiceTotals, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, type PaymentMethod } from '@jampack/domain';
+import { computeInvoiceTotals, resolvePrice, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, type PaymentMethod } from '@jampack/domain';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const num = (v: unknown) => { const n = Number(v as never); return Number.isFinite(n) ? n : 0; };
@@ -55,6 +55,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const [id, setId] = useState<string | 'new'>(initialId);
   const companies = trpc.crm.companies.list.useQuery();
   const products = trpc.catalog.products.list.useQuery();
+  const priceRules = trpc.catalog.priceRules.list.useQuery();
   const taxRates = trpc.catalog.taxRates.list.useQuery();
   const existing = api.get.useQuery({ id: id as string }, { enabled: id !== 'new' });
   const paymentTerms = trpc.billing.paymentTerms.list.useQuery();
@@ -135,13 +136,28 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     () => computeInvoiceTotals(lines, { discountType, discountValue: num(discountValue) || 0 }),
     [lines, discountType, discountValue],
   );
-  const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, k) => (k === i ? { ...l, ...patch } : l)));
+  // Grille tarifaire : résout le PU HT d'un article selon le client et la quantité.
+  const priceFor = (productId: string, quantity: number, base: number) => {
+    const rules = (priceRules.data ?? []).filter((r) => r.productId === productId).map((r) => ({ companyId: r.companyId, minQuantity: num(r.minQuantity), unitPriceHt: num(r.unitPriceHt) }));
+    return resolvePrice(rules, { companyId: companyId || null, quantity }, base);
+  };
+  const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, k) => {
+    if (k !== i) return l;
+    const next = { ...l, ...patch };
+    // Recalcule le prix quand la quantité change sur une ligne rattachée à un article.
+    if (patch.quantity !== undefined && next.productId) {
+      const p = products.data?.find((x) => x.id === next.productId);
+      if (p) next.unitPriceHt = priceFor(next.productId, num(next.quantity), num(p.priceHt));
+    }
+    return next;
+  }));
   const addLine = () => setLines((ls) => [...ls, { label: '', quantity: 1, unitPriceHt: 0, taxRatePct: num(taxRates.data?.find((t) => t.isDefault)?.rate) || 20 }]);
   const removeLine = (i: number) => setLines((ls) => ls.filter((_, k) => k !== i));
   const onPickProduct = (i: number, productId: string) => {
     const p = products.data?.find((x) => x.id === productId);
     if (!p) { setLine(i, { productId: undefined }); return; }
-    setLine(i, { productId, label: p.name, unitPriceHt: num(p.priceHt), taxRatePct: num(p.taxRate?.rate) || 0 });
+    const qty = lines[i]?.quantity ?? 1;
+    setLine(i, { productId, label: p.name, unitPriceHt: priceFor(productId, num(qty), num(p.priceHt)), taxRatePct: num(p.taxRate?.rate) || 0 });
   };
 
   const payload = () => ({
