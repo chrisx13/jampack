@@ -73,6 +73,31 @@ export function frTvaNumber(siren?: string | null): string | null {
   return `FR${String(key).padStart(2, '0')}${s}`;
 }
 
+// ── Notes de frais (dépenses salariés) ──
+/** Catégories de frais → compte de charge PCG (classe 6) par défaut. */
+export const EXPENSE_CATEGORIES = [
+  { key: 'deplacement', label: 'Déplacement / transport', account: '625100' },
+  { key: 'repas', label: 'Repas / restauration', account: '625600' },
+  { key: 'hebergement', label: 'Hébergement', account: '625500' },
+  { key: 'fournitures', label: 'Fournitures / petit matériel', account: '606400' },
+  { key: 'peage', label: 'Péage / stationnement', account: '625800' },
+  { key: 'autre', label: 'Autre', account: '628000' },
+] as const;
+export type ExpenseCategoryKey = (typeof EXPENSE_CATEGORIES)[number]['key'];
+export const expenseCategoryLabel = (k: string): string => EXPENSE_CATEGORIES.find((c) => c.key === k)?.label ?? k;
+export const expenseCategoryAccount = (k: string): string => EXPENSE_CATEGORIES.find((c) => c.key === k)?.account ?? '628000';
+
+const EXPENSE_KEYS = EXPENSE_CATEGORIES.map((c) => c.key) as [string, ...string[]];
+export const expenseCreate = z.object({
+  date: z.string(),
+  category: z.enum(EXPENSE_KEYS),
+  description: z.string().min(1).max(200),
+  amountHt: z.number().min(0),
+  taxRatePct: z.number().min(0).default(20),
+  incurredById: z.string().nullable().optional(), // salarié concerné (défaut : l'auteur)
+});
+export const expenseUpdate = expenseCreate.partial().extend({ id: z.string().min(1) });
+
 // ── Factures récurrentes (abonnements) ──
 export const RECURRENCE_FREQUENCIES = ['weekly', 'monthly', 'quarterly', 'yearly'] as const;
 export type RecurrenceFrequency = (typeof RECURRENCE_FREQUENCIES)[number];

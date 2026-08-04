@@ -16,6 +16,7 @@ import PurchaseOrders from './pages/PurchaseOrders';
 import OverduePurchaseOrders from './pages/OverduePurchaseOrders';
 import SupplierInvoices from './pages/SupplierInvoices';
 import SupplierEcheancier from './pages/SupplierEcheancier';
+import Expenses from './pages/Expenses';
 import StockLevels from './pages/StockLevels';
 import StockValuation from './pages/StockValuation';
 import StockMovements from './pages/StockMovements';
@@ -95,6 +96,7 @@ export const DOMAINS: Domain[] = [
       { id: 'purchase-overdue', label: 'Commandes en retard', icon: 'bi-clock-history', element: <OverduePurchaseOrders />, can: ['read', 'PurchaseOrder'] },
       { id: 'supplier-invoices', label: 'Factures fournisseurs', icon: 'bi-receipt-cutoff', element: <SupplierInvoices />, can: ['read', 'SupplierInvoice'] },
       { id: 'supplier-echeancier', label: 'Échéancier fournisseur', icon: 'bi-calendar-minus', element: <SupplierEcheancier />, can: ['read', 'SupplierInvoice'] },
+      { id: 'expenses', label: 'Notes de frais', icon: 'bi-receipt', element: <Expenses />, can: ['read', 'Accounting'] },
     ],
   },
   {

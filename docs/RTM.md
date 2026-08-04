@@ -67,6 +67,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-ACH-8 | `purchases.orders.overdue`, `isPurchaseOrderOverdue`/`purchaseOrderDaysLate`, `OverduePurchaseOrders.tsx` | unit : retard si envoyée+date dépassée, jours de retard ; e2e int : commande J−10 listée, sort après réception | ✅ |
 | FR-ACH-9 | `purchases.orders.receivePartial`, `purchaseReceipt`, `PurchaseOrderLine.quantityReceived`, panneau réception `PurchaseOrders.tsx` | unit : quantités par ligne, liste vide/négative rejetée ; e2e int : 60/100 → partial, dépassement refusé, 40 → received, stock cumulé 100 | ✅ |
 | FR-ACH-10 | `purchases.orders.duplicate`, bouton Dupliquer `PurchaseOrders.tsx` | e2e int : commande dupliquée = brouillon sans numéro, mêmes lignes/fournisseur | ✅ |
+| FR-ACH-11 | `Expense` (+ RLS org/société), `expenses.router` (`list`/`create`/`update`/`validate`/`post`/`markReimbursed`), `EXPENSE_CATEGORIES`/`expenseCategoryAccount`, `Expenses.tsx` | e2e int : création → validation → comptabilisation équilibrée (6xx+44566=421), idempotente | ✅ |
 
 ## Stock
 | Exigence | Code | Test / Preuve | État |

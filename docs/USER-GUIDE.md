@@ -50,6 +50,11 @@
 - **Relances** : factures échues non soldées, triées par niveau. Bouton **Relancer** (rappel → relance ferme →
   mise en demeure) et téléchargement de la **lettre de relance** conforme (mention pénalités + indemnité forfaitaire 40 €).
 
+### Notes de frais (Achats ▸ Notes de frais)
+- Saisir une dépense (date, catégorie, description, HT, TVA). Après **Valider**, la note peut être
+  **comptabilisée** (charge 6xx + TVA déductible au débit, compte 421 « dû au salarié » au crédit),
+  puis marquée **remboursée**. Les comptes PCG nécessaires sont créés automatiquement s'ils manquent.
+
 ## 4. Achats
 - **Commandes fournisseurs** : choisir un fournisseur (tiers marqué fournisseur) et un **entrepôt de
   réception** → **Valider & envoyer** (numéro CM-) → **Tout réceptionner** (entre la marchandise en stock).

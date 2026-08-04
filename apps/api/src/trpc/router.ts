@@ -15,6 +15,7 @@ import { purchaseRouter } from '../purchases/purchase.router';
 import { supplierInvoiceRouter } from '../purchases/supplierInvoice.router';
 import { supplierPaymentRouter } from '../purchases/supplierPayment.router';
 import { accountingRouter } from '../accounting/accounting.router';
+import { expensesRouter } from '../expenses/expenses.router';
 import { analyticsRouter } from '../analytics/analytics.router';
 import { auditRouter } from '../iam/audit.router';
 import { notesRouter } from '../notes/notes.router';
@@ -36,6 +37,7 @@ export const appRouter = router({
   supplierInvoices: supplierInvoiceRouter,
   supplierPayments: supplierPaymentRouter,
   accounting: accountingRouter,
+  expenses: expensesRouter,
   analytics: analyticsRouter,
   audit: auditRouter,
   notes: notesRouter,

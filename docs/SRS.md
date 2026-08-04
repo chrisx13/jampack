@@ -143,6 +143,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-ACH-8 | **Suivi des commandes en retard** : commandes envoyées non réceptionnées dont la date de livraison prévue est dépassée (jours de retard). | C | ✅ |
 | FR-ACH-9 | **Réception partielle** : livraisons échelonnées par ligne (reste dû, statut « réception partielle » puis « réceptionnée »), sans dépassement du reste dû. | C | ✅ |
 | FR-ACH-10 | **Duplication de commande** fournisseur en brouillon (commandes récurrentes). | C | ✅ |
+| FR-ACH-11 | **Notes de frais** : dépenses salariés (catégorie, HT, TVA) ; validation ; **comptabilisation** (charge 6xx + TVA déductible 44566 au débit, 421 dû au salarié au crédit) ; statut remboursée. | S | ✅ |
 
 ### 3.6 Stock
 | ID | Exigence | Prio | Statut |

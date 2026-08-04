@@ -42,6 +42,10 @@ Factures récurrentes (abonnements). `list · create · update · remove · gene
 ### `accounting`
 `accounts.{list,create,update,initPcg}` · `journals.{list,create,initDefaults}` · `fixedAssets.{list,create,update,remove,schedule,postDepreciation}` (immobilisations + plan d'amortissement + comptabilisation de la dotation 681/281) · `entries.{list,get,create,remove}` · `balance` · `ledger` (grand livre d'un compte) · `exportLedger` (CSV du grand livre d'un compte) · `exportBalance` (CSV de la balance) · `incomeStatement` (compte de résultat) · `balanceSheet` (bilan simplifié) · `postSalesInvoice · postPayment · postSupplierInvoice · postSupplierPayment` (génèrent les écritures) · `fec` (export FEC) · `vatReturn` (CA3) · `accountLines · letter · unletter` (lettrage) · `closeVat` · `bankLines · reconcile · importBankStatement` (rapprochement bancaire + import de relevé CSV)
 
+### `expenses`
+Notes de frais (dépenses salariés). `list · create · update · remove · validate · post · markReimbursed`.
+`post` génère l'écriture comptable (charge 6xx + TVA déductible 44566 au débit, 421 dû au salarié au crédit ; comptes créés au besoin), idempotente.
+
 ### `analytics`
 `summary` (KPI : CA, encours clients/fournisseurs, valeur stock, TVA) · `tresorerie` (prévisionnel encaissements/décaissements) · `agedReceivables` / `agedPayables` (balance âgée clients / fournisseurs par tranche) · `cashflowForecast` (`{weeks?}` : prévisionnel hebdomadaire encaissements/décaissements + position cumulée) · `agenda` (`{days?}` : échéances & tâches à venir — tâches CRM, factures clients/fournisseurs, livraisons ; retards signalés) · `agendaIcs` (`{days?}` : même agenda en iCalendar .ics)
 
