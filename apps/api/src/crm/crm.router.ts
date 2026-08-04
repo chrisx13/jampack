@@ -63,6 +63,21 @@ export const crmRouter = router({
       })
     ),
 
+    /** Candidats à la purge RGPD : tiers sans activité depuis plus de 3 ans (durée de conservation base active). */
+    purgeCandidates: authed('read', 'Company').query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const cutoff = new Date(Date.now() - 3 * 365 * 86400000); // ~ 3 ans (réf. CNIL)
+        const companies = await tx.company.findMany({
+          where: { ...scope(ctx.societeId), updatedAt: { lt: cutoff }, name: { not: 'Client anonymisé' } },
+          select: { id: true, name: true, updatedAt: true, invoices: { where: { issueDate: { gte: cutoff } }, select: { id: true }, take: 1 } },
+          orderBy: { updatedAt: 'asc' },
+        });
+        return companies
+          .filter((c) => c.invoices.length === 0) // aucune pièce récente
+          .map((c) => ({ id: c.id, name: c.name, lastActivity: c.updatedAt, reason: 'Aucune activité depuis plus de 3 ans' }));
+      })
+    ),
+
     /** Export RGPD (droit d'accès / portabilité, art. 15/20) : données personnelles détenues sur un tiers. */
     exportData: authed('read', 'Company').input(byId).query(({ ctx, input }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {

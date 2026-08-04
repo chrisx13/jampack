@@ -316,6 +316,18 @@ describe('CRM — RGPD (opposition & export des données)', () => {
     await C.prisma.company.delete({ where: { id: co.id } });
   });
 
+  it('candidats à la purge : tiers sans activité depuis > 3 ans', async () => {
+    const co = await caller.crm.companies.create({ name: '[INT] Dormant' });
+    // Backdate l'activité à 4 ans (updatedAt est géré par Prisma → SQL direct).
+    await C.prisma.$executeRawUnsafe(`UPDATE "Company" SET "updatedAt" = now() - interval '4 years' WHERE id = $1`, co.id);
+    const cands = await caller.crm.companies.purgeCandidates();
+    expect(cands.some((c: { id: string }) => c.id === co.id)).toBe(true);
+    // Un tiers récent n'apparaît pas.
+    const recent = await caller.crm.companies.create({ name: '[INT] Récent' });
+    expect((await caller.crm.companies.purgeCandidates()).some((c: { id: string }) => c.id === recent.id)).toBe(false);
+    await C.prisma.company.deleteMany({ where: { id: { in: [co.id, recent.id] } } });
+  });
+
   it('limitation du traitement (art. 18) : bloque toute nouvelle pièce', async () => {
     const co = await caller.crm.companies.create({ name: '[INT] Limité', processingRestricted: true });
     await expect(caller.invoices.create({ companyId: co.id, notes: '[INT]', lines: [{ label: 'x', quantity: 1, unitPriceHt: 10, taxRatePct: 20 }] })).rejects.toThrow(/limité/i);

@@ -30,6 +30,7 @@ import BillingSettings from './pages/BillingSettings';
 import Members from './pages/Members';
 import Societes from './pages/Societes';
 import AuditLog from './pages/AuditLog';
+import RgpdPurge from './pages/RgpdPurge';
 import Placeholder from './pages/Placeholder';
 
 /**
@@ -132,6 +133,7 @@ export const DOMAINS: Domain[] = [
       { id: 'societes', label: 'Sociétés', icon: 'bi-buildings', element: <Societes />, can: ['manage', 'all'] },
       { id: 'members', label: 'Utilisateurs & rôles', icon: 'bi-people-fill', element: <Members />, can: ['manage', 'all'] },
       { id: 'audit', label: 'Journal d\'audit', icon: 'bi-shield-check', element: <AuditLog />, can: ['manage', 'all'] },
+      { id: 'rgpd-purge', label: 'Purge RGPD', icon: 'bi-person-x', element: <RgpdPurge />, can: ['manage', 'all'] },
       { id: 'company', label: 'Société (facturation)', icon: 'bi-building-gear', element: <SocieteSettings />, can: ['manage', 'all'] },
       { id: 'billing', label: 'Facturation (banques, affacturage…)', icon: 'bi-bank', element: <BillingSettings />, can: ['manage', 'all'] },
       { id: 'appearance', label: 'Apparence', icon: 'bi-palette', element: <Appearance />, can: ['manage', 'all'] },

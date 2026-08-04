@@ -67,7 +67,9 @@ des **données personnelles** (contacts des tiers, utilisateurs) ; la conformit�
 ### 5.4 Durées de conservation (référentiel CNIL « gestion commerciale »)
 - **Prospects** : 3 ans à compter du dernier contact (base active) puis suppression/anonymisation.
 - **Clients** : durée de la relation + 3 ans (prospection) ; **pièces comptables 10 ans** (obligation).
-- **Journal d'audit** : 12 mois (cible ; configurable — voir §6). Purge/anonymisation à outiller (⏳).
+- **Journal d'audit** : 12 mois (cible ; configurable — voir §6).
+- **Aide à la purge** : la vue *Administration ▸ Purge RGPD* (`crm.companies.purgeCandidates`) liste les tiers
+  sans activité depuis > 3 ans, à anonymiser. Purge **planifiée automatique** = suivi (⏳).
 
 ### 5.5 Droits des personnes (art. 15-22)
 | Droit | Mécanisme dans JAMPACK | État |
@@ -130,7 +132,7 @@ profilage, décision automatisée ou données sensibles.
 |---|---|---|
 | Immuabilité stricte du journal d'audit | Falsification théorique | Append-only + signature (à venir) |
 | InvoiceLine sans RLS société propre | Accès seulement via pièce parente (protégée) | TODO Jalon A (`rls.sql`) |
-| Droits RGPD (accès/portabilité, rectification, opposition, effacement, limitation) : **tous outillés** ✅ | — | Purge automatique à échéance restante (⏳) |
+| Droits RGPD : **tous outillés** ✅ ; aide à la purge (candidats > 3 ans) ✅ | — | Purge **planifiée automatique** (scheduler) restante (⏳) |
 | Purge/anonymisation à échéance (prospects 3 ans, audit 12 mois) | Sur-conservation | Tâche de purge configurable (⏳) |
 | Procédure de violation de données formelle | Délai de notification 72 h | Runbook + registre des violations (⏳) |
 | Politique de confidentialité / mentions d'information | Information des personnes | Gabarit + emplacements (⏳) |
