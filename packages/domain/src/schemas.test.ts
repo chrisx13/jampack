@@ -4,7 +4,7 @@ import {
   PAYMENT_METHODS, PAYMENT_METHOD_LABELS, SALES_DOCS, STOCK_KINDS, STOCK_KIND_LABELS,
   stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
-  activityCreate, activityTypeLabel, isActivityOverdue,
+  activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -112,6 +112,19 @@ describe('activités CRM', () => {
     expect(isActivityOverdue({ type: 'tache', done: true, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(false);
     expect(isActivityOverdue({ type: 'tache', done: false, dueAt: '2026-08-10T00:00:00Z' }, now)).toBe(false);
     expect(isActivityOverdue({ type: 'note', done: false, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(false);
+  });
+});
+
+describe('stockTransfer', () => {
+  it('accepte un transfert valide', () => {
+    expect(stockTransfer.safeParse({ productId: 'p1', fromWarehouseId: 'w1', toWarehouseId: 'w2', quantity: 10 }).success).toBe(true);
+  });
+  it('rejette source = destination', () => {
+    expect(stockTransfer.safeParse({ productId: 'p1', fromWarehouseId: 'w1', toWarehouseId: 'w1', quantity: 10 }).success).toBe(false);
+  });
+  it('rejette une quantité nulle ou négative', () => {
+    expect(stockTransfer.safeParse({ productId: 'p1', fromWarehouseId: 'w1', toWarehouseId: 'w2', quantity: 0 }).success).toBe(false);
+    expect(stockTransfer.safeParse({ productId: 'p1', fromWarehouseId: 'w1', toWarehouseId: 'w2', quantity: -5 }).success).toBe(false);
   });
 });
 

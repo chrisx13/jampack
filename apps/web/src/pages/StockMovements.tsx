@@ -31,11 +31,22 @@ export default function StockMovements() {
   const [lotNumber, setLotNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
 
+  const transfer = trpc.stock.movements.transfer.useMutation();
+  const [tProductId, setTProductId] = useState('');
+  const [tFrom, setTFrom] = useState('');
+  const [tTo, setTTo] = useState('');
+  const [tQty, setTQty] = useState(1);
+
   const refresh = () => { utils.stock.movements.list.invalidate(); utils.stock.levels.invalidate(); utils.stock.lots.invalidate(); };
   const add = async () => {
     if (!warehouseId || !productId || !(quantity !== 0)) return;
     await create.mutateAsync({ warehouseId, productId, kind, quantity, note: note || undefined, lotNumber: lotNumber || undefined, expiryDate: expiryDate || undefined });
     setNote(''); setQuantity(1); setLotNumber(''); setExpiryDate(''); refresh();
+  };
+  const doTransfer = async () => {
+    if (!tProductId || !tFrom || !tTo || tFrom === tTo || tQty <= 0) return;
+    await transfer.mutateAsync({ productId: tProductId, fromWarehouseId: tFrom, toWarehouseId: tTo, quantity: tQty });
+    setTQty(1); refresh();
   };
   const del = async (id: string) => { await remove.mutateAsync({ id }); refresh(); };
 
@@ -87,6 +98,45 @@ export default function StockMovements() {
               </div>
             </div>
             {create.error && <div className="text-danger small mt-2">{create.error.message}</div>}
+          </Card.Body>
+        </Card>
+      )}
+
+      {can('create', 'StockMovement') && (
+        <Card className="mb-3">
+          <Card.Body>
+            <div className="d-flex align-items-center mb-2"><i className="bi bi-arrow-left-right me-2 text-secondary" /><span className="fw-semibold">Transfert inter-entrepôts</span></div>
+            <div className="row g-2 align-items-end">
+              <div className="col-md-3">
+                <Form.Label className="small mb-1">Article</Form.Label>
+                <Form.Select size="sm" value={tProductId} onChange={(e) => setTProductId(e.target.value)}>
+                  <option value="">— Sélectionner —</option>
+                  {products.data?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </Form.Select>
+              </div>
+              <div className="col-md-3">
+                <Form.Label className="small mb-1">De (source)</Form.Label>
+                <Form.Select size="sm" value={tFrom} onChange={(e) => setTFrom(e.target.value)}>
+                  <option value="">— Sélectionner —</option>
+                  {(warehouses.data ?? []).filter((w) => w.isActive).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+                </Form.Select>
+              </div>
+              <div className="col-md-3">
+                <Form.Label className="small mb-1">Vers (destination)</Form.Label>
+                <Form.Select size="sm" value={tTo} onChange={(e) => setTTo(e.target.value)} isInvalid={!!tTo && tTo === tFrom}>
+                  <option value="">— Sélectionner —</option>
+                  {(warehouses.data ?? []).filter((w) => w.isActive).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+                </Form.Select>
+              </div>
+              <div className="col-md-1">
+                <Form.Label className="small mb-1">Qté</Form.Label>
+                <Form.Control size="sm" type="number" step="0.001" min={0} value={tQty} onChange={(e) => setTQty(num(e.target.value))} />
+              </div>
+              <div className="col-md-2">
+                <Button size="sm" variant="outline-primary" className="w-100" onClick={doTransfer} disabled={transfer.isPending || !tProductId || !tFrom || !tTo || tFrom === tTo || tQty <= 0}><i className="bi bi-arrow-left-right me-1" />Transférer</Button>
+              </div>
+            </div>
+            {transfer.error && <div className="text-danger small mt-2">{transfer.error.message}</div>}
           </Card.Body>
         </Card>
       )}

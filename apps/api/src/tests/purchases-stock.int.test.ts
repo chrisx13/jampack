@@ -69,6 +69,19 @@ describe('Stock — mouvements, niveaux, valorisation', () => {
     expect(pmp.value).toBeCloseTo(150, 2);  // PMP=3 × 50
   });
 
+  it('transfert inter-entrepôts : −30 en source, +30 en destination', async () => {
+    const p = await caller.catalog.products.create({ name: '[INT] Transfert Prod', kind: 'bien' });
+    const src = await caller.stock.warehouses.create({ name: '[INT] Transfert Src' });
+    const dst = await caller.stock.warehouses.create({ name: '[INT] Transfert Dst' });
+    await caller.stock.movements.create({ warehouseId: src.id, productId: p.id, kind: 'entree', quantity: 100 });
+    await caller.stock.movements.transfer({ productId: p.id, fromWarehouseId: src.id, toWarehouseId: dst.id, quantity: 30 });
+    const levels = await caller.stock.levels();
+    const at = (wid: string) => levels.find((l: { productId: string; warehouseId: string; quantity: number }) => l.productId === p.id && l.warehouseId === wid);
+    expect(at(src.id).quantity).toBeCloseTo(70, 3);
+    expect(at(dst.id).quantity).toBeCloseTo(30, 3);
+    await expect(caller.stock.movements.transfer({ productId: p.id, fromWarehouseId: src.id, toWarehouseId: src.id, quantity: 5 })).rejects.toBeTruthy();
+  });
+
   it('inventaire : aligne le niveau sur la quantité comptée via un ajustement', async () => {
     const p = await caller.catalog.products.create({ name: '[INT] Inv Prod', kind: 'bien' });
     const wh = await caller.stock.warehouses.create({ name: '[INT] Inv' });

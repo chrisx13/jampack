@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { warehouseCreate, warehouseUpdate, stockMovementCreate, stockInventory, byId } from '@jampack/domain';
+import { warehouseCreate, warehouseUpdate, stockMovementCreate, stockTransfer, stockInventory, byId } from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -65,6 +65,23 @@ export const stockRouter = router({
     remove: authed('delete', 'StockMovement').input(byId).mutation(({ ctx, input }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.stockMovement.delete({ where: { id: input.id } }))
     ),
+    /** Transfert inter-entrepôts : une sortie (source) + une entrée (destination), atomiques. */
+    transfer: authed('create', 'StockMovement').input(stockTransfer).mutation(({ ctx, input }) => {
+      const societeId = req(ctx.societeId);
+      const { productId, fromWarehouseId, toWarehouseId, quantity, lotNumber, expiryDate, note, date } = input;
+      const qty = Math.abs(quantity);
+      const when = date ? new Date(date) : undefined;
+      const exp = expiryDate ? new Date(expiryDate) : undefined;
+      const base = { productId, lotNumber, note: note ?? 'Transfert inter-entrepôts', organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id, date: when, expiryDate: exp };
+      return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.stockMovement.createMany({
+          data: [
+            { ...base, warehouseId: fromWarehouseId, kind: 'sortie', quantity: -qty },
+            { ...base, warehouseId: toWarehouseId, kind: 'entree', quantity: qty },
+          ],
+        })
+      );
+    }),
   }),
 
   /** Niveaux de stock : quantité nette par article et par entrepôt (somme des mouvements signés). */

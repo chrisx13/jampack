@@ -34,7 +34,8 @@
 
 ## 5. Stock
 - **Entrepôts** : gérer les lieux de stockage (un par défaut).
-- **Mouvements** : entrée / sortie / ajustement (quantité signée pour l'ajustement).
+- **Mouvements** : entrée / sortie / ajustement (quantité signée pour l'ajustement). **Transfert inter-entrepôts**
+  (carte dédiée) : déplace une quantité d'un entrepôt à un autre en générant automatiquement la sortie et l'entrée.
 - **Niveaux** : quantité nette par article et entrepôt ; **inventaire** (bouton par ligne : saisir la
   quantité comptée, un ajustement est généré) ; **alerte de rupture** pour les articles sous leur seuil.
 - **Valorisation** : valeur du stock au **PMP** (prix moyen pondéré) ou en **FIFO** (premier entré, premier sorti) — méthode au choix.

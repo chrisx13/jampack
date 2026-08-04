@@ -518,6 +518,22 @@ export const stockMovementCreate = z.object({
 });
 export type StockMovementCreate = z.infer<typeof stockMovementCreate>;
 
+// ── Transfert inter-entrepôts (sortie source + entrée destination, atomique) ──
+export const stockTransfer = z.object({
+  productId: z.string().min(1),
+  fromWarehouseId: z.string().min(1),
+  toWarehouseId: z.string().min(1),
+  quantity: z.number().positive('Quantité à transférer strictement positive'),
+  lotNumber: z.string().optional(),
+  expiryDate: z.string().optional(),
+  note: z.string().optional(),
+  date: z.string().optional(),
+}).refine((t) => t.fromWarehouseId !== t.toWarehouseId, {
+  message: 'Les entrepôts source et destination doivent différer',
+  path: ['toWarehouseId'],
+});
+export type StockTransfer = z.infer<typeof stockTransfer>;
+
 // ── Achats : commandes fournisseurs ──
 export const PO_STATUS_LABELS: Record<string, string> = {
   draft: 'Brouillon', sent: 'Envoyée', received: 'Réceptionnée', cancelled: 'Annulée',
