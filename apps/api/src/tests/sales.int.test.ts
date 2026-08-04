@@ -149,6 +149,21 @@ describe('Comptabilité — immobilisations & amortissement', () => {
     expect(s.rows).toHaveLength(3);
     expect(s.rows.map((r: { annuity: number }) => r.annuity)).toEqual([1000, 1000, 1000]);
     expect(s.rows[2].residual).toBe(0);
+
+    // Comptabilisation de la dotation 2026 : 681 débit = 281 crédit (1000), idempotente.
+    const post = await caller.accounting.fixedAssets.postDepreciation({ id: a.id, year: 2026 });
+    expect(post.alreadyPosted).toBe(false);
+    expect(post.annuity).toBeCloseTo(1000, 2);
+    const entry = await C.prisma.journalEntry.findUniqueOrThrow({ where: { id: post.id }, include: { lines: { include: { account: true } } } });
+    expect(N(entry.lines.find((l) => l.account.code === '681000')!.debit)).toBeCloseTo(1000, 2);
+    expect(N(entry.lines.find((l) => l.account.code === '281800')!.credit)).toBeCloseTo(1000, 2);
+    expect((await caller.accounting.fixedAssets.postDepreciation({ id: a.id, year: 2026 })).alreadyPosted).toBe(true);
+    const sched2 = await caller.accounting.fixedAssets.schedule({ id: a.id });
+    expect(sched2.rows.find((r: { year: number; posted: boolean }) => r.year === 2026)?.posted).toBe(true);
+
+    // nettoyage écriture + immobilisation
+    await C.prisma.journalEntryLine.deleteMany({ where: { entryId: post.id } });
+    await C.prisma.journalEntry.delete({ where: { id: post.id } });
     await caller.accounting.fixedAssets.remove({ id: a.id });
   });
 });

@@ -100,9 +100,42 @@ export const accountingRouter = router({
     schedule: authed('read', 'Accounting').input(byId).query(({ ctx, input }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
         const a = await tx.fixedAsset.findUniqueOrThrow({ where: { id: input.id } });
-        return { asset: { id: a.id, name: a.name, amountHt: n(a.amountHt), acquisitionDate: a.acquisitionDate, durationYears: a.durationYears }, rows: depreciationSchedule(n(a.amountHt), a.durationYears, new Date(a.acquisitionDate)) };
+        const rows = depreciationSchedule(n(a.amountHt), a.durationYears, new Date(a.acquisitionDate));
+        const posted = await tx.journalEntry.findMany({ where: { ...scope(ctx.societeId), reference: { startsWith: `AMORT-${a.id}-` } }, select: { reference: true } });
+        const postedYears = new Set(posted.map((p) => Number(p.reference?.split('-').pop())));
+        return { asset: { id: a.id, name: a.name, amountHt: n(a.amountHt), acquisitionDate: a.acquisitionDate, durationYears: a.durationYears }, rows: rows.map((r) => ({ ...r, posted: postedYears.has(r.year) })) };
       })
     ),
+
+    /** Comptabilise la dotation aux amortissements d'un exercice (journal OD : 681 débit = 281 crédit). */
+    postDepreciation: authed('create', 'Accounting').input(z.object({ id: z.string().min(1), year: z.number().int() })).mutation(({ ctx, input }) => {
+      const societeId = req(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const ref = `AMORT-${input.id}-${input.year}`;
+        const existing = await tx.journalEntry.findFirst({ where: { ...scope(ctx.societeId), reference: ref }, select: { id: true } });
+        if (existing) return { id: existing.id, alreadyPosted: true, annuity: 0 };
+        const a = await tx.fixedAsset.findUniqueOrThrow({ where: { id: input.id } });
+        const row = depreciationSchedule(n(a.amountHt), a.durationYears, new Date(a.acquisitionDate)).find((r) => r.year === input.year);
+        if (!row) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Aucune annuité pour cet exercice.' });
+        const [journal, dotation, amort] = await Promise.all([
+          tx.journal.findFirst({ where: { ...scope(ctx.societeId), type: 'od' } }),
+          tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '681000' } }),
+          tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '281800' } }),
+        ]);
+        if (!journal || !dotation || !amort) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Initialisez le plan comptable et les journaux.' });
+        const entry = await tx.journalEntry.create({
+          data: {
+            organizationId: ctx.user.organizationId, societeId, journalId: journal.id, date: new Date(input.year, 11, 31), reference: ref,
+            label: `Dotation amortissement ${a.name} ${input.year}`, createdById: ctx.user.id,
+            lines: { create: [
+              { accountId: dotation.id, label: 'Dotation aux amortissements', debit: row.annuity, credit: 0, position: 0 },
+              { accountId: amort.id, label: 'Amortissements', debit: 0, credit: row.annuity, position: 1 },
+            ] },
+          },
+        });
+        return { id: entry.id, alreadyPosted: false, annuity: row.annuity };
+      });
+    }),
   }),
 
   // ── Écritures ──

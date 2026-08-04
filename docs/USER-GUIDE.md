@@ -45,7 +45,7 @@
 - **Lettrage** : rapprocher débits/crédits d'un même tiers.
 - **Rapprochement bancaire** : pointer les écritures du compte banque (512) au relevé (soldes comptable/pointé/reste), ou **importer un relevé CSV** (`date ; libellé ; montant`) pour un pointage automatique par montant.
 - **Déclaration de TVA (CA3)** : collectée − déductible ; écriture de clôture.
-- **Immobilisations** : enregistrer les biens amortissables et consulter leur **plan d'amortissement** (linéaire).
+- **Immobilisations** : enregistrer les biens amortissables, consulter leur **plan d'amortissement** (linéaire) et **comptabiliser la dotation** de chaque exercice (681 → 281).
 - **FEC** : export du Fichier des Écritures Comptables.
 
 ## 7. Trésorerie

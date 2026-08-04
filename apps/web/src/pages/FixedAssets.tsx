@@ -8,8 +8,14 @@ const num = (v: unknown) => { const n = Number(v as never); return Number.isFini
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-FR') : '—');
 
 function ScheduleModal({ id, onClose }: { id: string; onClose: () => void }) {
+  const utils = trpc.useUtils();
+  const can = useCan();
   const q = trpc.accounting.fixedAssets.schedule.useQuery({ id });
+  const post = trpc.accounting.fixedAssets.postDepreciation.useMutation({
+    onSuccess: () => { utils.accounting.fixedAssets.schedule.invalidate({ id }); utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate(); },
+  });
   const d = q.data;
+  const editable = can('create', 'Accounting');
   return (
     <Modal show onHide={onClose} centered>
       <Modal.Header closeButton><Modal.Title>Plan d'amortissement</Modal.Title></Modal.Header>
@@ -18,14 +24,24 @@ function ScheduleModal({ id, onClose }: { id: string; onClose: () => void }) {
           <>
             <p className="mb-2"><strong>{d.asset.name}</strong> — {euro.format(d.asset.amountHt)} sur {d.asset.durationYears} ans (linéaire)</p>
             <Table size="sm" className="align-middle">
-              <thead className="text-secondary small"><tr><th>Exercice</th><th className="text-end">Annuité</th><th className="text-end">Cumul</th><th className="text-end">VNC</th></tr></thead>
+              <thead className="text-secondary small"><tr><th>Exercice</th><th className="text-end">Annuité</th><th className="text-end">Cumul</th><th className="text-end">VNC</th><th className="text-end" /></tr></thead>
               <tbody>
                 {d.rows.map((r) => (
-                  <tr key={r.year}><td>{r.year}</td><td className="text-end">{euro.format(r.annuity)}</td><td className="text-end text-secondary">{euro.format(r.cumulated)}</td><td className="text-end fw-medium">{euro.format(r.residual)}</td></tr>
+                  <tr key={r.year}>
+                    <td>{r.year}</td>
+                    <td className="text-end">{euro.format(r.annuity)}</td>
+                    <td className="text-end text-secondary">{euro.format(r.cumulated)}</td>
+                    <td className="text-end fw-medium">{euro.format(r.residual)}</td>
+                    <td className="text-end">
+                      {r.posted
+                        ? <i className="bi bi-journal-check text-success" title="Comptabilisée" />
+                        : editable && <Button variant="light" size="sm" title="Comptabiliser la dotation (681/281)" onClick={() => post.mutate({ id, year: r.year })} disabled={post.isPending}><i className="bi bi-journal-plus" /></Button>}
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </Table>
-            <p className="text-secondary small mb-0">VNC = valeur nette comptable (reste à amortir).</p>
+            <p className="text-secondary small mb-0">VNC = valeur nette comptable. La dotation se comptabilise au journal OD (681 → 281).</p>
           </>
         )}
       </Modal.Body>
