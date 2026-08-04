@@ -28,12 +28,14 @@ export default function StockMovements() {
   const [kind, setKind] = useState<StockKind>('entree');
   const [quantity, setQuantity] = useState(1);
   const [note, setNote] = useState('');
+  const [lotNumber, setLotNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
 
-  const refresh = () => { utils.stock.movements.list.invalidate(); utils.stock.levels.invalidate(); };
+  const refresh = () => { utils.stock.movements.list.invalidate(); utils.stock.levels.invalidate(); utils.stock.lots.invalidate(); };
   const add = async () => {
     if (!warehouseId || !productId || !(quantity !== 0)) return;
-    await create.mutateAsync({ warehouseId, productId, kind, quantity, note: note || undefined });
-    setNote(''); setQuantity(1); refresh();
+    await create.mutateAsync({ warehouseId, productId, kind, quantity, note: note || undefined, lotNumber: lotNumber || undefined, expiryDate: expiryDate || undefined });
+    setNote(''); setQuantity(1); setLotNumber(''); setExpiryDate(''); refresh();
   };
   const del = async (id: string) => { await remove.mutateAsync({ id }); refresh(); };
 
@@ -74,7 +76,13 @@ export default function StockMovements() {
               </div>
             </div>
             <div className="row g-2 mt-1">
-              <div className="col-md-8">
+              <div className="col-md-3">
+                <Form.Control size="sm" placeholder="N° de lot / série (optionnel)" value={lotNumber} onChange={(e) => setLotNumber(e.target.value)} />
+              </div>
+              <div className="col-md-3">
+                <Form.Control size="sm" type="date" title="Date de péremption (DLC/DDM)" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
+              </div>
+              <div className="col-md-6">
                 <Form.Control size="sm" placeholder="Note (optionnel)" value={note} onChange={(e) => setNote(e.target.value)} />
               </div>
             </div>

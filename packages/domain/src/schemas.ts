@@ -409,6 +409,8 @@ export const stockMovementCreate = z.object({
   // Quantité saisie (positive pour entrée/sortie ; signée autorisée pour un ajustement).
   quantity: z.number().refine((v) => v !== 0, 'Quantité non nulle attendue'),
   unitCost: z.number().nonnegative().optional(),
+  lotNumber: z.string().optional(),
+  expiryDate: z.string().optional(),
   note: z.string().optional(),
   date: z.string().optional(),
 });

@@ -14,6 +14,7 @@ import SupplierEcheancier from './pages/SupplierEcheancier';
 import StockLevels from './pages/StockLevels';
 import StockValuation from './pages/StockValuation';
 import StockMovements from './pages/StockMovements';
+import StockLots from './pages/StockLots';
 import Warehouses from './pages/Warehouses';
 import ChartOfAccounts from './pages/ChartOfAccounts';
 import JournalEntries from './pages/JournalEntries';
@@ -88,6 +89,7 @@ export const DOMAINS: Domain[] = [
       { id: 'stock-levels', label: 'Niveaux', icon: 'bi-clipboard-data', element: <StockLevels />, can: ['read', 'StockMovement'] },
       { id: 'stock-valuation', label: 'Valorisation', icon: 'bi-cash-stack', element: <StockValuation />, can: ['read', 'StockMovement'] },
       { id: 'stock-movements', label: 'Mouvements', icon: 'bi-arrow-left-right', element: <StockMovements />, can: ['read', 'StockMovement'] },
+      { id: 'stock-lots', label: 'Lots & péremption', icon: 'bi-upc-scan', element: <StockLots />, can: ['read', 'StockMovement'] },
       { id: 'warehouses', label: 'Entrepôts', icon: 'bi-building', element: <Warehouses />, can: ['read', 'Warehouse'] },
     ],
   },

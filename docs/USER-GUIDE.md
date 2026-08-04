@@ -34,6 +34,8 @@
 - **Niveaux** : quantité nette par article et entrepôt ; **inventaire** (bouton par ligne : saisir la
   quantité comptée, un ajustement est généré) ; **alerte de rupture** pour les articles sous leur seuil.
 - **Valorisation** : valeur du stock au **PMP** (prix moyen pondéré) par article et entrepôt.
+- **Lots & péremption** : renseignez un **n° de lot/série** et une **date de péremption** sur un mouvement ;
+  la vue *Lots & péremption* affiche les soldes par lot et alerte sur les lots périmés ou bientôt périmés.
 - **Seuil de réapprovisionnement** : se définit sur la fiche article (Catalogue).
 
 ## 6. Comptabilité

@@ -410,6 +410,8 @@ model StockMovement {
   kind           String       // entree | sortie | ajustement
   quantity       Decimal      @db.Decimal(12, 3) // signé : + entrée, − sortie
   unitCost       Decimal?     @db.Decimal(12, 2) // coût unitaire (valorisation PMP — futur)
+  lotNumber      String?      // n° de lot ou de série (traçabilité)
+  expiryDate     DateTime?    // date de péremption (DLC/DDM) du lot
   note           String?
   date           DateTime     @default(now())
   createdById    String?

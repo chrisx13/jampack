@@ -68,6 +68,17 @@ describe('Stock — mouvements, niveaux, valorisation', () => {
     expect((await caller.stock.inventory({ warehouseId: wh.id, productId: p.id, countedQuantity: 30 })).movementId).toBeNull();
   });
 
+  it('lots & péremption : solde net par lot + statut périmé', async () => {
+    const p = await caller.catalog.products.create({ name: '[INT] Lot Prod', kind: 'bien' });
+    const wh = await caller.stock.warehouses.create({ name: '[INT] Lots' });
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'entree', quantity: 100, lotNumber: 'L-INT-1', expiryDate: '2020-01-01' });
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'sortie', quantity: 40, lotNumber: 'L-INT-1' });
+    const lot = (await caller.stock.lots()).find((r: { lotNumber: string | null; productId: string }) => r.lotNumber === 'L-INT-1' && r.productId === p.id);
+    expect(lot).toBeTruthy();
+    expect(lot.quantity).toBeCloseTo(60, 3);
+    expect(lot.expired).toBe(true); // 2020 < aujourd'hui
+  });
+
   it('seuil de réapprovisionnement : article sous le seuil listé dans lowStock', async () => {
     const p = await caller.catalog.products.create({ name: '[INT] Seuil Prod', kind: 'bien', reorderPoint: 100 });
     const wh = await caller.stock.warehouses.create({ name: '[INT] Seuil' });

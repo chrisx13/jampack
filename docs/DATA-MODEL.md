@@ -34,7 +34,8 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
   `SupplierPayment` (règlement fournisseur, recalcul du statut *payée*, sous RLS).
 
 ### Stock
-- `Warehouse` · `StockMovement` (**`quantity` signée**, `kind` entree|sortie|ajustement, `unitCost`).
+- `Warehouse` · `StockMovement` (**`quantity` signée**, `kind` entree|sortie|ajustement, `unitCost`,
+  **`lotNumber`/`expiryDate`** = traçabilité lot/série + péremption).
 
 ### Comptabilité
 - `Account` (compte PCG, `code`, classe dérivée du 1er chiffre) · `Journal` (`code` VT/AC/BQ/OD, `type`) ·
@@ -64,7 +65,7 @@ init → société → rôles → établissements → référentiels → factura
 billing_entities → **sales_documents** (docType) → **payments** → **stock** → **purchases** →
 **supplier_invoices** → **accounting** → invoice_accounting_link → posting_links → **audit_log** →
 **lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point** →
-**company_legal_ids** → **societe_vat_franchise** → **company_do_not_prospect** → **invoice_reverse_charge** → **societe_vat_on_payments**.
+**company_legal_ids** → **societe_vat_franchise** → **company_do_not_prospect** → **invoice_reverse_charge** → **societe_vat_on_payments** → **stock_lots**.
 
 ## 7. Schéma (extrait relationnel)
 ```

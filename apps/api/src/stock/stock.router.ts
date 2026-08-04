@@ -53,12 +53,12 @@ export const stockRouter = router({
     ),
     create: authed('create', 'StockMovement').input(stockMovementCreate).mutation(({ ctx, input }) => {
       const societeId = req(ctx.societeId);
-      const { quantity, kind, date, ...rest } = input;
+      const { quantity, kind, date, expiryDate, ...rest } = input;
       // Signe dérivé du type : entrée = +, sortie = −, ajustement = valeur saisie (signée).
       const signed = kind === 'sortie' ? -Math.abs(quantity) : kind === 'entree' ? Math.abs(quantity) : quantity;
       return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
         tx.stockMovement.create({
-          data: { ...rest, kind, quantity: signed, organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id, date: date ? new Date(date) : undefined },
+          data: { ...rest, kind, quantity: signed, organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id, date: date ? new Date(date) : undefined, expiryDate: expiryDate ? new Date(expiryDate) : undefined },
         })
       );
     }),
@@ -161,6 +161,35 @@ export const stockRouter = router({
         })
         .filter((r) => r.quantity < r.reorderPoint)
         .sort((a, b) => b.manque - a.manque);
+    })
+  ),
+
+  /** Soldes par lot/n° de série (quantité nette) + statut de péremption. */
+  lots: authed('read', 'StockMovement').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const grouped = await tx.stockMovement.groupBy({ by: ['productId', 'warehouseId', 'lotNumber'], where: { ...scope(ctx.societeId), lotNumber: { not: null } }, _sum: { quantity: true }, _max: { expiryDate: true } });
+      if (grouped.length === 0) return [];
+      const [products, warehouses] = await Promise.all([
+        tx.product.findMany({ where: scope(ctx.societeId), select: { id: true, name: true, unit: true } }),
+        tx.warehouse.findMany({ where: scope(ctx.societeId), select: { id: true, name: true } }),
+      ]);
+      const pById = new Map(products.map((p) => [p.id, p]));
+      const wById = new Map(warehouses.map((w) => [w.id, w]));
+      const now = Date.now();
+      const soon = now + 30 * 86400000;
+      return grouped
+        .map((g) => {
+          const expiry = g._max.expiryDate ? new Date(g._max.expiryDate) : null;
+          const exp = expiry ? expiry.getTime() : null;
+          return {
+            productId: g.productId, productName: pById.get(g.productId)?.name ?? '—', unit: pById.get(g.productId)?.unit ?? '',
+            warehouseId: g.warehouseId, warehouseName: wById.get(g.warehouseId)?.name ?? '—',
+            lotNumber: g.lotNumber, quantity: Math.round(N(g._sum.quantity) * 1000) / 1000, expiryDate: expiry,
+            expired: exp != null && exp < now, expiringSoon: exp != null && exp >= now && exp <= soon,
+          };
+        })
+        .filter((r) => Math.abs(r.quantity) > 0.0005)
+        .sort((a, b) => (a.expiryDate?.getTime() ?? Infinity) - (b.expiryDate?.getTime() ?? Infinity) || a.productName.localeCompare(b.productName));
     })
   ),
 });
