@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { warehouseCreate, warehouseUpdate, stockMovementCreate, byId } from '@jampack/domain';
+import { warehouseCreate, warehouseUpdate, stockMovementCreate, stockInventory, byId } from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -124,6 +124,43 @@ export const stockRouter = router({
         .filter((r) => Math.abs(r.quantity) > 0.0005 || r.value !== 0)
         .sort((a, b) => a.productName.localeCompare(b.productName));
       return { rows, total: r2(rows.reduce((s, r) => s + r.value, 0)) };
+    })
+  ),
+
+  /** Inventaire physique : aligne le stock d'un article/entrepôt sur la quantité comptée via un ajustement. */
+  inventory: authed('create', 'StockMovement').input(stockInventory).mutation(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const agg = await tx.stockMovement.aggregate({ where: { ...scope(ctx.societeId), warehouseId: input.warehouseId, productId: input.productId }, _sum: { quantity: true } });
+      const current = N(agg._sum.quantity);
+      const delta = Math.round((input.countedQuantity - current) * 1000) / 1000;
+      if (Math.abs(delta) < 0.0005) return { delta: 0, current, counted: input.countedQuantity, movementId: null };
+      const mv = await tx.stockMovement.create({
+        data: {
+          warehouseId: input.warehouseId, productId: input.productId, kind: 'ajustement', quantity: delta,
+          note: input.note ?? `Inventaire : compté ${input.countedQuantity}`,
+          organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id,
+        },
+      });
+      return { delta, current, counted: input.countedQuantity, movementId: mv.id };
+    });
+  }),
+
+  /** Articles sous leur seuil de réapprovisionnement (quantité nette totale < `reorderPoint`). */
+  lowStock: authed('read', 'StockMovement').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const withThreshold = await tx.product.findMany({ where: { ...scope(ctx.societeId), reorderPoint: { not: null } }, select: { id: true, name: true, unit: true, reference: true, reorderPoint: true } });
+      if (withThreshold.length === 0) return [];
+      const grouped = await tx.stockMovement.groupBy({ by: ['productId'], where: { ...scope(ctx.societeId), productId: { in: withThreshold.map((p) => p.id) } }, _sum: { quantity: true } });
+      const qtyById = new Map(grouped.map((g) => [g.productId, N(g._sum.quantity)]));
+      return withThreshold
+        .map((p) => {
+          const quantity = Math.round((qtyById.get(p.id) ?? 0) * 1000) / 1000;
+          const reorderPoint = N(p.reorderPoint);
+          return { productId: p.id, productName: p.name, reference: p.reference, unit: p.unit, quantity, reorderPoint, manque: Math.round((reorderPoint - quantity) * 1000) / 1000 };
+        })
+        .filter((r) => r.quantity < r.reorderPoint)
+        .sort((a, b) => b.manque - a.manque);
     })
   ),
 });

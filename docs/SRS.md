@@ -136,7 +136,8 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-STK-2 | Enregistrer des **mouvements** (entrée/sortie/ajustement) signés. | M | ✅ |
 | FR-STK-3 | Calculer les **niveaux de stock** nets par article et entrepôt. | M | ✅ |
 | FR-STK-4 | **Valorisation PMP** (prix moyen pondéré des entrées) par article. | S | ✅ |
-| FR-STK-5 | Inventaires, seuils de réapprovisionnement, lots/n° de série, FIFO. | C | ⏳ |
+| FR-STK-5 | **Seuil de réapprovisionnement** par article + **alertes de rupture** ; **inventaire physique** (quantité comptée → mouvement d'ajustement). | S | ✅ |
+| FR-STK-6 | Lots / n° de série, valorisation **FIFO** (DO-5). | C | ⏳ |
 
 ### 3.7 Comptabilité (Jalon 4)
 | ID | Exigence | Prio | Statut |

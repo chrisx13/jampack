@@ -354,6 +354,7 @@ model Product {
   kind           String       @default("bien") // "bien" | "service"
   unit           String       @default("unité")
   priceHt        Decimal      @db.Decimal(12, 2) @default(0)
+  reorderPoint   Decimal?     @db.Decimal(12, 3) // seuil de réapprovisionnement (null = pas de suivi)
   taxRate        TaxRate?     @relation(fields: [taxRateId], references: [id])
   taxRateId      String?
   category       ProductCategory? @relation(fields: [categoryId], references: [id])

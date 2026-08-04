@@ -23,6 +23,8 @@
 | Facture fournisseur | Facture reçue d'un fournisseur (compte à payer). |
 | Mouvement de stock | Entrée / sortie / ajustement (quantité **signée**). |
 | Niveau de stock | Quantité nette (somme des mouvements) par article et entrepôt. |
+| Seuil de réapprovisionnement | Quantité minimale (`reorderPoint`) sous laquelle un article est signalé en rupture. |
+| Inventaire physique | Comptage réel d'un article ; l'écart avec le stock théorique génère un mouvement d'ajustement. |
 | Vue consolidée | Vue multi-sociétés (toutes les sociétés accessibles du compte). |
 
 ## Technique

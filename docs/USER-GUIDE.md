@@ -31,8 +31,10 @@
 ## 5. Stock
 - **Entrepôts** : gérer les lieux de stockage (un par défaut).
 - **Mouvements** : entrée / sortie / ajustement (quantité signée pour l'ajustement).
-- **Niveaux** : quantité nette par article et entrepôt.
+- **Niveaux** : quantité nette par article et entrepôt ; **inventaire** (bouton par ligne : saisir la
+  quantité comptée, un ajustement est généré) ; **alerte de rupture** pour les articles sous leur seuil.
 - **Valorisation** : valeur du stock au **PMP** (prix moyen pondéré) par article et entrepôt.
+- **Seuil de réapprovisionnement** : se définit sur la fiche article (Catalogue).
 
 ## 6. Comptabilité
 - **Plan comptable** : consulter/gérer les comptes (PCG).

@@ -55,6 +55,30 @@ describe('Stock — mouvements, niveaux, valorisation', () => {
     expect(row.pmp).toBeCloseTo(3, 2);
     expect(row.value).toBeCloseTo(600, 2);
   });
+
+  it('inventaire : aligne le niveau sur la quantité comptée via un ajustement', async () => {
+    const p = await caller.catalog.products.create({ name: '[INT] Inv Prod', kind: 'bien' });
+    const wh = await caller.stock.warehouses.create({ name: '[INT] Inv' });
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'entree', quantity: 50 });
+    const res = await caller.stock.inventory({ warehouseId: wh.id, productId: p.id, countedQuantity: 30 });
+    expect(res.delta).toBeCloseTo(-20, 3);
+    const lvl = (await caller.stock.levels()).find((l: { productId: string; warehouseId: string; quantity: number }) => l.productId === p.id && l.warehouseId === wh.id);
+    expect(lvl.quantity).toBeCloseTo(30, 3);
+    // idempotence : recompter la même quantité ne crée aucun mouvement
+    expect((await caller.stock.inventory({ warehouseId: wh.id, productId: p.id, countedQuantity: 30 })).movementId).toBeNull();
+  });
+
+  it('seuil de réapprovisionnement : article sous le seuil listé dans lowStock', async () => {
+    const p = await caller.catalog.products.create({ name: '[INT] Seuil Prod', kind: 'bien', reorderPoint: 100 });
+    const wh = await caller.stock.warehouses.create({ name: '[INT] Seuil' });
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'entree', quantity: 40 });
+    const low = (await caller.stock.lowStock()).find((r: { productId: string; manque: number }) => r.productId === p.id);
+    expect(low).toBeTruthy();
+    expect(low.manque).toBeCloseTo(60, 3);
+    // au-dessus du seuil → disparaît
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'entree', quantity: 70 });
+    expect((await caller.stock.lowStock()).some((r: { productId: string }) => r.productId === p.id)).toBe(false);
+  });
 });
 
 describe('Achats — commande → réception → stock ; factures fournisseurs', () => {

@@ -198,8 +198,8 @@ async function main() {
     const f = await prisma.product.findFirst({ where: { organizationId: org.id, societeId, name } });
     return f ?? prisma.product.create({ data: { organizationId: org.id, societeId, name, ...data } });
   };
-  await ensureProduct(boulangerie.id, 'Baguette tradition', { reference: 'PAIN-001', kind: 'bien', unit: 'pièce', priceHt: 1.1, taxRateId: tr['TVA 5,5 %'].id, categoryId: catPains.id });
-  await ensureProduct(boulangerie.id, 'Croissant', { reference: 'VIEN-001', kind: 'bien', unit: 'pièce', priceHt: 1.2, taxRateId: tr['TVA 5,5 %'].id, categoryId: catVienn.id });
+  await ensureProduct(boulangerie.id, 'Baguette tradition', { reference: 'PAIN-001', kind: 'bien', unit: 'pièce', priceHt: 1.1, reorderPoint: 50, taxRateId: tr['TVA 5,5 %'].id, categoryId: catPains.id });
+  await ensureProduct(boulangerie.id, 'Croissant', { reference: 'VIEN-001', kind: 'bien', unit: 'pièce', priceHt: 1.2, reorderPoint: 100, taxRateId: tr['TVA 5,5 %'].id, categoryId: catVienn.id });
   await ensureProduct(studio.id, 'Création logo', { reference: 'SRV-LOGO', kind: 'service', unit: 'forfait', priceHt: 900, taxRateId: tr['TVA 20 %'].id, categoryId: catDesign.id });
   await ensureProduct(studio.id, 'Journée de développement', { reference: 'SRV-DEV', kind: 'service', unit: 'jour', priceHt: 650, taxRateId: tr['TVA 20 %'].id, categoryId: catDev.id });
 

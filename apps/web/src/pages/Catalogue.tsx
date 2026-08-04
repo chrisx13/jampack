@@ -5,7 +5,7 @@ import { useCan } from '../ability';
 
 const num = (v: unknown) => { const n = Number(v as never); return Number.isFinite(n) ? n : 0; };
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
-const blank = { name: '', reference: '', kind: 'bien', unit: 'unité', priceHt: '', taxRateId: '', categoryId: '' };
+const blank = { name: '', reference: '', kind: 'bien', unit: 'unité', priceHt: '', reorderPoint: '', taxRateId: '', categoryId: '' };
 
 type Row = { id: string } & typeof blank;
 
@@ -79,7 +79,7 @@ export default function Catalogue() {
   const remove = trpc.catalog.products.remove.useMutation({ onSuccess: () => { utils.catalog.products.list.invalidate(); setDel(null); } });
 
   const open = (r?: Row) => {
-    setForm(r ? { name: r.name, reference: r.reference ?? '', kind: r.kind, unit: r.unit, priceHt: String(r.priceHt ?? ''), taxRateId: r.taxRateId ?? '', categoryId: r.categoryId ?? '' } : blank);
+    setForm(r ? { name: r.name, reference: r.reference ?? '', kind: r.kind, unit: r.unit, priceHt: String(r.priceHt ?? ''), reorderPoint: r.reorderPoint != null ? String(r.reorderPoint) : '', taxRateId: r.taxRateId ?? '', categoryId: r.categoryId ?? '' } : blank);
     setEdit(r ? { id: r.id } : {});
   };
   const submit = () => {
@@ -87,6 +87,7 @@ export default function Catalogue() {
     const base = {
       name: form.name.trim(), reference: form.reference || undefined, kind: form.kind as 'bien' | 'service',
       unit: form.unit || undefined, priceHt: form.priceHt ? Number(form.priceHt) : undefined,
+      reorderPoint: form.reorderPoint !== '' ? Number(form.reorderPoint) : null,
       taxRateId: form.taxRateId || undefined, categoryId: form.categoryId || undefined,
     };
     if (edit?.id) update.mutate({ id: edit.id, ...base });
@@ -155,7 +156,8 @@ export default function Catalogue() {
             </div>
             <div className="col-md-3"><Form.Label>Unité</Form.Label><Form.Control value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} /></div>
             <div className="col-md-4"><Form.Label>Prix HT (€)</Form.Label><Form.Control type="number" step="0.01" value={form.priceHt} onChange={(e) => setForm({ ...form, priceHt: e.target.value })} /></div>
-            <div className="col-md-8"><Form.Label>TVA</Form.Label>
+            <div className="col-md-4"><Form.Label>Seuil de réappro.</Form.Label><Form.Control type="number" step="0.001" placeholder="—" value={form.reorderPoint} onChange={(e) => setForm({ ...form, reorderPoint: e.target.value })} disabled={form.kind === 'service'} /></div>
+            <div className="col-md-4"><Form.Label>TVA</Form.Label>
               <Form.Select value={form.taxRateId} onChange={(e) => setForm({ ...form, taxRateId: e.target.value })}>
                 <option value="">— Aucune —</option>
                 {taxRates.data?.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}

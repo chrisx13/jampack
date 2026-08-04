@@ -87,6 +87,7 @@ export const productCreate = z.object({
   kind: z.enum(['bien', 'service']).optional(),
   unit: z.string().optional(),
   priceHt: z.number().nonnegative().optional(),
+  reorderPoint: z.number().nonnegative().nullable().optional(),
   taxRateId: z.string().optional(),
   categoryId: z.string().optional(),
 });
@@ -100,10 +101,20 @@ export const productUpdate = z.object({
   kind: z.enum(['bien', 'service']).optional(),
   unit: z.string().optional(),
   priceHt: z.number().nonnegative().optional(),
+  reorderPoint: z.number().nonnegative().nullable().optional(),
   taxRateId: z.string().nullable().optional(),
   categoryId: z.string().nullable().optional(),
 });
 export type ProductUpdate = z.infer<typeof productUpdate>;
+
+/** Inventaire physique : quantité comptée d'un article dans un entrepôt → mouvement d'ajustement. */
+export const stockInventory = z.object({
+  warehouseId: z.string().min(1),
+  productId: z.string().min(1),
+  countedQuantity: z.number().nonnegative(),
+  note: z.string().optional(),
+});
+export type StockInventory = z.infer<typeof stockInventory>;
 
 // ── Établissements (adresses d'un client) ──
 const establishmentFields = {

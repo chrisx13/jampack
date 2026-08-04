@@ -19,7 +19,7 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
   (siège/facturation/livraison) · `PipelineStage` · `Opportunity` · `Activity`.
 
 ### Référentiels
-- `TaxRate` (compte) · `Product` · `ProductCategory` (arbre) · `NumberSequence` (société×docType, atomique).
+- `TaxRate` (compte) · `Product` (+ `reorderPoint` = seuil de réappro.) · `ProductCategory` (arbre) · `NumberSequence` (société×docType, atomique).
 
 ### Ventes & encaissement
 - `Invoice` (**`docType` = devis|facture|avoir**, `status`, `source` self-relation = filiation,
@@ -62,7 +62,7 @@ Répertoire `packages/db/prisma/migrations/` (appliquées par `prisma migrate de
 init → société → rôles → établissements → référentiels → facturation → catégories → thème → billing →
 billing_entities → **sales_documents** (docType) → **payments** → **stock** → **purchases** →
 **supplier_invoices** → **accounting** → invoice_accounting_link → posting_links → **audit_log** →
-**lettrage** → **pdp_transmission** → **supplier_payment**.
+**lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point**.
 
 ## 7. Schéma (extrait relationnel)
 ```

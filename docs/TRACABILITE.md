@@ -117,7 +117,8 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **2 Ventes** | **E-invoicing Factur-X / PDP** | 🔧 | Génération **Factur-X (XML CII, EN 16931)** (`facturx.ts`), connecteur **PDP** abstrait + adaptateur interne (`pdp.ts`), procédures `facturx`/`sendToPdp`/`transmissions`, journal `PdpTransmission` (RLS), UI (bouton Factur-X + « Envoyer via PDP » + statut). **Reste hors périmètre logiciel** : immatriculation PDP DGFiP, raccordement PPF, e-reporting, certification — voir [Conformité §3.1](CONFORMITE.md) |
 | **3 Stock** | Entrepôts + mouvements (entrée/sortie/ajustement) + niveaux calculés | ✅ | `stock.router.ts` (`warehouses`, `movements`, `levels`), modèles `Warehouse`/`StockMovement` |
 | **3 Stock** | **Valorisation PMP** (par article) | ✅ | `stock.router.ts` (`valuation`) — PMP des entrées × quantité nette |
-| **3 Stock** | Inventaires, FIFO, lots/seuils | ❌ | phase future |
+| **3 Stock** | **Seuils de réapprovisionnement** + alertes rupture + **inventaire physique** | ✅ | `Product.reorderPoint`, `stock.router.ts` (`inventory`, `lowStock`), `StockLevels.tsx` (alerte + action inventaire) |
+| **3 Stock** | FIFO, lots/n° de série | ❌ | phase future (DO-5) |
 | **3 Achats** | Commandes fournisseurs → **réceptions** (génèrent les entrées de stock) | ✅ | `purchase.router.ts` (`orders.validate`/`receive`), modèles `PurchaseOrder`/`PurchaseOrderLine` ; fournisseur = `Company.isSupplier` |
 | **3 Achats** | **Factures fournisseurs** + échéancier fournisseur (reste dû) | ✅ | `supplierInvoice.router.ts` (`validate`/`markPaid`/`echeancier`), modèles `SupplierInvoice`/`SupplierInvoiceLine` |
 | **3 Achats** | **Règlements fournisseurs partiels** + comptabilisation (401=512) | ✅ | `supplierPayment.router.ts` (`create`/`remove`/`listForInvoice`), modèle `SupplierPayment` (RLS), statut piloté par le cumul, `accounting.postSupplierPayment`, UI (panneau règlements + échéancier reste dû) |

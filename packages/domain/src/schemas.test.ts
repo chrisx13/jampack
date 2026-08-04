@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate,
   PAYMENT_METHODS, PAYMENT_METHOD_LABELS, SALES_DOCS, STOCK_KINDS, STOCK_KIND_LABELS,
-  stockMovementCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
+  stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
 } from './schemas';
 
@@ -49,6 +49,27 @@ describe('stockMovementCreate', () => {
   });
   it('refuse un type invalide', () => {
     expect(stockMovementCreate.safeParse({ warehouseId: 'w', productId: 'p', kind: 'bogus', quantity: 1 }).success).toBe(false);
+  });
+});
+
+describe('productCreate — seuil de réapprovisionnement', () => {
+  it('accepte un reorderPoint positif, nul, absent ou null', () => {
+    expect(productCreate.safeParse({ name: 'A', reorderPoint: 10 }).success).toBe(true);
+    expect(productCreate.safeParse({ name: 'A', reorderPoint: 0 }).success).toBe(true);
+    expect(productCreate.safeParse({ name: 'A', reorderPoint: null }).success).toBe(true);
+    expect(productCreate.safeParse({ name: 'A' }).success).toBe(true);
+  });
+  it('refuse un reorderPoint négatif', () => {
+    expect(productCreate.safeParse({ name: 'A', reorderPoint: -1 }).success).toBe(false);
+  });
+});
+
+describe('stockInventory', () => {
+  it('exige entrepôt, article et quantité comptée ≥ 0', () => {
+    expect(stockInventory.safeParse({ warehouseId: 'w', productId: 'p', countedQuantity: 30 }).success).toBe(true);
+    expect(stockInventory.safeParse({ warehouseId: 'w', productId: 'p', countedQuantity: 0 }).success).toBe(true);
+    expect(stockInventory.safeParse({ warehouseId: 'w', productId: 'p', countedQuantity: -1 }).success).toBe(false);
+    expect(stockInventory.safeParse({ productId: 'p', countedQuantity: 1 }).success).toBe(false);
   });
 });
 
