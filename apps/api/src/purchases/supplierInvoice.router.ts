@@ -33,6 +33,39 @@ export const supplierInvoiceRouter = router({
     withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.supplierInvoice.findUniqueOrThrow({ where: { id: input.id }, include: fullInclude }))
   ),
 
+  /** Rapprochement 3 voies : commande ↔ réception ↔ facture fournisseur (contrôle de cohérence). */
+  match: authed('read', 'SupplierInvoice').input(byId).query(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const inv = await tx.supplierInvoice.findUniqueOrThrow({
+        where: { id: input.id },
+        include: { lines: true, purchaseOrder: { include: { lines: true } } },
+      });
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      const invoicedHt = r2(inv.lines.reduce((s, l) => s + n(l.quantity) * n(l.unitPriceHt), 0));
+      const po = inv.purchaseOrder;
+      if (!po) return { linked: false as const, invoicedHt };
+      const orderedHt = r2(po.lines.reduce((s, l) => s + n(l.quantity) * n(l.unitPriceHt), 0));
+      const orderedQty = po.lines.reduce((s, l) => s + n(l.quantity), 0);
+      const receivedQty = po.lines.reduce((s, l) => s + n(l.quantityReceived), 0);
+      const variance = r2(invoicedHt - orderedHt);
+      const receptionComplete = po.lines.every((l) => n(l.quantityReceived) + 0.0005 >= n(l.quantity));
+      const priceMatch = Math.abs(variance) <= 0.01;
+      return {
+        linked: true as const,
+        poNumber: po.number,
+        poStatus: po.status,
+        orderedHt,
+        invoicedHt,
+        variance,
+        receivedRatio: orderedQty > 0 ? Math.round((receivedQty / orderedQty) * 100) : 0,
+        receptionComplete,
+        priceMatch,
+        overInvoiced: variance > 0.01,
+        ok: priceMatch && receptionComplete,
+      };
+    })
+  ),
+
   create: authed('create', 'SupplierInvoice').input(supplierInvoiceCreate).mutation(({ ctx, input }) => {
     const societeId = req(ctx.societeId);
     const { lines, issueDate, dueDate, ...rest } = input;

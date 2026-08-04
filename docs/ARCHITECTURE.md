@@ -30,7 +30,7 @@ Ces choix ne sont pas encore tranchés ; ils sont suivis ici et dans les documen
 | DO-3 | **Hébergeur UE définitif** (Scaleway vs OVHcloud) | RGPD, exploitation | [Runbook](RUNBOOK.md) |
 | DO-4 | **Rapprochement bancaire** : import de relevés (format, source) ↔ écritures 512 | Compta/trésorerie | [Traçabilité §5](TRACABILITE.md) |
 | DO-5 | **Stock** : valorisation **FIFO** + **lots/n° série** (aujourd'hui PMP) | Stock avancé | [Traçabilité §5](TRACABILITE.md) |
-| DO-6 | **Rapprochement 3 voies** achats (commande ↔ réception ↔ facture) | Contrôle achats | SRS FR-ACH-7 |
+| ~~DO-6~~ | **Rapprochement 3 voies** achats (commande ↔ réception ↔ facture) — **✅ livré** (`supplierInvoices.match`, FR-ACH-7) | Contrôle achats | SRS FR-ACH-7 |
 | DO-7 | **Mentions spéciales TVA** : exonérations spécifiques restantes. *(Identifiants acheteur SIREN/TVA, franchise 293 B « E », autoliquidation 283-2 « AE » : ✅ livrés.)* | Conformité facture FR | [Conformité §3.5](CONFORMITE.md), REG-5 |
 | DO-8 | **Régimes de TVA FR** restants : CA12 (réel simplifié), TVA sur débits vs encaissements. *(Franchise en base et autoliquidation : ✅ livrées.)* | Conformité TVA FR | [Conformité §3.7](CONFORMITE.md), REG-7 |
 | DO-9 | **Niveau de conformité RGAA / WCAG 2.1 AA** visé + calendrier d'audit et déclaration d'accessibilité (déclenché notamment par un client public) | Accessibilité, marché public | [Conformité §4](CONFORMITE.md), NFR-UTI |

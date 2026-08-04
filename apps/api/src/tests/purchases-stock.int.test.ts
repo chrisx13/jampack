@@ -190,3 +190,26 @@ describe('Comptabilité — écriture équilibrée & rejet du déséquilibre', (
     await C.prisma.journalEntry.delete({ where: { id: e.id } });
   });
 });
+
+describe('Achats — rapprochement 3 voies (commande ↔ réception ↔ facture)', () => {
+  it('facture conforme = OK ; facture surévaluée = écart détecté', async () => {
+    const [pid, sid] = [await product(), await supplier()];
+    const wh = await caller.stock.warehouses.create({ name: '[INT] 3W' });
+    const po = await caller.purchases.orders.create({ supplierId: sid, warehouseId: wh.id, notes: '[INT]', lines: [{ productId: pid, label: 'Baguette', quantity: 200, unitPriceHt: 0.5 }] });
+    await caller.purchases.orders.validate({ id: po.id });
+    await caller.purchases.orders.receive({ id: po.id });
+
+    const inv = await caller.supplierInvoices.create({ supplierId: sid, purchaseOrderId: po.id, reference: '[INT] 3W', notes: '[INT]', lines: [{ label: 'Baguette', quantity: 200, unitPriceHt: 0.5, taxRatePct: 20 }] });
+    const m = await caller.supplierInvoices.match({ id: inv.id });
+    expect(m.linked).toBe(true);
+    expect(m.orderedHt).toBeCloseTo(100, 2);
+    expect(m.invoicedHt).toBeCloseTo(100, 2);
+    expect(m.receptionComplete).toBe(true);
+    expect(m.ok).toBe(true);
+
+    const inv2 = await caller.supplierInvoices.create({ supplierId: sid, purchaseOrderId: po.id, reference: '[INT] 3W2', notes: '[INT]', lines: [{ label: 'Baguette', quantity: 240, unitPriceHt: 0.5, taxRatePct: 20 }] });
+    const m2 = await caller.supplierInvoices.match({ id: inv2.id });
+    expect(m2.overInvoiced).toBe(true);
+    expect(m2.ok).toBe(false);
+  });
+});

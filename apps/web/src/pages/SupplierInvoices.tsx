@@ -37,6 +37,9 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const [notes, setNotes] = useState('');
   const [lines, setLines] = useState<Line[]>([]);
   const [status, setStatus] = useState('draft');
+  const [purchaseOrderId, setPurchaseOrderId] = useState('');
+  const orders = trpc.purchases.orders.list.useQuery();
+  const match = trpc.supplierInvoices.match.useQuery({ id: id as string }, { enabled: id !== 'new' && !!purchaseOrderId });
 
   useEffect(() => {
     const inv = existing.data;
@@ -47,6 +50,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
     setDueDate(inv.dueDate ? new Date(inv.dueDate).toISOString().slice(0, 10) : '');
     setNotes(inv.notes ?? '');
     setStatus(inv.status);
+    setPurchaseOrderId((inv as { purchaseOrderId?: string | null }).purchaseOrderId ?? '');
     setLines(inv.lines.map((l) => ({ label: l.label, quantity: num(l.quantity), unitPriceHt: num(l.unitPriceHt), taxRatePct: num(l.taxRatePct) })));
   }, [existing.data]);
 
@@ -67,6 +71,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
 
   const payload = () => ({
     supplierId, reference: reference || undefined, issueDate: issueDate || undefined, dueDate: dueDate || undefined, notes: notes || undefined,
+    purchaseOrderId: purchaseOrderId || null,
     lines: lines.map((l, i) => ({ label: l.label || 'Ligne', quantity: l.quantity, unitPriceHt: l.unitPriceHt, taxRatePct: l.taxRatePct, position: i })),
   });
   const persist = async () => {
@@ -75,7 +80,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
     return id;
   };
   const refreshLists = () => { utils.supplierInvoices.list.invalidate(); utils.supplierInvoices.echeancier.invalidate(); };
-  const onSave = async () => { await persist(); refreshLists(); if (id !== 'new') utils.supplierInvoices.get.invalidate({ id }); };
+  const onSave = async () => { await persist(); refreshLists(); if (id !== 'new') { utils.supplierInvoices.get.invalidate({ id }); utils.supplierInvoices.match.invalidate({ id }); } };
   const onValidate = async () => { const theId = await persist(); await validate.mutateAsync({ id: theId }); refreshLists(); onClose(); };
   const onPaid = async () => { await markPaid.mutateAsync({ id }); refreshLists(); utils.supplierInvoices.get.invalidate({ id }); };
   const onPost = async () => {
@@ -136,9 +141,44 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
               <Form.Label>Échéance</Form.Label>
               <Form.Control type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} disabled={readOnly} />
             </div>
+            <div className="col-md-6">
+              <Form.Label>Commande rattachée (rapprochement 3 voies)</Form.Label>
+              <Form.Select value={purchaseOrderId} onChange={(e) => setPurchaseOrderId(e.target.value)} disabled={readOnly}>
+                <option value="">— Aucune —</option>
+                {(orders.data ?? []).filter((o) => !supplierId || o.supplierId === supplierId).map((o) => (
+                  <option key={o.id} value={o.id}>{o.number ?? 'brouillon'} · {o.status}</option>
+                ))}
+              </Form.Select>
+            </div>
           </div>
         </Card.Body>
       </Card>
+
+      {match.data?.linked && (
+        <Card className="mb-3 border-0" style={{ background: match.data.ok ? 'var(--bs-success-bg-subtle)' : 'var(--bs-warning-bg-subtle)' }}>
+          <Card.Body className="py-3">
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div className="fw-semibold">
+                <i className={`bi ${match.data.ok ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'} me-2`} />
+                Rapprochement 3 voies — commande {match.data.poNumber ?? '—'}
+              </div>
+              <div className="d-flex gap-4 small">
+                <span>Commandé HT <strong>{euro.format(match.data.orderedHt)}</strong></span>
+                <span>Facturé HT <strong>{euro.format(match.data.invoicedHt)}</strong></span>
+                <span>Écart <strong className={Math.abs(match.data.variance) > 0.01 ? 'text-danger' : 'text-success'}>{euro.format(match.data.variance)}</strong></span>
+                <span>Réception <strong>{match.data.receivedRatio}%</strong></span>
+              </div>
+            </div>
+            {!match.data.ok && (
+              <div className="small text-secondary mt-2">
+                {match.data.overInvoiced && <span className="me-3"><i className="bi bi-cash-coin me-1" />Facturé au-delà de la commande.</span>}
+                {!match.data.priceMatch && !match.data.overInvoiced && <span className="me-3"><i className="bi bi-tag me-1" />Écart de montant commande/facture.</span>}
+                {!match.data.receptionComplete && <span><i className="bi bi-box-seam me-1" />Réception incomplète.</span>}
+              </div>
+            )}
+          </Card.Body>
+        </Card>
+      )}
 
       <Card className="mb-3">
         <Card.Body className="p-0">

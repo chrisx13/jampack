@@ -455,7 +455,7 @@ export const supplierInvoiceLineInput = z.object({
 });
 export const supplierInvoiceCreate = z.object({
   supplierId: z.string().min(1),
-  purchaseOrderId: z.string().optional(),
+  purchaseOrderId: z.string().nullable().optional(),
   reference: z.string().optional(),
   issueDate: z.string().optional(),
   dueDate: z.string().optional(),

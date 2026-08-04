@@ -40,7 +40,7 @@ export const purchaseRouter = router({
         });
         return rows.map((r) => ({
           id: r.id, number: r.number, status: r.status, orderDate: r.orderDate, expectedDate: r.expectedDate,
-          supplier: r.supplier,
+          supplierId: r.supplierId, supplier: r.supplier,
           totalHt: Math.round(r.lines.reduce((s, l) => s + n(l.quantity) * n(l.unitPriceHt), 0) * 100) / 100,
         }));
       })

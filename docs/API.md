@@ -27,7 +27,7 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 `suppliers` · `orders.{list,get,create,update,validate,cancel,receive}` (la réception génère les entrées de stock)
 
 ### `supplierInvoices`
-`list · get · create · update · validate · markPaid · markUnpaid · cancel · echeancier`
+`list · get · create · update · validate · markPaid · markUnpaid · cancel · echeancier · match` (match = rapprochement 3 voies commande/réception/facture)
 
 ### `supplierPayments`
 `listForInvoice · create · remove` (recalcule le statut *payée* de la facture fournisseur)
