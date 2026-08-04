@@ -60,6 +60,11 @@
 - **Prévisionnel** : projection des encaissements et décaissements à partir des échéanciers client et fournisseur (position nette, retards).
 - **Balance âgée** : créances clients non soldées ventilées par ancienneté (non échu, 1-30, 31-60, 61-90, +90 jours) — pilotage du recouvrement.
 
+## 7 bis. Gestion — Agenda
+- **Agenda** : vue consolidée des échéances et tâches à venir sur **7 / 30 / 90 jours**, regroupées par jour :
+  tâches CRM, encaissements (factures clients), décaissements (factures fournisseurs) et livraisons attendues.
+  Les éléments **en retard** sont signalés en rouge.
+
 ## 8. Administration
 - **Paramètres**, **Société (facturation)** (en-tête, mentions légales, CGV), **Facturation** (banques,
   affacturage, conditions de paiement), **Apparence** (couleurs de marque du compte).

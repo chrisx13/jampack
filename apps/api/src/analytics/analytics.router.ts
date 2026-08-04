@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { withTenant } from '@jampack/db';
 import { computeInvoiceTotals } from '@jampack/domain';
 import { router, protectedProcedure } from '../trpc/trpc';
@@ -157,6 +158,57 @@ export const analyticsRouter = router({
       const round = (b: Bucket): Bucket => ({ notDue: r2(b.notDue), d1_30: r2(b.d1_30), d31_60: r2(b.d31_60), d61_90: r2(b.d61_90), d90p: r2(b.d90p), total: r2(b.total) });
       const rows = [...bySupplier.entries()].map(([company, b]) => ({ company, ...round(b) })).sort((a, b) => b.total - a.total);
       return { rows, totals: round(totals) };
+    })
+  ),
+
+  /**
+   * Agenda consolidé : échéances et tâches à venir (ou en retard) sur une fenêtre glissante.
+   * Regroupe tâches CRM, échéances de factures clients/fournisseurs et livraisons attendues.
+   */
+  agenda: protectedProcedure.input(z.object({ days: z.number().int().min(1).max(365).optional() }).optional()).query(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const now = Date.now();
+      const horizon = now + (input?.days ?? 30) * 86400000;
+      const inWindow = (d: Date | null | undefined) => !!d && new Date(d).getTime() <= horizon; // inclut le passé (retards)
+      type Event = { id: string; date: Date; kind: 'tache' | 'facture_client' | 'facture_fournisseur' | 'livraison'; label: string; party: string; amount: number | null; overdue: boolean };
+      const events: Event[] = [];
+
+      // Tâches CRM à faire (échéance)
+      const tasks = await tx.activity.findMany({
+        where: { ...scope(ctx.societeId), type: 'tache', done: false, dueAt: { not: null } },
+        include: { company: { select: { name: true } }, contact: { select: { firstName: true, lastName: true } } },
+      });
+      for (const t of tasks) if (inWindow(t.dueAt)) events.push({ id: `task:${t.id}`, date: t.dueAt as Date, kind: 'tache', label: t.content, party: t.company?.name ?? (t.contact ? `${t.contact.firstName} ${t.contact.lastName}` : '—'), amount: null, overdue: new Date(t.dueAt as Date).getTime() < now });
+
+      // Factures clients validées non soldées (échéance d'encaissement)
+      const factures = await tx.invoice.findMany({
+        where: { ...scope(ctx.societeId), docType: 'facture', status: 'validated', dueDate: { not: null } },
+        include: { company: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } },
+      });
+      for (const f of factures) {
+        const remaining = r2(totalsOf(f.lines).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0));
+        if (remaining > 0.005 && inWindow(f.dueDate)) events.push({ id: `inv:${f.id}`, date: f.dueDate as Date, kind: 'facture_client', label: `Encaissement ${f.number ?? ''}`.trim(), party: f.company?.name ?? '—', amount: remaining, overdue: new Date(f.dueDate as Date).getTime() < now });
+      }
+
+      // Factures fournisseurs validées non soldées (échéance de décaissement)
+      const sis = await tx.supplierInvoice.findMany({
+        where: { ...scope(ctx.societeId), status: 'validated', dueDate: { not: null } },
+        include: { supplier: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } },
+      });
+      for (const s of sis) {
+        const remaining = r2(totalsOf(s.lines).totalTtc - s.payments.reduce((a, p) => a + n(p.amount), 0));
+        if (remaining > 0.005 && inWindow(s.dueDate)) events.push({ id: `sinv:${s.id}`, date: s.dueDate as Date, kind: 'facture_fournisseur', label: `Décaissement ${s.reference ?? ''}`.trim(), party: s.supplier?.name ?? '—', amount: remaining, overdue: new Date(s.dueDate as Date).getTime() < now });
+      }
+
+      // Livraisons attendues (commandes envoyées non réceptionnées)
+      const pos = await tx.purchaseOrder.findMany({
+        where: { ...scope(ctx.societeId), status: 'sent', expectedDate: { not: null } },
+        include: { supplier: { select: { name: true } } },
+      });
+      for (const p of pos) if (inWindow(p.expectedDate)) events.push({ id: `po:${p.id}`, date: p.expectedDate as Date, kind: 'livraison', label: `Livraison ${p.number ?? ''}`.trim(), party: p.supplier?.name ?? '—', amount: null, overdue: new Date(p.expectedDate as Date).getTime() < now });
+
+      events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      return { events, overdueCount: events.filter((e) => e.overdue).length };
     })
   ),
 });

@@ -227,6 +227,25 @@ describe('Trésorerie — prévisionnel encaissements vs décaissements', () => 
   });
 });
 
+describe('Agenda consolidé — échéances & tâches à venir', () => {
+  it('remonte une échéance de facture client dans la fenêtre et signale le retard', async () => {
+    const cid = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    const past = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
+    const ci = await caller.invoices.create({ companyId: cid, notes: '[INT]', dueDate: past, lines: [{ label: 'Vente', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: ci.id });
+
+    const ag = await caller.analytics.agenda({ days: 30 });
+    const ev = ag.events.find((e: { id: string; overdue: boolean; kind: string }) => e.id === `inv:${ci.id}`);
+    expect(ev).toBeTruthy();
+    expect(ev.kind).toBe('facture_client');
+    expect(ev.overdue).toBe(true);
+    expect(ag.overdueCount).toBeGreaterThanOrEqual(1);
+
+    await C.prisma.payment.deleteMany({ where: { invoiceId: ci.id } });
+    await C.prisma.invoice.delete({ where: { id: ci.id } });
+  });
+});
+
 describe('Comptabilité — écriture équilibrée & rejet du déséquilibre', () => {
   it('crée une écriture équilibrée et rejette un déséquilibre', async () => {
     const acc = async (code: string) => (await C.prisma.account.findFirstOrThrow({ where: { societeId: C.soc.id, code } })).id;

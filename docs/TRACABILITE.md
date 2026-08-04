@@ -137,6 +137,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **4 Compta** | **Immobilisations** + plan d'amortissement linéaire + **comptabilisation de la dotation** (681/281) | ✅ | `accounting.fixedAssets` (`schedule`/`postDepreciation`), `depreciationSchedule`, `FixedAsset`, `FixedAssets.tsx` |
 | **5 Trésorerie** | **Prévisionnel de trésorerie** : encaissements clients vs décaissements fournisseurs, position nette, retards | ✅ | `analytics.tresorerie`, page `Tresorerie.tsx` (domaine Trésorerie) |
 | **5 Trésorerie** | **Balance âgée** clients **et fournisseurs** (par tranche d'ancienneté) | ✅ | `analytics.agedReceivables`/`agedPayables`, `AgedReceivables.tsx` |
+| **6 Gestion** | **Agenda consolidé** (échéances & tâches à venir, 7/30/90 j, retards) | ✅ | `analytics.agenda` (tâches CRM + factures clients/fournisseurs + livraisons), `Agenda.tsx` (domaine Gestion) |
 | **5 BI** | Tableaux de bord analytiques avancés (séries temporelles, marges) | 🔧 | KPI consolidés via `analytics.summary` (Dashboard) ; BI approfondie = phase future |
 | transverse | Administration in-app : inviter users, attribuer/révoquer rôles | ✅ | `iam.router` (`invite`/`grantRole`/`revokeRole`), garde-fou dernier admin, page `Members.tsx` |
 

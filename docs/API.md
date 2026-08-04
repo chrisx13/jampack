@@ -39,7 +39,7 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 `accounts.{list,create,update,initPcg}` · `journals.{list,create,initDefaults}` · `fixedAssets.{list,create,update,remove,schedule,postDepreciation}` (immobilisations + plan d'amortissement + comptabilisation de la dotation 681/281) · `entries.{list,get,create,remove}` · `balance` · `ledger` (grand livre d'un compte) · `postSalesInvoice · postPayment · postSupplierInvoice · postSupplierPayment` (génèrent les écritures) · `fec` (export FEC) · `vatReturn` (CA3) · `accountLines · letter · unletter` (lettrage) · `closeVat` · `bankLines · reconcile · importBankStatement` (rapprochement bancaire + import de relevé CSV)
 
 ### `analytics`
-`summary` (KPI : CA, encours clients/fournisseurs, valeur stock, TVA) · `tresorerie` (prévisionnel encaissements/décaissements) · `agedReceivables` / `agedPayables` (balance âgée clients / fournisseurs par tranche)
+`summary` (KPI : CA, encours clients/fournisseurs, valeur stock, TVA) · `tresorerie` (prévisionnel encaissements/décaissements) · `agedReceivables` / `agedPayables` (balance âgée clients / fournisseurs par tranche) · `agenda` (`{days?}` : échéances & tâches à venir — tâches CRM, factures clients/fournisseurs, livraisons ; retards signalés)
 
 ### `audit`
 `list` (dernières entrées du journal d'audit du compte)

@@ -37,7 +37,7 @@ import Members from './pages/Members';
 import Societes from './pages/Societes';
 import AuditLog from './pages/AuditLog';
 import RgpdPurge from './pages/RgpdPurge';
-import Placeholder from './pages/Placeholder';
+import Agenda from './pages/Agenda';
 
 /**
  * Modèle de navigation type VS Code :
@@ -133,7 +133,7 @@ export const DOMAINS: Domain[] = [
     label: 'Gestion',
     icon: 'bi-calendar3',
     views: [
-      { id: 'calendar', label: 'Agenda', icon: 'bi-calendar3', element: <Placeholder title="Agenda" /> },
+      { id: 'calendar', label: 'Agenda', icon: 'bi-calendar3', element: <Agenda /> },
     ],
   },
   {
