@@ -102,6 +102,17 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
     expect(N(entry.lines.find((l) => l.account.code === '512000')!.debit)).toBeCloseTo(120, 2);
     expect(N(entry.lines.find((l) => l.account.code === '411000')!.credit)).toBeCloseTo(120, 2);
     expect((await caller.accounting.postPayment({ id: pay.id })).alreadyPosted).toBe(true);
+
+    // Rapprochement bancaire : la ligne 512 apparaît, non pointée ; après pointage le reste diminue.
+    const bank = await caller.accounting.bankLines();
+    const line512 = bank.lines.find((l: { id: string; debit: number }) => l.debit === 120);
+    expect(line512).toBeTruthy();
+    expect(line512.reconciled).toBe(false);
+    const before = bank.reconciledBalance;
+    await caller.accounting.reconcile({ id: line512.id, reconciled: true });
+    const after = await caller.accounting.bankLines();
+    expect(after.reconciledBalance).toBeCloseTo(before + 120, 2);
+    expect(after.lines.find((l: { id: string }) => l.id === line512.id).reconciled).toBe(true);
   });
 
   it('export FEC : entête normée + lignes d’écriture', async () => {

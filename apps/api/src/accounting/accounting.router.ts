@@ -130,6 +130,33 @@ export const accountingRouter = router({
     })
   ),
 
+  /** Rapprochement bancaire : lignes du compte banque (512), pointées ou non, + solde comptable et pointé. */
+  bankLines: authed('read', 'Accounting').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const lines = await tx.journalEntryLine.findMany({
+        where: { entry: { is: scope(ctx.societeId) }, account: { code: { startsWith: '512' } } },
+        include: { entry: { select: { date: true, label: true, reference: true } } },
+        orderBy: [{ entry: { date: 'asc' } }],
+        take: 500,
+      });
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      const book = r2(lines.reduce((s, l) => s + n(l.debit) - n(l.credit), 0));
+      const rec = r2(lines.filter((l) => l.reconciled).reduce((s, l) => s + n(l.debit) - n(l.credit), 0));
+      return {
+        lines: lines.map((l) => ({ id: l.id, date: l.entry.date, label: l.label ?? l.entry.label, reference: l.entry.reference, debit: n(l.debit), credit: n(l.credit), reconciled: l.reconciled })),
+        bookBalance: book, reconciledBalance: rec, unreconciled: r2(book - rec),
+      };
+    })
+  ),
+
+  /** Pointe (ou dépointe) une ligne de banque au relevé. */
+  reconcile: authed('update', 'Accounting').input(z.object({ id: z.string().min(1), reconciled: z.boolean() })).mutation(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const line = await tx.journalEntryLine.findFirstOrThrow({ where: { id: input.id, entry: { is: scope(ctx.societeId) } }, select: { id: true } });
+      return tx.journalEntryLine.update({ where: { id: line.id }, data: { reconciled: input.reconciled } });
+    })
+  ),
+
   /** Comptabilise une facture de vente : écriture au journal des ventes (411 débit TTC = 707 HT + 44571 TVA). */
   postSalesInvoice: authed('create', 'Accounting').input(byId).mutation(({ ctx, input }) => {
     const societeId = req(ctx.societeId);

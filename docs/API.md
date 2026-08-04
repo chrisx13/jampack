@@ -36,7 +36,7 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 `warehouses.{list,create,update,archive}` · `movements.{list,create,remove}` · `levels` · `valuation` (`{method:'pmp'|'fifo'}`) · `inventory` (comptage → ajustement) · `lowStock` (articles sous le seuil de réappro.) · `lots` (soldes par lot/série + péremption)
 
 ### `accounting`
-`accounts.{list,create,update,initPcg}` · `journals.{list,create,initDefaults}` · `entries.{list,get,create,remove}` · `balance` · `postSalesInvoice · postPayment · postSupplierInvoice · postSupplierPayment` (génèrent les écritures) · `fec` (export FEC) · `vatReturn` (CA3) · `accountLines · letter · unletter` (lettrage) · `closeVat`
+`accounts.{list,create,update,initPcg}` · `journals.{list,create,initDefaults}` · `entries.{list,get,create,remove}` · `balance` · `postSalesInvoice · postPayment · postSupplierInvoice · postSupplierPayment` (génèrent les écritures) · `fec` (export FEC) · `vatReturn` (CA3) · `accountLines · letter · unletter` (lettrage) · `closeVat` · `bankLines · reconcile` (rapprochement bancaire)
 
 ### `analytics`
 `summary` (KPI : CA, encours clients/fournisseurs, valeur stock, TVA) · `tresorerie` (prévisionnel encaissements/décaissements)

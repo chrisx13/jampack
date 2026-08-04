@@ -803,6 +803,7 @@ model JournalEntryLine {
   debit     Decimal      @db.Decimal(14, 2) @default(0)
   credit    Decimal      @db.Decimal(14, 2) @default(0)
   letter    String?      // code de lettrage (rapprochement débit/crédit)
+  reconciled Boolean     @default(false) // rapprochement bancaire : ligne pointée au relevé
   position  Int          @default(0)
   @@index([entryId])
   @@index([accountId])
