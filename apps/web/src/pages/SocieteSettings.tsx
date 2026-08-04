@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, Button, Form, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
-import { frTvaNumber, isValidSiren } from '@jampack/domain';
+import { frTvaNumber, isValidSiren, isValidSiret } from '@jampack/domain';
 
 type Settings = Record<string, string | boolean | null | undefined>;
 
@@ -71,7 +71,17 @@ export default function SocieteSettings() {
                   <Form.Control.Feedback type="invalid">Clé de contrôle invalide.</Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={6}><Text k="siret" label="SIRET" /></Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small text-secondary mb-1">SIRET</Form.Label>
+                  <Form.Control
+                    value={val('siret')} disabled={!editable}
+                    isInvalid={!!val('siret').trim() && (!isValidSiret(val('siret')) || (isValidSiren(val('siren')) && !val('siret').replace(/\D/g, '').startsWith(val('siren').replace(/\D/g, ''))))}
+                    onChange={(e) => set('siret', e.target.value)}
+                  />
+                  <Form.Control.Feedback type="invalid">SIRET invalide ou incohérent avec le SIREN.</Form.Control.Feedback>
+                </Form.Group>
+              </Col>
             </Row>
             <Row><Col md={4}><Text k="tvaNumber" label="TVA intracom" /></Col><Col md={4}><Text k="rcs" label="RCS" /></Col><Col md={4}><Text k="ape" label="APE/NAF" /></Col></Row>
           </Card.Body></Card>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, Table, Button, Modal, Form, Spinner, Badge } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
-import { frTvaNumber, isValidSiren } from '@jampack/domain';
+import { frTvaNumber, isValidSiren, isValidSiret } from '@jampack/domain';
 
 type Company = {
   id: string; name: string; siren: string | null; siret?: string | null; tvaNumber?: string | null; doNotProspect?: boolean; processingRestricted?: boolean;
@@ -201,7 +201,16 @@ export default function Clients() {
               />
               <Form.Control.Feedback type="invalid">Clé de contrôle invalide.</Form.Control.Feedback>
             </div>
-            <div className="col-md-4"><Form.Label>SIRET</Form.Label><Form.Control value={form.siret} onChange={(e) => setForm({ ...form, siret: e.target.value })} placeholder="14 chiffres" /></div>
+            <div className="col-md-4">
+              <Form.Label>SIRET</Form.Label>
+              <Form.Control
+                value={form.siret}
+                isInvalid={!!form.siret.trim() && (!isValidSiret(form.siret) || (isValidSiren(form.siren) && !form.siret.replace(/\D/g, '').startsWith(form.siren.replace(/\D/g, ''))))}
+                onChange={(e) => setForm({ ...form, siret: e.target.value })}
+                placeholder="14 chiffres"
+              />
+              <Form.Control.Feedback type="invalid">SIRET invalide ou incohérent avec le SIREN.</Form.Control.Feedback>
+            </div>
             <div className="col-md-4"><Form.Label>N° TVA</Form.Label><Form.Control value={form.tvaNumber} onChange={(e) => setForm({ ...form, tvaNumber: e.target.value })} placeholder="FR… (auto depuis le SIREN)" /></div>
           </div>
           <Form.Check type="switch" id="doNotProspect" className="mb-2" label="Ne pas prospecter (droit d'opposition RGPD)" checked={form.doNotProspect} onChange={(e) => setForm({ ...form, doNotProspect: e.target.checked })} />
