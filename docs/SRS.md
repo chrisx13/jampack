@@ -118,6 +118,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-VEN-6 | **Règlements** rattachés à une facture ; statut *payée* recalculé (partiel/total). | M | ✅ |
 | FR-VEN-7 | **Échéancier client** : factures validées non soldées, reste dû, retard. | M | ✅ |
 | FR-VEN-9 | **Relances clients** (dunning) : niveau progressif (rappel → ferme → mise en demeure), lettre de relance, suivi. | S | ✅ |
+| FR-VEN-10 | **Validité & expiration des devis** : suivi des devis émis par date de validité (valide / expire bientôt / expiré) pour relance avant caducité. | C | ✅ |
 | FR-VEN-8 | **E-invoicing Factur-X / PDP** : génération **Factur-X (XML CII, EN 16931)**, connecteur **PDP** (interface + adaptateur interne), journal des transmissions (`PdpTransmission`, sous RLS). Émission/réception effective via PDP **immatriculée** ou **partenaire**. | M | 🔧 (génération + connecteur ✅ ; immatriculation DGFiP / PPF / e-reporting ⛔ hors périmètre logiciel) |
 
 ### 3.5 Achats

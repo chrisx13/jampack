@@ -6,6 +6,7 @@ import Clients from './pages/Clients';
 import Contacts from './pages/Contacts';
 import Catalogue from './pages/Catalogue';
 import Devis from './pages/Devis';
+import QuotesExpiring from './pages/QuotesExpiring';
 import Factures from './pages/Factures';
 import Avoirs from './pages/Avoirs';
 import Echeancier from './pages/Echeancier';
@@ -76,6 +77,7 @@ export const DOMAINS: Domain[] = [
     views: [
       { id: 'catalog', label: 'Catalogue', icon: 'bi-box-seam', element: <Catalogue />, can: ['read', 'Product'] },
       { id: 'quotes', label: 'Devis', icon: 'bi-file-earmark-ruled', element: <Devis />, can: ['read', 'Quote'] },
+      { id: 'quotes-expiring', label: 'Devis à échéance', icon: 'bi-hourglass-bottom', element: <QuotesExpiring />, can: ['read', 'Quote'] },
       { id: 'invoices', label: 'Factures', icon: 'bi-file-earmark-text', element: <Factures />, can: ['read', 'Invoice'] },
       { id: 'credit-notes', label: 'Avoirs', icon: 'bi-file-earmark-minus', element: <Avoirs />, can: ['read', 'CreditNote'] },
       { id: 'echeancier', label: 'Échéancier', icon: 'bi-calendar-check', element: <Echeancier />, can: ['read', 'Payment'] },

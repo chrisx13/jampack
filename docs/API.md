@@ -17,7 +17,7 @@ transaction RLS (`withTenant`).
 
 ### `quotes` / `invoices` / `creditNotes` (pièces de vente)
 Commun (`makeSalesRouter`) : `list · get · create · update · validate · cancel · pdf`
-- `quotes` : + `accept · refuse · convertToInvoice`
+- `quotes` : + `accept · refuse · convertToInvoice · expiring` (expiring = devis émis par date de validité, avec jours avant expiration)
 - `invoices` : + `createCreditNote · facturx · sendToPdp · transmissions`
 
 ### `payments`

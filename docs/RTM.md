@@ -42,6 +42,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-VEN-6 | `invoice/payment.router.ts` | e2e : acompte→validée, solde→payée | ✅ |
 | FR-VEN-7 | `payment.router.ts` (`echeancier`) | e2e : reste dû, hors échéancier si payé | ✅ |
 | FR-VEN-9 | `payment.router.ts` (`reminders`/`recordReminder`/`reminderLetter`), `dunningMessage`, `Invoice.reminderLevel`, `Reminders.tsx` | unit : libellés + message ; e2e int : échue → relance niveau 1, lettre niveau 2 | ✅ |
+| FR-VEN-10 | `quote.router.ts` (`expiring`), `isQuoteExpired`/`quoteDaysToExpiry`, `Invoice.validUntil`, `QuotesExpiring.tsx` | unit : expiré/valide/non applicable + jours restants ; e2e int : devis émis à validité dépassée = expiré, TTC calculé | ✅ |
 | FR-VEN-8 | `invoice/facturx.ts`, `invoice/pdp.ts`, `invoice.router.ts` (`facturx`/`sendToPdp`/`transmissions`), `PdpTransmission` | `sales.int.test.ts` › *E-invoicing — Factur-X & PDP interne* | 🔧 (génération CII + connecteur ✅ ; immatriculation DGFiP/PPF/e-reporting ⛔ hors périmètre logiciel) |
 
 ## Achats

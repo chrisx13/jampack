@@ -548,6 +548,17 @@ export const stockMovementCreate = z.object({
 });
 export type StockMovementCreate = z.infer<typeof stockMovementCreate>;
 
+/** Un devis émis est expiré si sa date de validité est dépassée (offre caduque). */
+export function isQuoteExpired(q: { status: string; validUntil?: Date | string | null }, now = new Date()): boolean {
+  if (q.status !== 'sent' || !q.validUntil) return false;
+  return new Date(q.validUntil).getTime() < now.getTime();
+}
+/** Jours restants avant expiration d'un devis émis (négatif si déjà expiré) ; null si sans date/valide. */
+export function quoteDaysToExpiry(q: { status: string; validUntil?: Date | string | null }, now = new Date()): number | null {
+  if (q.status !== 'sent' || !q.validUntil) return null;
+  return Math.ceil((new Date(q.validUntil).getTime() - now.getTime()) / 86400000);
+}
+
 /** Une commande fournisseur est en retard si envoyée (non réceptionnée) et sa date prévue est dépassée. */
 export function isPurchaseOrderOverdue(po: { status: string; expectedDate?: Date | string | null }, now = new Date()): boolean {
   if (po.status !== 'sent' || !po.expectedDate) return false;

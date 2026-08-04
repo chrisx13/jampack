@@ -18,6 +18,7 @@
 - **Catalogue** : articles/services, catégories, taux de TVA. **Importer CSV** (`référence ; nom ; prix HT ;
   unité ; type`) : crée les nouveaux articles et met à jour ceux dont la référence existe déjà — idéal pour l'onboarding.
 - **Devis** : créer → **Envoyer** (numéro DE-) → **Accepter/Refuser** → **Convertir en facture**.
+- **Devis à échéance** : liste des devis émis par date de validité (valide / expire sous 7 j / expiré) — pour relancer avant caducité de l'offre.
 - **Factures** : créer → **Valider** (numéro FA-, échéance) → **PDF**. Depuis une facture validée :
   **Créer un avoir** ; saisir des **Règlements** (acompte, reste dû, passage *payée*).
 - **Facturation électronique** : sur une facture validée, **Factur-X** (télécharge le XML CII/EN 16931) et

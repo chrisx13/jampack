@@ -114,6 +114,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **2 Ventes** | TVA par ligne + totaux | ✅ | `computeInvoiceTotals`, `InvoiceLine.taxRatePct` |
 | **2 Ventes** | Affacturage / banques / conditions de paiement | ✅ ➕ | `billing.router.ts` (hors périmètre explicite de la roadmap) |
 | **2 Ventes** | **Devis** (+ conversion en facture) | ✅ | `quote.router.ts` (`convertToInvoice`, `accept`/`refuse`), `Invoice.docType='devis'` |
+| **2 Ventes** | **Validité & expiration des devis** (relance avant caducité) | ✅ | `quote.router.ts` (`expiring`), `isQuoteExpired`/`quoteDaysToExpiry`, `Invoice.validUntil`, `QuotesExpiring.tsx` |
 | **2 Ventes** | **Avoirs** (depuis facture) | ✅ | `creditNote.router.ts`, `invoices.createCreditNote`, `Invoice.docType='avoir'` |
 | **2 Ventes** | **Règlements / échéancier** | ✅ | `payment.router.ts` (`create`/`remove`/`echeancier`), modèle `Payment`, statut facture recalculé (validée ⇄ payée) |
 | **2 Ventes** | **Relances clients** (dunning) | ✅ | `payment.router.ts` (`reminders`/`recordReminder`/`reminderLetter`), `Invoice.reminderLevel`/`lastReminderAt`, `dunningMessage`, `Reminders.tsx` — niveau progressif + lettre conforme LME (pénalités + 40 €) |

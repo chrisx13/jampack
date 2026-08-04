@@ -6,6 +6,7 @@ import {
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
   isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
+  isQuoteExpired, quoteDaysToExpiry,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -113,6 +114,22 @@ describe('activités CRM', () => {
     expect(isActivityOverdue({ type: 'tache', done: true, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(false);
     expect(isActivityOverdue({ type: 'tache', done: false, dueAt: '2026-08-10T00:00:00Z' }, now)).toBe(false);
     expect(isActivityOverdue({ type: 'note', done: false, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(false);
+  });
+});
+
+describe('devis — validité & expiration', () => {
+  const now = new Date('2026-08-04T12:00:00Z');
+  it('expiré : émis + date de validité dépassée', () => {
+    expect(isQuoteExpired({ status: 'sent', validUntil: '2026-08-01T00:00:00Z' }, now)).toBe(true);
+    expect(quoteDaysToExpiry({ status: 'sent', validUntil: '2026-08-01T00:00:00Z' }, now)).toBeLessThan(0);
+  });
+  it('valide : émis + date future', () => {
+    expect(isQuoteExpired({ status: 'sent', validUntil: '2026-08-20T00:00:00Z' }, now)).toBe(false);
+    expect(quoteDaysToExpiry({ status: 'sent', validUntil: '2026-08-20T00:00:00Z' }, now)).toBeGreaterThan(0);
+  });
+  it('non applicable : accepté, converti, ou sans date', () => {
+    expect(isQuoteExpired({ status: 'accepted', validUntil: '2026-08-01T00:00:00Z' }, now)).toBe(false);
+    expect(quoteDaysToExpiry({ status: 'sent', validUntil: null }, now)).toBeNull();
   });
 });
 

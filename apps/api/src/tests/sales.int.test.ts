@@ -159,6 +159,21 @@ describe('CRM — activités & tâches', () => {
   });
 });
 
+describe('Ventes — validité & expiration des devis', () => {
+  it('devis émis à validité dépassée apparaît comme expiré', async () => {
+    const companyId = await anyCustomer();
+    const devis = await caller.quotes.create({ companyId, notes: '[INT]', lines: [{ label: 'EXP', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.quotes.validate({ id: devis.id });
+    // Force une date de validité passée (offre caduque).
+    await C.prisma.invoice.update({ where: { id: devis.id }, data: { validUntil: new Date(Date.now() - 5 * 86400000) } });
+    const row = (await caller.quotes.expiring()).find((r: { id: string; expired: boolean; daysToExpiry: number }) => r.id === devis.id);
+    expect(row).toBeTruthy();
+    expect(row.expired).toBe(true);
+    expect(row.daysToExpiry).toBeLessThan(0);
+    expect(row.totalTtc).toBeCloseTo(120, 2);
+  });
+});
+
 describe('Ventes — relances clients (dunning)', () => {
   it('facture échue → relance ; niveau incrémenté ; lettre au bon niveau', async () => {
     const companyId = await anyCustomer();
