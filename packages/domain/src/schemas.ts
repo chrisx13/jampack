@@ -241,9 +241,13 @@ export const societeSettingsUpdate = z.object({
   legalForm: optStr, capital: optStr, rcs: optStr, ape: optStr,
   addressLine1: optStr, addressLine2: optStr, postalCode: optStr, city: optStr,
   phone: optStr, email: optStr, website: optStr, logoUrl: optStr,
-  legalMentions: optStr, cgv: optStr,
+  legalMentions: optStr, cgv: optStr, penaltyRate: optStr,
+  vatFranchise: z.boolean().optional(),
 });
 export type SocieteSettingsUpdate = z.infer<typeof societeSettingsUpdate>;
+
+/** Mention obligatoire d'exonération en franchise en base de TVA (art. 293 B du CGI). */
+export const VAT_FRANCHISE_MENTION = 'TVA non applicable, art. 293 B du CGI';
 
 // ── Adresses de la société (plusieurs) ──
 export const societeAddressCreate = z.object({

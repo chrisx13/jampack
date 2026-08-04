@@ -70,10 +70,10 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 - **Pièce** : numéro **séquentiel chronologique continu**, date d'émission, date de la vente/prestation,
   désignation, quantité, PU HT, **taux de TVA par ligne**, réductions, total HT/TVA/TTC. ✅ (numérotation
   atomique par société/type ; totaux par taux).
-- **Mentions spéciales** : **autoliquidation**, **franchise en base** (« TVA non applicable, art. 293 B du
-  CGI »), exonérations, **mention de subrogation** (affacturage). → subrogation ✅ ; autoliquidation /
-  franchise / exonération **non structurées** (aujourd'hui via champ libre `legalMentions`). 🔧
-- → FR-VEN-3, FR-TRV-1. **Décision** : structurer les mentions spéciales TVA (DO-7).
+- **Mentions spéciales** : **subrogation** (affacturage) ✅ ; **franchise en base** — mention « TVA non
+  applicable, art. 293 B du CGI » sur la facture + catégorie d'exonération **« E »** dans le Factur-X
+  (flag société `vatFranchise`) ✅ ; **autoliquidation** et autres exonérations **non structurées** ⏳.
+- → FR-VEN-3, FR-TRV-1. **Décision** : structurer l'autoliquidation et les exonérations restantes (DO-7).
 
 ### 3.6 Délais de paiement (LME · art. L441-10 C. com.)
 - Délai légal **≤ 60 jours** (ou 45 j fin de mois) ; la facture doit indiquer la **date d'échéance**, le
@@ -85,9 +85,9 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 
 ### 3.7 TVA — taux & régimes France
 - **Taux** : 20 % / 10 % / 5,5 % / 2,1 % paramétrables (référentiel société). ✅
-- **Déclaration** : **CA3** (réel normal, mensuelle/trimestrielle) ✅ ; **CA12** (réel simplifié annuel),
-  **franchise en base**, **autoliquidation**, choix **TVA sur les débits vs sur les encaissements** ⏳
-  (décision DO-8). → FR-CPT-5, REG-7.
+- **Régimes** : **franchise en base** (mention 293 B + Factur-X exonéré) ✅ ; **CA3** (réel normal) ✅ ;
+  **CA12** (réel simplifié annuel), **autoliquidation**, choix **TVA sur les débits vs sur les
+  encaissements** ⏳ (décision DO-8). → FR-CPT-5, REG-7.
 
 ### 3.8 Plan Comptable Général (PCG — règlement ANC 2014-03)
 - Le plan comptable et les journaux suivent le **PCG**. État : init **PCG minimal** (comptes usuels
@@ -141,10 +141,12 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | Export FEC | FR-CPT-6 | À la mise en service compta | ✅ |
 | Mentions obligatoires facture (vendeur, pièce, subrogation) | FR-VEN-3, FR-TRV-1 | Continu | ✅ |
 | Identifiants acheteur (SIREN/TVA) sur facture & Factur-X | FR-VEN-3/8 | 09/2026 | ✅ |
-| Mentions spéciales TVA (autoliquidation, franchise 293 B) | FR-VEN-3 | Continu | 🔧 (DO-7) |
+| Mentions spéciales TVA — franchise 293 B (facture + Factur-X « E ») | FR-VEN-3 | Continu | ✅ |
+| Mentions spéciales TVA — autoliquidation / autres exonérations | FR-VEN-3 | Continu | 🔧 (DO-7) |
 | Délais de paiement LME (échéance, pénalités, indemnité 40 €) | FR-TRV-1, REG-6 | Continu | ✅ (taux configurable ⏳) |
 | TVA — taux FR paramétrables + CA3 | FR-CPT-5, REG-7 | Continu | ✅ |
-| TVA — CA12 / franchise / autoliquidation / débits-encaissements | REG-7 | — | ⏳ (DO-8) |
+| TVA — franchise en base (mention + Factur-X exonéré) | REG-7 | — | ✅ |
+| TVA — CA12 / autoliquidation / débits-encaissements | REG-7 | — | ⏳ (DO-8) |
 | PCG (ANC 2014-03) + piste d'audit fiable | FR-CPT-*, REG-8 | Continu | 🔧 |
 | Archivage à valeur probante (NF Z42-013 / eIDAS) | REG-9 | 09/2026 | ⏳ (DO-1) |
 | RGPD / CNIL (registre, droits, durées, sous-traitance) | REG-3 | Continu | 🔧 — voir [Sécurité & RGPD §5](SECURITE-RGPD.md) |

@@ -88,6 +88,8 @@ model Societe {
   logoUrl        String?   // URL ou data: URL du logo
   legalMentions  String?   // mentions légales / pénalités de retard
   cgv            String?   // conditions générales de vente
+  vatFranchise   Boolean   @default(false) // franchise en base de TVA (art. 293 B CGI)
+  penaltyRate    String?   // formulation du taux de pénalités de retard (LME)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   companies      Company[]

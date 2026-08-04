@@ -31,8 +31,8 @@ Ces choix ne sont pas encore tranchés ; ils sont suivis ici et dans les documen
 | DO-4 | **Rapprochement bancaire** : import de relevés (format, source) ↔ écritures 512 | Compta/trésorerie | [Traçabilité §5](TRACABILITE.md) |
 | DO-5 | **Stock** : valorisation **FIFO** + **lots/n° série** (aujourd'hui PMP) | Stock avancé | [Traçabilité §5](TRACABILITE.md) |
 | DO-6 | **Rapprochement 3 voies** achats (commande ↔ réception ↔ facture) | Contrôle achats | SRS FR-ACH-7 |
-| DO-7 | **Structurer les mentions spéciales TVA** de facture (autoliquidation, franchise 293 B, exonération). *(Identifiants acheteur SIREN/TVA sur facture/Factur-X : ✅ livré.)* | Conformité facture FR | [Conformité §3.5](CONFORMITE.md), REG-5 |
-| DO-8 | **Régimes de TVA FR** : CA12 (réel simplifié), franchise en base, autoliquidation, TVA sur débits vs encaissements | Conformité TVA FR | [Conformité §3.7](CONFORMITE.md), REG-7 |
+| DO-7 | **Structurer les mentions spéciales TVA** restantes : **autoliquidation** et autres exonérations. *(Identifiants acheteur SIREN/TVA + franchise en base 293 B : ✅ livrés.)* | Conformité facture FR | [Conformité §3.5](CONFORMITE.md), REG-5 |
+| DO-8 | **Régimes de TVA FR** restants : CA12 (réel simplifié), autoliquidation, TVA sur débits vs encaissements. *(Franchise en base : ✅ livrée.)* | Conformité TVA FR | [Conformité §3.7](CONFORMITE.md), REG-7 |
 | DO-9 | **Niveau de conformité RGAA / WCAG 2.1 AA** visé + calendrier d'audit et déclaration d'accessibilité (déclenché notamment par un client public) | Accessibilité, marché public | [Conformité §4](CONFORMITE.md), NFR-UTI |
 
 ## 3. Vue de contexte (C4 niveau 1)

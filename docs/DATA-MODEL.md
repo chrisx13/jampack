@@ -63,7 +63,8 @@ Répertoire `packages/db/prisma/migrations/` (appliquées par `prisma migrate de
 init → société → rôles → établissements → référentiels → facturation → catégories → thème → billing →
 billing_entities → **sales_documents** (docType) → **payments** → **stock** → **purchases** →
 **supplier_invoices** → **accounting** → invoice_accounting_link → posting_links → **audit_log** →
-**lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point** → **company_legal_ids**.
+**lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point** →
+**company_legal_ids** → **societe_vat_franchise**.
 
 ## 7. Schéma (extrait relationnel)
 ```

@@ -237,4 +237,19 @@ describe('E-invoicing — Factur-X & PDP interne', () => {
     expect(tx).toHaveLength(1);
     expect(tx[0].providerRef).toContain('INT-');
   });
+
+  it('franchise en base de TVA : mention 293 B → catégorie d’exonération « E » dans le Factur-X', async () => {
+    const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    await caller.societes.updateSettings({ vatFranchise: true });
+    try {
+      const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'f', quantity: 1, unitPriceHt: 100, taxRatePct: 0 }] });
+      await caller.invoices.validate({ id: inv.id });
+      const fx = await caller.invoices.facturx({ id: inv.id });
+      expect(fx.xml).toContain('<ram:CategoryCode>E</ram:CategoryCode>');
+      expect(fx.xml).toContain('293 B du CGI');
+      expect(fx.xml).not.toContain('<ram:CategoryCode>S</ram:CategoryCode>');
+    } finally {
+      await caller.societes.updateSettings({ vatFranchise: false });
+    }
+  });
 });

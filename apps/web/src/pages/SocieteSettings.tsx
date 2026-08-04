@@ -22,9 +22,10 @@ export default function SocieteSettings() {
   const val = (k: string) => (form[k] == null ? '' : String(form[k]));
 
   const submit = () => {
-    const keys = ['name', 'legalForm', 'capital', 'siren', 'siret', 'tvaNumber', 'rcs', 'ape', 'addressLine1', 'addressLine2', 'postalCode', 'city', 'phone', 'email', 'website', 'logoUrl', 'legalMentions', 'cgv'];
+    const keys = ['name', 'legalForm', 'capital', 'siren', 'siret', 'tvaNumber', 'rcs', 'ape', 'addressLine1', 'addressLine2', 'postalCode', 'city', 'phone', 'email', 'website', 'logoUrl', 'legalMentions', 'cgv', 'penaltyRate'];
     const payload: Settings = {};
     for (const k of keys) payload[k] = (form[k] as string) ?? '';
+    payload.vatFranchise = !!form.vatFranchise;
     save.mutate(payload as never);
   };
 
@@ -68,8 +69,15 @@ export default function SocieteSettings() {
         </Col>
 
         <Col lg={6}>
-          <Card className="mb-3"><Card.Header className="fw-semibold">Mentions légales</Card.Header><Card.Body>
-            <Text k="legalMentions" label="Mentions légales / pénalités de retard" as="textarea" />
+          <Card className="mb-3"><Card.Header className="fw-semibold">Mentions légales & TVA</Card.Header><Card.Body>
+            <Form.Check
+              type="switch" id="vatFranchise" className="mb-3"
+              label="Franchise en base de TVA (art. 293 B CGI) — mention d'exonération sur les factures"
+              checked={!!form.vatFranchise} disabled={!editable}
+              onChange={(e) => set('vatFranchise', e.target.checked)}
+            />
+            <Text k="penaltyRate" label="Taux des pénalités de retard (LME) — défaut : trois fois le taux d'intérêt légal" />
+            <Text k="legalMentions" label="Mentions légales complémentaires" as="textarea" />
             <Text k="cgv" label="CGV (référence ou texte)" as="textarea" />
           </Card.Body></Card>
           <Alert variant="light" className="border small mb-0">
