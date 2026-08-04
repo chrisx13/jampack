@@ -16,7 +16,7 @@ transaction RLS (`withTenant`).
 `products.{list,create,update,remove,importCsv}` (importCsv = upsert par référence depuis un CSV `réf ; nom ; prix HT ; unité ; type`) · `taxRates.{list,create,update,remove}` · `categories.{list,create,update,archive}` · `sequences.list`
 
 ### `quotes` / `invoices` / `creditNotes` (pièces de vente)
-Commun (`makeSalesRouter`) : `list · get · create · update · validate · cancel · pdf`
+Commun (`makeSalesRouter`) : `list · get · create · update · validate · cancel · duplicate · pdf` (duplicate = copie en brouillon)
 - `quotes` : + `accept · refuse · convertToInvoice · expiring` (expiring = devis émis par date de validité, avec jours avant expiration)
 - `invoices` : + `createCreditNote · facturx · sendToPdp · transmissions`
 

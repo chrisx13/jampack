@@ -47,6 +47,7 @@ function usePdf(api: any) {
 
 function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | 'new'; onClose: () => void }) {
   const utils = trpc.useUtils();
+  const can = useCan();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const api = (trpc as any)[cfg.key];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -183,8 +184,14 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     uapi.transmissions.invalidate({ id });
     alert(`Facture transmise (PDP « ${r.provider} ») — statut : ${r.status}, réf. ${r.providerRef}.`);
   };
+  const duplicate = api.duplicate.useMutation();
+  const onDuplicate = async () => {
+    const copy = await duplicate.mutateAsync({ id });
+    uapi.list.invalidate();
+    setId(copy.id); // bascule sur le nouveau brouillon
+  };
 
-  const err = create.error || update.error || validate.error || convert?.error || accept?.error || refuse?.error || creditNote?.error;
+  const err = create.error || update.error || validate.error || convert?.error || accept?.error || refuse?.error || creditNote?.error || duplicate.error;
 
   return (
     <>
@@ -200,6 +207,11 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
           {id !== 'new' && (
             <Button variant="light" title="Télécharger le PDF" disabled={pdf.pending} onClick={() => pdf.download(id)}>
               <i className="bi bi-filetype-pdf me-1" />PDF
+            </Button>
+          )}
+          {id !== 'new' && can('create', cfg.subject) && (
+            <Button variant="light" title="Dupliquer en brouillon" disabled={duplicate.isPending} onClick={onDuplicate}>
+              <i className="bi bi-files me-1" />Dupliquer
             </Button>
           )}
           {/* Devis émis : accepter / refuser / convertir */}

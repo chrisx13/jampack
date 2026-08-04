@@ -165,6 +165,30 @@ export function makeSalesRouter(meta: SalesDocMeta, extra: Record<string, any> =
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.invoice.update({ where: { id: input.id }, data: { status: 'cancelled' } }))
     ),
 
+    /** Duplique la pièce en un nouveau brouillon (même type, même client/lignes ; numéro et dates réinitialisés). */
+    duplicate: authed('create', meta.subject).input(byId).mutation(({ ctx, input }) => {
+      const societeId = requireSociete(ctx.societeId);
+      return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const src = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: { lines: true } });
+        return tx.invoice.create({
+          data: {
+            docType: meta.docType,
+            organizationId: ctx.user.organizationId,
+            societeId,
+            createdById: ctx.user.id,
+            companyId: src.companyId,
+            notes: src.notes,
+            vatReverseCharge: src.vatReverseCharge,
+            paymentTermId: src.paymentTermId,
+            bankAccountId: src.bankAccountId,
+            factorId: src.factorId,
+            lines: copyLines(src.lines),
+          },
+          include: { lines: true },
+        });
+      });
+    }),
+
     /** PDF de la pièce (template HTML → PDF via Chromium). */
     pdf: authed('read', meta.subject).input(byId).mutation(async ({ ctx, input }) => {
       const societeId = requireSociete(ctx.societeId);
