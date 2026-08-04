@@ -218,12 +218,32 @@ export const opportunityMove = z.object({
 export type OpportunityMove = z.infer<typeof opportunityMove>;
 
 // ── Activités ──
+export const ACTIVITY_TYPES = ['note', 'appel', 'email', 'rdv', 'tache'] as const;
+export type ActivityType = (typeof ACTIVITY_TYPES)[number];
+const ACTIVITY_LABELS: Record<ActivityType, string> = {
+  note: 'Note',
+  appel: 'Appel',
+  email: 'E-mail',
+  rdv: 'Rendez-vous',
+  tache: 'Tâche',
+};
+export function activityTypeLabel(type: string): string {
+  return ACTIVITY_LABELS[type as ActivityType] ?? type;
+}
+/** Une activité « à faire » est en retard si elle a une échéance dépassée et n'est pas terminée. */
+export function isActivityOverdue(a: { type: string; done: boolean; dueAt?: Date | string | null }, now = new Date()): boolean {
+  if (a.type !== 'tache' || a.done || !a.dueAt) return false;
+  return new Date(a.dueAt).getTime() < now.getTime();
+}
 export const activityCreate = z.object({
-  type: z.enum(['note', 'appel', 'email', 'rdv', 'tache']),
+  type: z.enum(ACTIVITY_TYPES),
   content: z.string().min(1),
   dueAt: z.string().datetime().optional(),
+  companyId: z.string().optional(),
   contactId: z.string().optional(),
   opportunityId: z.string().optional(),
+}).refine((a) => a.companyId || a.contactId || a.opportunityId, {
+  message: 'Rattacher l’activité à un client, un contact ou une opportunité',
 });
 export type ActivityCreate = z.infer<typeof activityCreate>;
 

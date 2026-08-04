@@ -184,9 +184,33 @@ export const crmRouter = router({
 
   // ── Activités ──
   activities: router({
-    list: authed('read', 'Opportunity').input(byId.partial()).query(({ ctx }) =>
+    /** Journal d'activité, optionnellement filtré par tiers (client / contact / opportunité). */
+    list: authed('read', 'Opportunity')
+      .input(z.object({ companyId: z.string().optional(), contactId: z.string().optional(), opportunityId: z.string().optional() }).optional())
+      .query(({ ctx, input }) =>
+        withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+          tx.activity.findMany({
+            where: {
+              ...scope(ctx.societeId),
+              ...(input?.companyId ? { companyId: input.companyId } : {}),
+              ...(input?.contactId ? { contactId: input.contactId } : {}),
+              ...(input?.opportunityId ? { opportunityId: input.opportunityId } : {}),
+            },
+            include: { company: { select: { name: true } }, contact: { select: { firstName: true, lastName: true } } },
+            orderBy: { createdAt: 'desc' },
+            take: 100,
+          })
+        )
+      ),
+    /** Tâches ouvertes (à faire), du plus urgent au moins urgent — les échues d'abord. */
+    tasks: authed('read', 'Opportunity').query(({ ctx }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
-        tx.activity.findMany({ where: { ...scope(ctx.societeId) }, orderBy: { createdAt: 'desc' }, take: 50 })
+        tx.activity.findMany({
+          where: { ...scope(ctx.societeId), type: 'tache', done: false },
+          include: { company: { select: { name: true } }, contact: { select: { firstName: true, lastName: true } } },
+          orderBy: [{ dueAt: 'asc' }, { createdAt: 'desc' }],
+          take: 100,
+        })
       )
     ),
     create: authed('create', 'Opportunity').input(activityCreate).mutation(({ ctx, input }) => {
@@ -195,5 +219,22 @@ export const crmRouter = router({
         tx.activity.create({ data: { ...input, dueAt: input.dueAt ? new Date(input.dueAt) : undefined, organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id } })
       );
     }),
+    /** Clôturer une tâche (fait). */
+    complete: authed('update', 'Opportunity').input(byId).mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.activity.update({ where: { id: input.id }, data: { done: true, doneAt: new Date() } })
+      )
+    ),
+    /** Rouvrir une tâche clôturée. */
+    reopen: authed('update', 'Opportunity').input(byId).mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.activity.update({ where: { id: input.id }, data: { done: false, doneAt: null } })
+      )
+    ),
+    remove: authed('delete', 'Opportunity').input(byId).mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
+        tx.activity.delete({ where: { id: input.id } })
+      )
+    ),
   }),
 });

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import Dashboard from './pages/Dashboard';
 import Pipeline from './pages/Pipeline';
+import Activities from './pages/Activities';
 import Clients from './pages/Clients';
 import Contacts from './pages/Contacts';
 import Catalogue from './pages/Catalogue';
@@ -63,6 +64,7 @@ export const DOMAINS: Domain[] = [
       { id: 'companies', label: 'Clients', icon: 'bi-briefcase', element: <Clients />, can: ['read', 'Company'] },
       { id: 'contacts', label: 'Contacts', icon: 'bi-person-lines-fill', element: <Contacts />, can: ['read', 'Contact'] },
       { id: 'pipeline', label: 'Pipeline', icon: 'bi-kanban', element: <Pipeline />, can: ['read', 'Opportunity'] },
+      { id: 'activities', label: 'Activités & tâches', icon: 'bi-check2-square', element: <Activities />, can: ['read', 'Opportunity'] },
     ],
   },
   {

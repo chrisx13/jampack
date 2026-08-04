@@ -11,6 +11,8 @@
 ## 2. CRM
 - **Clients** / **Contacts** : créer, modifier ; rattacher contacts et établissements (siège/facturation/livraison).
 - **Pipeline** : glisser-déposer les opportunités entre étapes.
+- **Activités & tâches** : consigner notes, appels, e-mails, rendez-vous et **tâches** rattachés à un client.
+  Les tâches à faire s'affichent triées par échéance (les **en retard** signalées) ; bouton ✓ pour les clôturer.
 
 ## 3. Ventes
 - **Catalogue** : articles/services, catégories, taux de TVA.

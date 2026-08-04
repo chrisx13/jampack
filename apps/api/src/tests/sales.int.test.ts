@@ -142,6 +142,23 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
   });
 });
 
+describe('CRM — activités & tâches', () => {
+  it('crée une tâche rattachée au client, la liste puis la clôture', async () => {
+    const companyId = await anyCustomer();
+    const due = new Date(Date.now() + 3 * 86400000).toISOString();
+    const act = await caller.crm.activities.create({ type: 'tache', content: '[INT] rappeler le client', companyId, dueAt: due });
+    const open = await caller.crm.activities.tasks();
+    expect(open.some((a: { id: string }) => a.id === act.id)).toBe(true);
+    const feed = await caller.crm.activities.list({ companyId });
+    expect(feed.some((a: { id: string }) => a.id === act.id)).toBe(true);
+    await caller.crm.activities.complete({ id: act.id });
+    expect((await caller.crm.activities.tasks()).some((a: { id: string }) => a.id === act.id)).toBe(false);
+  });
+  it('refuse une activité sans rattachement', async () => {
+    await expect(caller.crm.activities.create({ type: 'note', content: 'orpheline' } as never)).rejects.toBeTruthy();
+  });
+});
+
 describe('Ventes — relances clients (dunning)', () => {
   it('facture échue → relance ; niveau incrémenté ; lettre au bon niveau', async () => {
     const companyId = await anyCustomer();

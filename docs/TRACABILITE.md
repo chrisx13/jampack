@@ -102,6 +102,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 |---|---|---|---|
 | **Fait** | Socle multi-société + RLS + OIDC + RBAC | ✅ | cf. §1–3 |
 | **Fait** | CRM (clients, contacts, opportunités, pipeline kanban) | ✅ | `apps/api/src/crm/crm.router.ts`, `apps/web/src/pages/Pipeline.tsx` |
+| **Fait** | CRM — activités & tâches (note/appel/email/rdv/tâche, échéance, clôture) | ✅ | `crm.router.ts` (`activities.*`), `Activity` (+`companyId`/`done`/`doneAt`), `apps/web/src/pages/Activities.tsx` |
 | **Fait** | Établissements & adresses clients | ✅ | `crm.router.ts` (`establishments`) |
 | **1 Référentiels** | Articles/services | ✅ | `catalog.router.ts` (`products`) |
 | **1 Référentiels** | Taxes (TVA) | ✅ | `catalog.router.ts` (`taxRates`) |

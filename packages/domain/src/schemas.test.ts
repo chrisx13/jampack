@@ -4,6 +4,7 @@ import {
   PAYMENT_METHODS, PAYMENT_METHOD_LABELS, SALES_DOCS, STOCK_KINDS, STOCK_KIND_LABELS,
   stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
+  activityCreate, activityTypeLabel, isActivityOverdue,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -92,6 +93,25 @@ describe('relances (dunning)', () => {
     expect(m2).toContain('120,00 €');
     expect(m2).toContain('indemnité forfaitaire');
     expect(dunningMessage(3, { number: 'X', amount: '1 €', dueDate: 'x' })).toContain('mise en demeure');
+  });
+});
+
+describe('activités CRM', () => {
+  it('libellés de type', () => {
+    expect(activityTypeLabel('appel')).toBe('Appel');
+    expect(activityTypeLabel('rdv')).toBe('Rendez-vous');
+    expect(activityTypeLabel('inconnu')).toBe('inconnu');
+  });
+  it('exige un rattachement (client, contact ou opportunité)', () => {
+    expect(activityCreate.safeParse({ type: 'note', content: 'x' }).success).toBe(false);
+    expect(activityCreate.safeParse({ type: 'note', content: 'x', companyId: 'c1' }).success).toBe(true);
+  });
+  it('tâche en retard : échéance dépassée et non terminée', () => {
+    const now = new Date('2026-08-04T12:00:00Z');
+    expect(isActivityOverdue({ type: 'tache', done: false, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(true);
+    expect(isActivityOverdue({ type: 'tache', done: true, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(false);
+    expect(isActivityOverdue({ type: 'tache', done: false, dueAt: '2026-08-10T00:00:00Z' }, now)).toBe(false);
+    expect(isActivityOverdue({ type: 'note', done: false, dueAt: '2026-08-01T00:00:00Z' }, now)).toBe(false);
   });
 });
 

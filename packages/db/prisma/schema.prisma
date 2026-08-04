@@ -218,6 +218,7 @@ model Company {
   contacts       Contact[]
   opportunities  Opportunity[]
   establishments Establishment[]
+  activities     Activity[]
   invoices       Invoice[]
   purchaseOrders PurchaseOrder[]
   supplierInvoices SupplierInvoice[]
@@ -293,6 +294,10 @@ model Activity {
   type           String
   content        String
   dueAt          DateTime?
+  done           Boolean      @default(false)
+  doneAt         DateTime?
+  company        Company?     @relation(fields: [companyId], references: [id])
+  companyId      String?
   contact        Contact?     @relation(fields: [contactId], references: [id])
   contactId      String?
   opportunity    Opportunity? @relation(fields: [opportunityId], references: [id])
@@ -301,6 +306,7 @@ model Activity {
   createdById    String?
   @@index([organizationId])
   @@index([societeId])
+  @@index([companyId])
 }
 
 // ── Établissement d'un client (adresse ; siège / facturation / livraison) ──
