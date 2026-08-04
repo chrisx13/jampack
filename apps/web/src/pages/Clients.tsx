@@ -128,12 +128,25 @@ export default function Clients() {
   };
   const busy = create.isPending || update.isPending;
 
+  const [search, setSearch] = useState('');
+  const all = list.data ?? [];
+  const q = search.trim().toLowerCase();
+  const rows = q ? all.filter((c) => c.name.toLowerCase().includes(q) || (c.siren ?? '').toLowerCase().includes(q)) : all;
+  const showSearch = all.length > 5;
+
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <h4 className="mb-0 fw-semibold">Clients</h4>
         {can('create', 'Company') && <Button onClick={() => open()}><i className="bi bi-plus-lg me-1" />Nouveau client</Button>}
       </div>
+
+      {showSearch && (
+        <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
+          <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+          <Form.Control size="sm" className="ps-4" placeholder="Rechercher un client (nom ou SIREN)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      )}
 
       <Card>
         <Card.Body className="p-0">
@@ -142,7 +155,7 @@ export default function Clients() {
               <tr><th className="ps-3">Nom</th><th>SIREN</th><th>Établissements</th><th>Société</th><th className="text-end pe-3">Actions</th></tr>
             </thead>
             <tbody>
-              {list.data?.map((c) => (
+              {rows.map((c) => (
                 <tr key={c.id}>
                   <td className="ps-3 fw-medium">{c.name}
                     {(c as Company).doNotProspect && <Badge bg="warning-subtle" text="warning" className="fw-normal ms-2"><i className="bi bi-slash-circle me-1" />ne pas prospecter</Badge>}
@@ -163,7 +176,8 @@ export default function Clients() {
                   </td>
                 </tr>
               ))}
-              {list.data?.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun client pour cette société</td></tr>}
+              {all.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun client pour cette société</td></tr>}
+              {all.length > 0 && rows.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun client ne correspond à « {search} »</td></tr>}
             </tbody>
           </Table>
         </Card.Body>
