@@ -31,6 +31,8 @@ Ces choix ne sont pas encore tranchés ; ils sont suivis ici et dans les documen
 | DO-4 | **Rapprochement bancaire** : import de relevés (format, source) ↔ écritures 512 | Compta/trésorerie | [Traçabilité §5](TRACABILITE.md) |
 | DO-5 | **Stock** : valorisation **FIFO** + **lots/n° série** (aujourd'hui PMP) | Stock avancé | [Traçabilité §5](TRACABILITE.md) |
 | DO-6 | **Rapprochement 3 voies** achats (commande ↔ réception ↔ facture) | Contrôle achats | SRS FR-ACH-7 |
+| DO-7 | **Structurer les mentions spéciales TVA** de facture (autoliquidation, franchise 293 B, exonération) + identifiants acheteur (SIREN/TVA) sur facture/Factur-X | Conformité facture FR | [Conformité §3.5](CONFORMITE.md), REG-5 |
+| DO-8 | **Régimes de TVA FR** : CA12 (réel simplifié), franchise en base, autoliquidation, TVA sur débits vs encaissements | Conformité TVA FR | [Conformité §3.7](CONFORMITE.md), REG-7 |
 
 ## 3. Vue de contexte (C4 niveau 1)
 ```

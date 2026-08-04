@@ -1,8 +1,13 @@
 # Conformité & normes
 
-**Projet :** JAMPACK · **Statut :** En revue · **Version :** 1.0 · **Date :** 3 août 2026
+**Projet :** JAMPACK · **Statut :** En revue · **Version :** 1.1 · **Date :** 4 août 2026
 
 Cartographie des normes, référentiels et obligations applicables, et de leur prise en compte.
+
+> **Produit franco-français.** JAMPACK cible **exclusivement le marché France** et doit respecter
+> **l'ensemble des normes et règles françaises en vigueur** applicables à un logiciel de gestion
+> (facturation, comptabilité, TVA, données personnelles). Toute évolution touchant une facture, une
+> écriture, la TVA ou des données personnelles vérifie et trace ici l'obligation française correspondante.
 
 ## 1. Normes d'ingénierie logicielle
 | Norme | Objet | Où c'est traité | État |
@@ -57,6 +62,44 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 ### 3.4 Conservation légale
 - Pièces comptables (factures) : conservation **10 ans**. Prévaut sur le droit à l'effacement RGPD.
 
+### 3.5 Mentions obligatoires des factures (art. 242 nonies A CGI · art. L441-9 C. com.)
+- **Vendeur** : dénomination, forme juridique + capital, adresse, **SIRET/SIREN**, **n° TVA
+  intracommunautaire**, RCS/APE. → portés par le gabarit (`invoiceHtml.ts`) depuis les champs société. ✅
+- **Acheteur** : identité + adresse. ✅ — **identifiants SIREN/TVA de l'acheteur** (requis pour le routage
+  e-invoicing B2B et l'autoliquidation) : champ `Company.siren` présent, **à porter sur la facture et le
+  Factur-X**. 🔧
+- **Pièce** : numéro **séquentiel chronologique continu**, date d'émission, date de la vente/prestation,
+  désignation, quantité, PU HT, **taux de TVA par ligne**, réductions, total HT/TVA/TTC. ✅ (numérotation
+  atomique par société/type ; totaux par taux).
+- **Mentions spéciales** : **autoliquidation**, **franchise en base** (« TVA non applicable, art. 293 B du
+  CGI »), exonérations, **mention de subrogation** (affacturage). → subrogation ✅ ; autoliquidation /
+  franchise / exonération **non structurées** (aujourd'hui via champ libre `legalMentions`). 🔧
+- → FR-VEN-3, FR-TRV-1. **Décision** : structurer les mentions spéciales TVA (DO-7).
+
+### 3.6 Délais de paiement (LME · art. L441-10 C. com.)
+- Délai légal **≤ 60 jours** (ou 45 j fin de mois) ; la facture doit indiquer la **date d'échéance**, le
+  **taux des pénalités de retard** et l'**indemnité forfaitaire de recouvrement de 40 €**.
+- État : échéance calculée ✅ (conditions de paiement) ; **pénalités + indemnité 40 €** via champ libre
+  `legalMentions`/`cgv` 🔧 — à normaliser (gabarit standard). → FR-TRV-1, REG-6.
+
+### 3.7 TVA — taux & régimes France
+- **Taux** : 20 % / 10 % / 5,5 % / 2,1 % paramétrables (référentiel société). ✅
+- **Déclaration** : **CA3** (réel normal, mensuelle/trimestrielle) ✅ ; **CA12** (réel simplifié annuel),
+  **franchise en base**, **autoliquidation**, choix **TVA sur les débits vs sur les encaissements** ⏳
+  (décision DO-8). → FR-CPT-5, REG-7.
+
+### 3.8 Plan Comptable Général (PCG — règlement ANC 2014-03)
+- Le plan comptable et les journaux suivent le **PCG**. État : init **PCG minimal** (comptes usuels
+  ventes/achats/TVA/tiers/banque) ✅ ; **plan complet + comptabilité analytique + immobilisations** ⏳.
+- Principes : partie double (débit = crédit) ✅, **intangibilité** des écritures validées et **piste
+  d'audit fiable** (PAF : lien pièce ↔ écriture ↔ règlement) 🔧 (auto-comptabilisation + journal d'audit).
+  → FR-CPT-*, REG-8.
+
+### 3.9 Archivage à valeur probante (NF Z42-013 / eIDAS)
+- La facture électronique doit être conservée **10 ans** avec **intégrité, lisibilité et authenticité**.
+- État : conservation 10 ans ✅ (règle) ; **coffre à valeur probante / horodatage / cachet** ⏳
+  (dépend de la voie PDP — DO-1). → REG-9.
+
 ## 4. Accessibilité (cible)
 - **RGAA / WCAG 2.1 AA** : cible pour l'UI publique. État : 🔧 à auditer (contrastes du thème,
   navigation clavier, libellés ARIA).
@@ -69,6 +112,14 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | Immatriculation PDP DGFiP + raccordement PPF + e-reporting | FR-VEN-8 | 09/2026-09/2027 | ⛔ hors périmètre logiciel |
 | Émission/réception via PDP agréée (interne immatriculée **ou** partenaire) | FR-VEN-8 | 09/2027 | ⏳ |
 | Export FEC | FR-CPT-6 | À la mise en service compta | ✅ |
+| Mentions obligatoires facture (vendeur, pièce, subrogation) | FR-VEN-3, FR-TRV-1 | Continu | ✅ |
+| Identifiants acheteur (SIREN/TVA) sur facture & Factur-X | FR-VEN-3/8 | 09/2026 | 🔧 |
+| Mentions spéciales TVA (autoliquidation, franchise 293 B) | FR-VEN-3 | Continu | 🔧 (DO-7) |
+| Délais de paiement LME (échéance, pénalités, indemnité 40 €) | FR-TRV-1, REG-6 | Continu | 🔧 |
+| TVA — taux FR paramétrables + CA3 | FR-CPT-5, REG-7 | Continu | ✅ |
+| TVA — CA12 / franchise / autoliquidation / débits-encaissements | REG-7 | — | ⏳ (DO-8) |
+| PCG (ANC 2014-03) + piste d'audit fiable | FR-CPT-*, REG-8 | Continu | 🔧 |
+| Archivage à valeur probante (NF Z42-013 / eIDAS) | REG-9 | 09/2026 | ⏳ (DO-1) |
 | RGPD (registre, UE, effacement) | REG-3 | Continu | 🔧 |
 | Hébergement UE | C-1 | Continu | ✅ (choix imposé) |
 
@@ -78,5 +129,10 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
    **raccorder au PPF** (programme réglementaire lourd, hors code), soit **brancher une PDP partenaire**
    sur l'adaptateur existant.
 3. ✅ Ouvrir le module **Comptabilité** et l'**export FEC**. *(fait)*
-4. Compléter le **journal d'audit** et l'outillage RGPD (export/effacement).
-5. Audit **RGAA/WCAG** de l'UI.
+4. **Facture** : porter les **identifiants acheteur** (SIREN/TVA) et **structurer les mentions spéciales
+   TVA** (autoliquidation, franchise 293 B) + **mentions LME** normalisées (pénalités, indemnité 40 €). (DO-7, REG-5/6)
+5. **TVA** : couvrir les régimes FR (CA12, franchise, autoliquidation, débits/encaissements). (DO-8, REG-7)
+6. **Comptabilité** : PCG complet + **piste d'audit fiable** et intangibilité renforcée. (REG-8)
+7. **Archivage à valeur probante** de l'e-facture (selon la voie PDP retenue). (DO-1, REG-9)
+8. Compléter le **journal d'audit** et l'outillage RGPD (export/effacement).
+9. Audit **RGAA/WCAG** de l'UI.

@@ -16,6 +16,7 @@
 | RT-8 | Perte de données (sauvegarde/restauration) | Exploitation | 2 | 5 | 10 | Sauvegardes chiffrées + tests de restauration (RPO/RTO) | Surveillé |
 | RT-9 | Dette technique (tsx en prod) | Technique | 3 | 2 | 6 | CI complète en place (lint, typecheck, tests unit+intégration, build) ; reste : build/runtime API de prod (sortir de tsx) | Surveillé |
 | RT-10 | Adoption/UX insuffisante | Produit | 3 | 3 | 9 | Démo seedée, guide utilisateur, itérations | Surveillé |
+| RT-11 | Mentions facture/LME & régimes TVA FR incomplets | Réglementaire | 3 | 4 | 12 | Structurer mentions spéciales TVA + identifiants acheteur + LME (DO-7) ; couvrir régimes TVA (DO-8) — voir [Conformité](CONFORMITE.md) | Actif |
 
 ## Revue
 Registre revu à chaque fin de jalon et après tout incident S1/S2 (post-mortem → mise à jour).

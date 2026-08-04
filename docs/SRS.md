@@ -211,11 +211,18 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 
 ---
 
-## 5. Exigences réglementaires (France)
+> **Produit franco-français** : JAMPACK cible exclusivement la France et doit respecter **toutes les
+> normes et règles françaises en vigueur**. Cartographie complète et statuts dans [Conformité](CONFORMITE.md).
+
 - **REG-1 (M)** Facturation électronique : réception obligatoire **09/2026**, émission échelonnée jusqu'à **09/2027** (Factur-X via PDP). 🔧 (génération Factur-X CII + connecteur PDP interne ✅ ; immatriculation DGFiP/PPF/e-reporting ⛔ hors périmètre logiciel — DO-1) — voir [Conformité](CONFORMITE.md).
 - **REG-2 (M)** Export **FEC** dès qu'un module comptable tient les écritures. ✅ — voir FR-CPT-6.
 - **REG-3 (M)** **RGPD** : registre des traitements, minimisation, droit à l'effacement, hébergement UE. 🔧 — voir [Sécurité & RGPD](SECURITE-RGPD.md).
 - **REG-4 (C)** **NF525** si encaissement B2C d'espèces (attestation éditeur). Hors périmètre B2B actuel.
+- **REG-5 (M)** **Mentions obligatoires des factures** (art. 242 nonies A CGI · art. L441-9 C. com.) : identité vendeur/acheteur, SIRET/TVA, numéro séquentiel, date, TVA par taux, mentions spéciales. 🔧 (vendeur/pièce ✅ ; identifiants acheteur + autoliquidation/franchise à structurer — DO-7) — voir [Conformité §3.5](CONFORMITE.md).
+- **REG-6 (M)** **Délais de paiement (LME)** : date d'échéance, taux de pénalités de retard, indemnité forfaitaire de **40 €**. 🔧 (échéance ✅ ; pénalités via champ libre à normaliser) — voir [Conformité §3.6](CONFORMITE.md).
+- **REG-7 (M)** **TVA France** : taux 20/10/5,5/2,1 paramétrables ✅ + **CA3** ✅ ; CA12, franchise en base, autoliquidation, TVA sur débits/encaissements ⏳ (DO-8) — voir [Conformité §3.7](CONFORMITE.md).
+- **REG-8 (M)** **PCG** (ANC 2014-03) + **piste d'audit fiable** (lien pièce ↔ écriture ↔ règlement). 🔧 (PCG minimal + auto-comptabilisation ✅ ; plan complet + intangibilité renforcée ⏳) — voir [Conformité §3.8](CONFORMITE.md).
+- **REG-9 (M)** **Archivage à valeur probante** de la facture électronique (NF Z42-013 / eIDAS) : conservation 10 ans, intégrité, authenticité. ⏳ (dépend de la voie PDP — DO-1) — voir [Conformité §3.9](CONFORMITE.md).
 
 ---
 
