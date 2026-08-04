@@ -110,8 +110,18 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     const c = companies.data?.find((x) => x.id === cid);
     if (!c) return;
     setFactorId(c.factorId ?? '');
-    setPaymentTermId(c.paymentTermId ?? (paymentTerms.data?.find((t) => t.isDefault)?.id ?? ''));
+    const termId = c.paymentTermId ?? (paymentTerms.data?.find((t) => t.isDefault)?.id ?? '');
+    setPaymentTermId(termId);
     setBankAccountId(bankAccounts.data?.find((b) => b.isDefault)?.id ?? '');
+    // Simplicité : pré-remplit l'échéance de facture (aujourd'hui + délai de la condition de règlement)
+    // si elle n'a pas été saisie manuellement. L'utilisateur reste libre de la corriger.
+    if (cfg.dateField === 'dueDate' && !secondDate) {
+      const days = paymentTerms.data?.find((t) => t.id === termId)?.days;
+      if (days != null) {
+        const d = new Date(); d.setDate(d.getDate() + days);
+        setSecondDate(d.toISOString().slice(0, 10));
+      }
+    }
   };
 
   const totals = useMemo(() => computeInvoiceTotals(lines), [lines]);
