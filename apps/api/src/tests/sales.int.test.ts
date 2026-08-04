@@ -253,3 +253,16 @@ describe('E-invoicing — Factur-X & PDP interne', () => {
     }
   });
 });
+
+describe('CRM — RGPD (opposition & export des données)', () => {
+  it('drapeau « ne pas prospecter » + export des données personnelles', async () => {
+    const co = await caller.crm.companies.create({ name: '[INT] RGPD SARL', siren: '123456789', doNotProspect: true });
+    await caller.crm.contacts.create({ companyId: co.id, firstName: 'Jean', lastName: 'Test', email: 'jean@int-rgpd.fr' });
+    const exp = await caller.crm.companies.exportData({ id: co.id });
+    expect(exp.subject.name).toBe('[INT] RGPD SARL');
+    expect(exp.subject.doNotProspect).toBe(true);
+    expect(exp.contacts.some((c: { email: string | null }) => c.email === 'jean@int-rgpd.fr')).toBe(true);
+    await caller.crm.companies.remove({ id: co.id }); // nettoyage (contact détaché puis société supprimée)
+    await C.prisma.contact.deleteMany({ where: { email: 'jean@int-rgpd.fr' } });
+  });
+});

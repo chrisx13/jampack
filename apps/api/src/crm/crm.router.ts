@@ -52,6 +52,27 @@ export const crmRouter = router({
         return tx.company.delete({ where: { id: input.id } });
       })
     ),
+
+    /** Export RGPD (droit d'accès / portabilité, art. 15/20) : données personnelles détenues sur un tiers. */
+    exportData: authed('read', 'Company').input(byId).query(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const c = await tx.company.findUniqueOrThrow({
+          where: { id: input.id },
+          include: {
+            contacts: { select: { firstName: true, lastName: true, email: true, phone: true, createdAt: true } },
+            establishments: { select: { name: true, siret: true, addressLine1: true, addressLine2: true, postalCode: true, city: true, phone: true, email: true } },
+            opportunities: { select: { title: true, amount: true, createdAt: true, stage: { select: { name: true } } } },
+          },
+        });
+        return {
+          generatedAt: new Date(),
+          subject: { name: c.name, siren: c.siren, siret: c.siret, tvaNumber: c.tvaNumber, doNotProspect: c.doNotProspect, isCustomer: c.isCustomer, isSupplier: c.isSupplier, createdAt: c.createdAt },
+          contacts: c.contacts,
+          establishments: c.establishments,
+          opportunities: c.opportunities,
+        };
+      })
+    ),
   }),
 
   // ── Établissements (adresses d'un client) ──
