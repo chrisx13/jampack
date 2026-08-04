@@ -213,6 +213,72 @@ export const accountingRouter = router({
     })
   ),
 
+  /**
+   * Compte de résultat (PCG) : produits (classe 7) − charges (classe 6) = résultat.
+   * Ventilé par poste (racine à 2 chiffres) ; produit = solde créditeur, charge = solde débiteur.
+   */
+  incomeStatement: authed('read', 'Accounting').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const grouped = await tx.journalEntryLine.groupBy({ by: ['accountId'], where: { entry: { is: scope(ctx.societeId) } }, _sum: { debit: true, credit: true } });
+      const accounts = await tx.account.findMany({ where: scope(ctx.societeId), select: { id: true, code: true, name: true } });
+      const aById = new Map(accounts.map((a) => [a.id, a]));
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      const charges: { code: string; name: string; amount: number }[] = [];
+      const produits: { code: string; name: string; amount: number }[] = [];
+      for (const g of grouped) {
+        const acc = aById.get(g.accountId);
+        if (!acc) continue;
+        const cls = acc.code[0];
+        if (cls !== '6' && cls !== '7') continue;
+        const debit = n(g._sum.debit), credit = n(g._sum.credit);
+        if (cls === '6') { const amt = r2(debit - credit); if (Math.abs(amt) > 0.005) charges.push({ code: acc.code, name: acc.name, amount: amt }); }
+        else { const amt = r2(credit - debit); if (Math.abs(amt) > 0.005) produits.push({ code: acc.code, name: acc.name, amount: amt }); }
+      }
+      charges.sort((a, b) => a.code.localeCompare(b.code));
+      produits.sort((a, b) => a.code.localeCompare(b.code));
+      const totalCharges = r2(charges.reduce((s, c) => s + c.amount, 0));
+      const totalProduits = r2(produits.reduce((s, p) => s + p.amount, 0));
+      return { charges, produits, totalCharges, totalProduits, resultat: r2(totalProduits - totalCharges) };
+    })
+  ),
+
+  /**
+   * Bilan simplifié (PCG) : actif (classes 2/3/4 débitrices + 5) vs passif (classe 1 + 4 créditrices),
+   * avec le résultat de l'exercice (produits − charges) porté au passif (capitaux propres).
+   */
+  balanceSheet: authed('read', 'Accounting').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const grouped = await tx.journalEntryLine.groupBy({ by: ['accountId'], where: { entry: { is: scope(ctx.societeId) } }, _sum: { debit: true, credit: true } });
+      const accounts = await tx.account.findMany({ where: scope(ctx.societeId), select: { id: true, code: true, name: true } });
+      const aById = new Map(accounts.map((a) => [a.id, a]));
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      const actif: { code: string; name: string; amount: number }[] = [];
+      const passif: { code: string; name: string; amount: number }[] = [];
+      let resultat = 0;
+      for (const g of grouped) {
+        const acc = aById.get(g.accountId);
+        if (!acc) continue;
+        const cls = acc.code[0];
+        const solde = r2(n(g._sum.debit) - n(g._sum.credit)); // >0 débiteur, <0 créditeur
+        if (cls === '6') { resultat -= solde; continue; }
+        if (cls === '7') { resultat += -solde; continue; } // produit : solde créditeur → +résultat
+        if (cls === '1' || cls === '2' || cls === '3' || cls === '4' || cls === '5') {
+          if (Math.abs(solde) <= 0.005) continue;
+          // Convention bilan : un poste au solde débiteur va à l'actif, créditeur au passif (montants positifs).
+          if (solde > 0) actif.push({ code: acc.code, name: acc.name, amount: solde });
+          else passif.push({ code: acc.code, name: acc.name, amount: -solde });
+        }
+      }
+      resultat = r2(resultat);
+      actif.sort((a, b) => a.code.localeCompare(b.code));
+      passif.sort((a, b) => a.code.localeCompare(b.code));
+      const totalActif = r2(actif.reduce((s, a) => s + a.amount, 0));
+      // Le résultat de l'exercice (bénéfice ou perte) équilibre le passif (capitaux propres).
+      const totalPassif = r2(passif.reduce((s, p) => s + p.amount, 0) + resultat);
+      return { actif, passif, resultat, totalActif, totalPassif, equilibre: Math.abs(totalActif - totalPassif) < 0.01 };
+    })
+  ),
+
   /** Rapprochement bancaire : lignes du compte banque (512), pointées ou non, + solde comptable et pointé. */
   bankLines: authed('read', 'Accounting').query(({ ctx }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {

@@ -50,6 +50,8 @@
 - **Écritures** : saisir et consulter les écritures (générées automatiquement depuis les pièces validées).
 - **Balance** : soldes par compte.
 - **Grand livre** : détail des mouvements d'un compte avec solde progressif.
+- **États financiers** : **compte de résultat** (produits − charges → bénéfice/perte) et **bilan simplifié**
+  (actif/passif par classe, résultat de l'exercice) — vue de gestion, sans se substituer à la liasse fiscale.
 - **Lettrage** : rapprocher débits/crédits d'un même tiers.
 - **Rapprochement bancaire** : pointer les écritures du compte banque (512) au relevé (soldes comptable/pointé/reste), ou **importer un relevé CSV** (`date ; libellé ; montant`) pour un pointage automatique par montant.
 - **Déclaration de TVA (CA3)** : collectée − déductible ; écriture de clôture.

@@ -158,6 +158,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CPT-5d | **Rapprochement bancaire** : pointage des lignes du compte 512, soldes comptable/pointé/reste, **import de relevé CSV** (pointage auto par montant). | M | ✅ |
 | FR-CPT-6 | Export **FEC** (Fichier des Écritures Comptables) tabulé normé. | M | ✅ |
 | FR-CPT-7 | **Immobilisations** amortissables + **plan d'amortissement linéaire** (prorata temporis) + **comptabilisation de la dotation** (681 → 281). | S | ✅ |
+| FR-CPT-8 | **États de synthèse** : compte de résultat (produits cl. 7 − charges cl. 6) et bilan simplifié (actif/passif par classe PCG, résultat au passif), dérivés de la balance. | S | ✅ |
 
 ### 3.8 Trésorerie (Jalon 5)
 | ID | Exigence | Prio | Statut |

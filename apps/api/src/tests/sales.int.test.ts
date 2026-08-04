@@ -191,6 +191,28 @@ describe('Comptabilité — grand livre', () => {
   });
 });
 
+describe('Comptabilité — états de synthèse (résultat & bilan)', () => {
+  it('compte de résultat : une vente comptabilisée ajoute un produit 707 ; bilan équilibré', async () => {
+    const companyId = await anyCustomer();
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'CR', quantity: 1, unitPriceHt: 300, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    await caller.accounting.postSalesInvoice({ id: inv.id }); // 411 débit 360, 707 crédit 300, 44571 crédit 60
+
+    const cr = await caller.accounting.incomeStatement();
+    expect(cr.produits.some((p: { code: string }) => p.code.startsWith('707'))).toBe(true);
+    expect(cr.totalProduits).toBeGreaterThanOrEqual(300);
+    // résultat = produits − charges, cohérent avec les totaux renvoyés
+    expect(cr.resultat).toBeCloseTo(Math.round((cr.totalProduits - cr.totalCharges) * 100) / 100, 2);
+
+    // Le bilan (actif = passif + résultat) est équilibré : toutes les écritures le sont.
+    const bs = await caller.accounting.balanceSheet();
+    expect(bs.equilibre).toBe(true);
+    expect(bs.totalActif).toBeCloseTo(bs.totalPassif, 2);
+    // Le résultat du bilan égale celui du compte de résultat.
+    expect(bs.resultat).toBeCloseTo(cr.resultat, 2);
+  });
+});
+
 describe('Analytics — balance âgée clients', () => {
   it('ventile les créances par tranche d’ancienneté', async () => {
     const companyId = await anyCustomer();
