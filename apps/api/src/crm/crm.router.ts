@@ -194,11 +194,21 @@ export const crmRouter = router({
           const e = byStage.get(s.id) ?? { count: 0, total: 0 };
           return { stageId: s.id, name: s.name, probability: s.probability, count: e.count, total: r2(e.total), weighted: r2(e.total * s.probability / 100) };
         });
+        // Classement gagné/perdu/en cours selon la probabilité de l'étape (100 % = gagné, 0 % = perdu).
+        const won = rows.filter((r) => r.probability >= 100);
+        const lost = rows.filter((r) => r.probability <= 0);
+        const wonCount = won.reduce((s, r) => s + r.count, 0);
+        const lostCount = lost.reduce((s, r) => s + r.count, 0);
+        const closed = wonCount + lostCount;
         return {
           rows,
           totalCount: rows.reduce((s, r) => s + r.count, 0),
           totalAmount: r2(rows.reduce((s, r) => s + r.total, 0)),
           weightedAmount: r2(rows.reduce((s, r) => s + r.weighted, 0)),
+          wonCount,
+          lostCount,
+          wonAmount: r2(won.reduce((s, r) => s + r.total, 0)),
+          winRate: closed > 0 ? Math.round((wonCount / closed) * 1000) / 10 : null, // % à une décimale, null si rien de clôturé
         };
       })
     ),

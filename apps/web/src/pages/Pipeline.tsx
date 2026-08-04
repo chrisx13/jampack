@@ -60,7 +60,10 @@ export default function Pipeline() {
             <div className="fs-5 fw-semibold">{euro.format(summary.data.totalAmount)}</div>
           </Card.Body></Card></div>
           <div className="col-md-4"><Card className="h-100 border-primary"><Card.Body className="py-2">
-            <div className="text-secondary small"><i className="bi bi-graph-up-arrow me-1" />Prévisionnel pondéré</div>
+            <div className="text-secondary small d-flex justify-content-between">
+              <span><i className="bi bi-graph-up-arrow me-1" />Prévisionnel pondéré</span>
+              {summary.data.winRate != null && <span title="Taux de conversion (gagné / clôturé)"><i className="bi bi-trophy me-1" />{summary.data.winRate}%</span>}
+            </div>
             <div className="fs-5 fw-semibold text-primary">{euro.format(summary.data.weightedAmount)}</div>
           </Card.Body></Card></div>
         </div>

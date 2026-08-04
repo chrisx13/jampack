@@ -98,7 +98,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CRM-3 | Gérer les **établissements/adresses** d'un client (siège/facturation/livraison). | M | ✅ |
 | FR-CRM-4 | **Pipeline d'opportunités** kanban avec glisser-déposer entre étapes. | M | ✅ |
 | FR-CRM-5 | Activités (note/appel/email/rdv/tâche) rattachées à client/contact/opportunité ; tâches à faire (échéance, clôture, retard). | C | ✅ |
-| FR-CRM-6 | **Prévisionnel commercial pondéré** : probabilité de conversion par étape ; synthèse du pipeline (nombre, montant, montant pondéré). | C | ✅ |
+| FR-CRM-6 | **Prévisionnel commercial pondéré** : probabilité de conversion par étape ; synthèse du pipeline (nombre, montant, montant pondéré, **taux de conversion** gagné/clôturé). | C | ✅ |
 
 ### 3.3 Référentiels
 | ID | Exigence | Prio | Statut |

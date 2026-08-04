@@ -155,6 +155,13 @@ describe('CRM — synthèse pondérée du pipeline', () => {
     }
     // Le pondéré ne dépasse jamais le total (probabilités ≤ 100 %).
     expect(s.weightedAmount).toBeLessThanOrEqual(s.totalAmount + 0.01);
+    // Taux de conversion : cohérent avec les compteurs gagné/perdu.
+    if (s.wonCount + s.lostCount > 0) {
+      expect(s.winRate).toBeCloseTo(Math.round((s.wonCount / (s.wonCount + s.lostCount)) * 1000) / 10, 1);
+    } else {
+      expect(s.winRate).toBeNull();
+    }
+    expect(s.wonAmount).toBeLessThanOrEqual(s.totalAmount + 0.01);
   });
 });
 

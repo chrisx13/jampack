@@ -11,7 +11,8 @@
 ## 2. CRM
 - **Clients** / **Contacts** : créer, modifier ; rattacher contacts et établissements (siège/facturation/livraison).
 - **Pipeline** : glisser-déposer les opportunités entre étapes. Chaque étape porte une **probabilité de conversion** ;
-  le bandeau affiche le nombre d'affaires, le montant total et le **prévisionnel pondéré** (montant × probabilité).
+  le bandeau affiche le nombre d'affaires, le montant total, le **prévisionnel pondéré** (montant × probabilité)
+  et le **taux de conversion** (affaires gagnées / affaires clôturées).
 - **Activités & tâches** : consigner notes, appels, e-mails, rendez-vous et **tâches** rattachés à un client.
   Les tâches à faire s'affichent triées par échéance (les **en retard** signalées) ; bouton ✓ pour les clôturer.
 
