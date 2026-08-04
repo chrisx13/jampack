@@ -173,6 +173,35 @@ export const crmRouter = router({
         return tx.opportunity.delete({ where: { id: input.id } });
       })
     ),
+    /**
+     * Synthèse du pipeline par étape : nombre d'affaires, montant total et montant pondéré
+     * (montant × probabilité de l'étape). Base d'un prévisionnel commercial.
+     */
+    pipelineSummary: authed('read', 'Opportunity').query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const [stages, opps] = await Promise.all([
+          tx.pipelineStage.findMany({ orderBy: { order: 'asc' } }),
+          tx.opportunity.findMany({ where: scope(ctx.societeId), select: { amount: true, stageId: true } }),
+        ]);
+        const r2 = (v: number) => Math.round(v * 100) / 100;
+        const byStage = new Map<string, { count: number; total: number }>();
+        for (const o of opps) {
+          const e = byStage.get(o.stageId) ?? { count: 0, total: 0 };
+          e.count += 1; e.total += Number(o.amount ?? 0);
+          byStage.set(o.stageId, e);
+        }
+        const rows = stages.map((s) => {
+          const e = byStage.get(s.id) ?? { count: 0, total: 0 };
+          return { stageId: s.id, name: s.name, probability: s.probability, count: e.count, total: r2(e.total), weighted: r2(e.total * s.probability / 100) };
+        });
+        return {
+          rows,
+          totalCount: rows.reduce((s, r) => s + r.count, 0),
+          totalAmount: r2(rows.reduce((s, r) => s + r.total, 0)),
+          weightedAmount: r2(rows.reduce((s, r) => s + r.weighted, 0)),
+        };
+      })
+    ),
   }),
 
   // ── Étapes du pipeline (niveau compte) ──

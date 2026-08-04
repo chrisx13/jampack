@@ -142,6 +142,22 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
   });
 });
 
+describe('CRM — synthèse pondérée du pipeline', () => {
+  it('montant pondéré = Σ montant × probabilité d’étape', async () => {
+    const s = await caller.crm.opportunities.pipelineSummary();
+    expect(s.rows.length).toBeGreaterThanOrEqual(1);
+    // La cohérence interne : le pondéré global = somme des pondérés par étape.
+    const sumWeighted = Math.round(s.rows.reduce((a: number, r: { weighted: number }) => a + r.weighted, 0) * 100) / 100;
+    expect(s.weightedAmount).toBeCloseTo(sumWeighted, 2);
+    // Chaque ligne : weighted = total × probability / 100.
+    for (const r of s.rows as { total: number; probability: number; weighted: number }[]) {
+      expect(r.weighted).toBeCloseTo(Math.round(r.total * r.probability) / 100, 2);
+    }
+    // Le pondéré ne dépasse jamais le total (probabilités ≤ 100 %).
+    expect(s.weightedAmount).toBeLessThanOrEqual(s.totalAmount + 0.01);
+  });
+});
+
 describe('CRM — activités & tâches', () => {
   it('crée une tâche rattachée au client, la liste puis la clôture', async () => {
     const companyId = await anyCustomer();

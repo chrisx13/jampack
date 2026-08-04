@@ -17,8 +17,10 @@ export default function Pipeline() {
   const can = useCan();
   const canMove = can('update', 'Opportunity');
 
+  const summary = trpc.crm.opportunities.pipelineSummary.useQuery();
+
   const move = trpc.crm.opportunities.move.useMutation({
-    onSettled: () => utils.crm.opportunities.list.invalidate(),
+    onSettled: () => { utils.crm.opportunities.list.invalidate(); utils.crm.opportunities.pipelineSummary.invalidate(); },
   });
 
   const byStage = useMemo(() => {
@@ -47,6 +49,23 @@ export default function Pipeline() {
         {move.isPending && <Spinner size="sm" />}
       </div>
 
+      {summary.data && (
+        <div className="row g-3 mb-4">
+          <div className="col-md-4"><Card className="h-100"><Card.Body className="py-2">
+            <div className="text-secondary small"><i className="bi bi-collection me-1" />Affaires en cours</div>
+            <div className="fs-5 fw-semibold">{summary.data.totalCount}</div>
+          </Card.Body></Card></div>
+          <div className="col-md-4"><Card className="h-100"><Card.Body className="py-2">
+            <div className="text-secondary small"><i className="bi bi-cash-stack me-1" />Montant total</div>
+            <div className="fs-5 fw-semibold">{euro.format(summary.data.totalAmount)}</div>
+          </Card.Body></Card></div>
+          <div className="col-md-4"><Card className="h-100 border-primary"><Card.Body className="py-2">
+            <div className="text-secondary small"><i className="bi bi-graph-up-arrow me-1" />Prévisionnel pondéré</div>
+            <div className="fs-5 fw-semibold text-primary">{euro.format(summary.data.weightedAmount)}</div>
+          </Card.Body></Card></div>
+        </div>
+      )}
+
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="d-flex gap-3 pb-2" style={{ overflowX: 'auto' }}>
           {stages.data?.map((stage) => {
@@ -54,7 +73,7 @@ export default function Pipeline() {
             return (
               <div key={stage.id} style={{ minWidth: 288, width: 288 }} className="flex-shrink-0">
                 <div className="d-flex align-items-center justify-content-between px-1 mb-2">
-                  <span className="fw-semibold">{stage.name}</span>
+                  <span className="fw-semibold">{stage.name} <span className="text-secondary small fw-normal">· {(stage as { probability?: number }).probability ?? 0}%</span></span>
                   <Badge bg="secondary-subtle" text="secondary">{items.length}</Badge>
                 </div>
                 <div className="text-secondary small px-1 mb-2">{euro.format(stageTotal(stage.id))}</div>

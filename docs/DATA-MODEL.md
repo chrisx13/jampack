@@ -18,7 +18,8 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
 - `Company` (`isCustomer`/`isSupplier`, **`siren`/`siret`/`tvaNumber`** = identifiants légaux,
   **`doNotProspect`** = opposition RGPD, **`processingRestricted`** = limitation RGPD, `factorId`,
   `paymentTermId`) · `Contact` · `Establishment`
-  (siège/facturation/livraison) · `PipelineStage` · `Opportunity` · `Activity`.
+  (siège/facturation/livraison) · `PipelineStage` (**`probability`** = probabilité de conversion %) ·
+  `Opportunity` · `Activity` (**`companyId`/`done`/`doneAt`** = tâches rattachées & clôturables).
 
 ### Référentiels
 - `TaxRate` (compte) · `Product` (+ `reorderPoint` = seuil de réappro.) · `ProductCategory` (arbre) · `NumberSequence` (société×docType, atomique).

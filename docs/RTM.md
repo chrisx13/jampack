@@ -23,6 +23,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-CRM-1..3 | `crm/crm.router.ts` (companies, contacts, establishments) | seed + UI | ✅ |
 | FR-CRM-4 | `pages/Pipeline.tsx` (@hello-pangea/dnd) | UI kanban | ✅ |
 | FR-CRM-5 | `crm.router.ts` (`activities.{list,tasks,create,complete,reopen,remove}`), modèle `Activity` (+`companyId`/`done`/`doneAt`), `activityCreate`/`activityTypeLabel`/`isActivityOverdue`, `Activities.tsx` | unit : rattachement requis, libellés, retard ; e2e int : tâche créée→listée→clôturée, activité orpheline rejetée | ✅ |
+| FR-CRM-6 | `crm.opportunities.pipelineSummary`, `PipelineStage.probability`, synthèse + probabilités dans `Pipeline.tsx` | e2e int : pondéré = Σ montant × proba/100, ≤ total | ✅ |
 
 ## Référentiels
 | Exigence | Code | Test / Preuve | État |

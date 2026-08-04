@@ -262,6 +262,7 @@ model PipelineStage {
   organizationId String
   name           String
   order          Int
+  probability    Int           @default(50) // probabilité de conversion (%) pour la valeur pondérée du pipeline
   opportunities  Opportunity[]
   @@unique([organizationId, name])
 }

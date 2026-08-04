@@ -106,6 +106,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **Fait** | Établissements & adresses clients | ✅ | `crm.router.ts` (`establishments`) |
 | **1 Référentiels** | Articles/services | ✅ | `catalog.router.ts` (`products`) |
 | **1 Référentiels** | **Import CSV du catalogue** (upsert par référence) | ✅ | `catalog.products.importCsv`, `parseProductsCsv`, bouton import `Catalogue.tsx` |
+| **1 CRM** | **Prévisionnel commercial pondéré** (probabilité par étape) | ✅ | `crm.opportunities.pipelineSummary`, `PipelineStage.probability`, bandeau `Pipeline.tsx` |
 | **1 Référentiels** | Taxes (TVA) | ✅ | `catalog.router.ts` (`taxRates`) |
 | **1 Référentiels** | Numérotation des pièces | ✅ | `NumberSequence`, `nextDocumentNumber` |
 | **1 Référentiels** | Modèles PDF | ✅ | `apps/api/src/invoice/invoiceHtml.ts` → PDF Chromium |

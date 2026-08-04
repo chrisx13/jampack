@@ -118,10 +118,16 @@ async function main() {
   await grant(userCompta.id, boulangerie.id, comptable.id);
 
   // ── Pipeline (niveau compte) ──
-  const stageNames = ['Prospect', 'Qualifie', 'Proposition', 'Gagne', 'Perdu'];
+  const stageDefs = [
+    { name: 'Prospect', probability: 10 },
+    { name: 'Qualifie', probability: 40 },
+    { name: 'Proposition', probability: 70 },
+    { name: 'Gagne', probability: 100 },
+    { name: 'Perdu', probability: 0 },
+  ];
   const stages = await Promise.all(
-    stageNames.map((name, i) =>
-      prisma.pipelineStage.upsert({ where: { organizationId_name: { organizationId: org.id, name } }, update: {}, create: { organizationId: org.id, name, order: i } })
+    stageDefs.map((s, i) =>
+      prisma.pipelineStage.upsert({ where: { organizationId_name: { organizationId: org.id, name: s.name } }, update: { probability: s.probability }, create: { organizationId: org.id, name: s.name, order: i, probability: s.probability } })
     )
   );
   const stageByName = Object.fromEntries(stages.map((s) => [s.name, s]));
