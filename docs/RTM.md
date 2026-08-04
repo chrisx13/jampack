@@ -69,6 +69,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-STK-6 | `stock.lots`, `StockMovement.lotNumber`/`expiryDate`, `StockLots.tsx` | e2e int : solde net par lot + statut périmé | ✅ |
 | FR-STK-7 | `stock.valuation({method:'fifo'})`, `StockValuation.tsx` (bascule PMP/FIFO) | e2e int : 100@2+100@4, sortie 150 → FIFO 200 vs PMP 150 | ✅ |
 | FR-STK-8 | `stock.movements.transfer`, `stockTransfer` (refine source≠destination, qté>0), carte transfert `StockMovements.tsx` | unit : transfert valide / source=dest rejeté / qté ≤ 0 rejetée ; e2e int : −30 source, +30 destination, source=dest rejeté | ✅ |
+| FR-STK-9 | `stock.exportLevels`, `stockLevelsCsv` (échappement `;`/`"`, décimale FR), bouton export `StockLevels.tsx` | unit : en-tête + échappement + liste vide ; e2e int : export contient l'article stocké | ✅ |
 
 ## Comptabilité
 | Exigence | Code | Test / Preuve | État |

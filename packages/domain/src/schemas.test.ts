@@ -6,7 +6,7 @@ import {
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
   isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
-  isQuoteExpired, quoteDaysToExpiry,
+  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -144,6 +144,22 @@ describe('commandes fournisseurs en retard', () => {
     expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: null }, now)).toBe(false);
     expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: '2026-08-10T00:00:00Z' }, now)).toBe(false);
     expect(purchaseOrderDaysLate({ status: 'received', expectedDate: '2026-08-01T00:00:00Z' }, now)).toBe(0);
+  });
+});
+
+describe('stockLevelsCsv', () => {
+  it('génère un en-tête + lignes, décimale FR, et échappe le séparateur', () => {
+    const csv = stockLevelsCsv([
+      { reference: 'R1', productName: 'Baguette', warehouseName: 'Dépôt A', quantity: 65, unit: 'pièce' },
+      { reference: null, productName: 'Pain; spécial', warehouseName: 'Dépôt B', quantity: 12.5, unit: null },
+    ]);
+    const lines = csv.split('\n');
+    expect(lines[0]).toBe('Référence;Article;Entrepôt;Quantité;Unité');
+    expect(lines[1]).toBe('R1;Baguette;Dépôt A;65;pièce');
+    expect(lines[2]).toBe(';"Pain; spécial";Dépôt B;12,5;'); // nom avec ; entre guillemets, réf/unité vides
+  });
+  it('liste vide → en-tête seul', () => {
+    expect(stockLevelsCsv([])).toBe('Référence;Article;Entrepôt;Quantité;Unité');
   });
 });
 

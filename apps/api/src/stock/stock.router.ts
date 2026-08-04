@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { warehouseCreate, warehouseUpdate, stockMovementCreate, stockTransfer, stockInventory, byId } from '@jampack/domain';
+import { warehouseCreate, warehouseUpdate, stockMovementCreate, stockTransfer, stockInventory, stockLevelsCsv, byId } from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -106,6 +106,29 @@ export const stockRouter = router({
           quantity: N(g._sum.quantity),
         }))
         .sort((a, b) => a.productName.localeCompare(b.productName) || a.warehouseName.localeCompare(b.warehouseName));
+    })
+  ),
+
+  /** Export CSV des niveaux de stock (référence ; article ; entrepôt ; quantité ; unité). */
+  exportLevels: authed('read', 'StockMovement').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const grouped = await tx.stockMovement.groupBy({ by: ['productId', 'warehouseId'], where: scope(ctx.societeId), _sum: { quantity: true } });
+      const [products, warehouses] = await Promise.all([
+        tx.product.findMany({ where: scope(ctx.societeId), select: { id: true, name: true, unit: true, reference: true } }),
+        tx.warehouse.findMany({ where: scope(ctx.societeId), select: { id: true, name: true } }),
+      ]);
+      const pById = new Map(products.map((p) => [p.id, p]));
+      const wById = new Map(warehouses.map((w) => [w.id, w]));
+      const rows = grouped
+        .map((g) => ({
+          reference: pById.get(g.productId)?.reference ?? null,
+          productName: pById.get(g.productId)?.name ?? '—',
+          warehouseName: wById.get(g.warehouseId)?.name ?? '—',
+          quantity: N(g._sum.quantity),
+          unit: pById.get(g.productId)?.unit ?? '',
+        }))
+        .sort((a, b) => a.productName.localeCompare(b.productName) || a.warehouseName.localeCompare(b.warehouseName));
+      return { filename: 'niveaux-stock.csv', content: stockLevelsCsv(rows) };
     })
   ),
 

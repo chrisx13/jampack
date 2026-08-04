@@ -69,6 +69,16 @@ describe('Stock — mouvements, niveaux, valorisation', () => {
     expect(pmp.value).toBeCloseTo(150, 2);  // PMP=3 × 50
   });
 
+  it('export CSV des niveaux : en-tête + ligne pour l’article stocké', async () => {
+    const p = await caller.catalog.products.create({ name: '[INT] Export Prod', reference: '[INT]-EXP', kind: 'bien' });
+    const wh = await caller.stock.warehouses.create({ name: '[INT] Export WH' });
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'entree', quantity: 42 });
+    const { filename, content } = await caller.stock.exportLevels();
+    expect(filename).toBe('niveaux-stock.csv');
+    expect(content.split('\n')[0]).toBe('Référence;Article;Entrepôt;Quantité;Unité');
+    expect(content).toContain('[INT] Export Prod;[INT] Export WH;42');
+  });
+
   it('transfert inter-entrepôts : −30 en source, +30 en destination', async () => {
     const p = await caller.catalog.products.create({ name: '[INT] Transfert Prod', kind: 'bien' });
     const src = await caller.stock.warehouses.create({ name: '[INT] Transfert Src' });

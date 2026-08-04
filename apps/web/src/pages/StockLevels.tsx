@@ -25,9 +25,18 @@ export default function StockLevels() {
     utils.stock.levels.invalidate(); utils.stock.lowStock.invalidate(); utils.stock.valuation.invalidate();
   };
 
+  const exportCsv = async () => {
+    const { filename, content } = await utils.stock.exportLevels.fetch();
+    const url = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+  };
+
   return (
     <>
-      <div className="mb-4"><h4 className="mb-1 fw-semibold">Niveaux de stock</h4><p className="text-secondary mb-0">Quantités nettes par article et entrepôt</p></div>
+      <div className="d-flex justify-content-between align-items-start mb-4">
+        <div><h4 className="mb-1 fw-semibold">Niveaux de stock</h4><p className="text-secondary mb-0">Quantités nettes par article et entrepôt</p></div>
+        <Button variant="outline-secondary" size="sm" onClick={exportCsv} disabled={rows.length === 0}><i className="bi bi-download me-1" />Exporter CSV</Button>
+      </div>
 
       {low.length > 0 && (
         <Alert variant="warning" className="d-flex align-items-start gap-2">

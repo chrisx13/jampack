@@ -42,7 +42,8 @@
 - **Mouvements** : entrée / sortie / ajustement (quantité signée pour l'ajustement). **Transfert inter-entrepôts**
   (carte dédiée) : déplace une quantité d'un entrepôt à un autre en générant automatiquement la sortie et l'entrée.
 - **Niveaux** : quantité nette par article et entrepôt ; **inventaire** (bouton par ligne : saisir la
-  quantité comptée, un ajustement est généré) ; **alerte de rupture** pour les articles sous leur seuil.
+  quantité comptée, un ajustement est généré) ; **alerte de rupture** pour les articles sous leur seuil ;
+  **Exporter CSV** des niveaux (référence ; article ; entrepôt ; quantité ; unité).
 - **Valorisation** : valeur du stock au **PMP** (prix moyen pondéré) ou en **FIFO** (premier entré, premier sorti) — méthode au choix.
 - **Lots & péremption** : renseignez un **n° de lot/série** et une **date de péremption** sur un mouvement ;
   la vue *Lots & péremption* affiche les soldes par lot et alerte sur les lots périmés ou bientôt périmés.

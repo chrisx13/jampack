@@ -145,6 +145,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-STK-6 | **Lots / n° de série** + **péremption** (DLC/DDM) : soldes par lot, alertes périmé/bientôt. | C | ✅ |
 | FR-STK-7 | Valorisation **FIFO** (premier entré, premier sorti) en plus du **PMP** (méthode au choix). | C | ✅ |
 | FR-STK-8 | **Transfert inter-entrepôts** : sortie source + entrée destination atomiques (entrepôts distincts, quantité positive). | C | ✅ |
+| FR-STK-9 | **Export CSV des niveaux de stock** (référence ; article ; entrepôt ; quantité ; unité). | C | ✅ |
 
 ### 3.7 Comptabilité (Jalon 4)
 | ID | Exigence | Prio | Statut |

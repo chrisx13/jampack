@@ -548,6 +548,19 @@ export const stockMovementCreate = z.object({
 });
 export type StockMovementCreate = z.infer<typeof stockMovementCreate>;
 
+/**
+ * Sérialise les niveaux de stock en CSV (séparateur `;`, décimale FR).
+ * Colonnes : Référence ; Article ; Entrepôt ; Quantité ; Unité. Échappe `;`/`"`/retours ligne.
+ */
+export type StockLevelRow = { reference?: string | null; productName: string; warehouseName: string; quantity: number; unit?: string | null };
+export function stockLevelsCsv(rows: StockLevelRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const fr = (n: number) => (Math.round(n * 1000) / 1000).toString().replace('.', ',');
+  const head = 'Référence;Article;Entrepôt;Quantité;Unité';
+  const lines = rows.map((r) => [esc(r.reference ?? ''), esc(r.productName), esc(r.warehouseName), fr(r.quantity), esc(r.unit ?? '')].join(';'));
+  return [head, ...lines].join('\n');
+}
+
 /** Un devis émis est expiré si sa date de validité est dépassée (offre caduque). */
 export function isQuoteExpired(q: { status: string; validUntil?: Date | string | null }, now = new Date()): boolean {
   if (q.status !== 'sent' || !q.validUntil) return false;

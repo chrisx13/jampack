@@ -33,7 +33,7 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 `listForInvoice · create · remove` (recalcule le statut *payée* de la facture fournisseur)
 
 ### `stock`
-`warehouses.{list,create,update,archive}` · `movements.{list,create,remove,transfer}` (transfer = transfert inter-entrepôts atomique) · `levels` · `valuation` (`{method:'pmp'|'fifo'}`) · `inventory` (comptage → ajustement) · `lowStock` (articles sous le seuil de réappro.) · `lots` (soldes par lot/série + péremption)
+`warehouses.{list,create,update,archive}` · `movements.{list,create,remove,transfer}` (transfer = transfert inter-entrepôts atomique) · `levels` · `exportLevels` (CSV des niveaux) · `valuation` (`{method:'pmp'|'fifo'}`) · `inventory` (comptage → ajustement) · `lowStock` (articles sous le seuil de réappro.) · `lots` (soldes par lot/série + péremption)
 
 ### `accounting`
 `accounts.{list,create,update,initPcg}` · `journals.{list,create,initDefaults}` · `fixedAssets.{list,create,update,remove,schedule,postDepreciation}` (immobilisations + plan d'amortissement + comptabilisation de la dotation 681/281) · `entries.{list,get,create,remove}` · `balance` · `ledger` (grand livre d'un compte) · `incomeStatement` (compte de résultat) · `balanceSheet` (bilan simplifié) · `postSalesInvoice · postPayment · postSupplierInvoice · postSupplierPayment` (génèrent les écritures) · `fec` (export FEC) · `vatReturn` (CA3) · `accountLines · letter · unletter` (lettrage) · `closeVat` · `bankLines · reconcile · importBankStatement` (rapprochement bancaire + import de relevé CSV)
