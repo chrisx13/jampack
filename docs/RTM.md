@@ -47,7 +47,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-VEN-11 | `discountMention`/`DISCOUNT_MENTION_NONE`, `Societe.discountTerms`, mention dans `invoiceHtml.ts`, champ `SocieteSettings.tsx` | unit : sans condition → « néant », avec condition → détaillée ; e2e int : discountTerms paramétré persiste | ✅ |
 | FR-VEN-12 | `makeSalesRouter.duplicate` (+ `copyLines`), bouton Dupliquer `SalesDocs.tsx` | e2e int : facture dupliquée = brouillon sans numéro, mêmes lignes/client + réf. commande | ✅ |
 | FR-VEN-13 | `invoiceHtml.ts` (bloc `docType === 'devis'` : validité + CGV + « Bon pour accord ») | rendu PDF (gabarit) | ✅ |
-| FR-VEN-14 | `Invoice.customerReference`, `invoiceCreate`/`invoiceUpdate`, champ `SalesDocs.tsx`, affichage `invoiceHtml.ts` | e2e int : référence persistée + copiée à la duplication | ✅ |
+| FR-VEN-14 | `Invoice.customerReference`, `invoiceCreate`/`invoiceUpdate`, champ `SalesDocs.tsx`, affichage `invoiceHtml.ts` + Factur-X `facturx.ts` (BT-13 `BuyerOrderReferencedDocument`) | e2e int : référence persistée, copiée à la duplication, présente dans le XML CII | ✅ |
 | FR-VEN-8 | `invoice/facturx.ts`, `invoice/pdp.ts`, `invoice.router.ts` (`facturx`/`sendToPdp`/`transmissions`), `PdpTransmission` | `sales.int.test.ts` › *E-invoicing — Factur-X & PDP interne* | 🔧 (génération CII + connecteur ✅ ; immatriculation DGFiP/PPF/e-reporting ⛔ hors périmètre logiciel) |
 
 ## Achats

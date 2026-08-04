@@ -8,6 +8,7 @@ type Invoice = {
   issueDate: Date | null;
   dueDate: Date | null;
   vatReverseCharge?: boolean | null;
+  customerReference?: string | null;
   company: { name: string; siren?: string | null; siret?: string | null; tvaNumber?: string | null } | null;
   establishment: { addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
   lines: Line[];
@@ -89,7 +90,8 @@ ${inv.lines.map(line).join('\n')}
         <ram:SpecifiedLegalOrganization><ram:ID schemeID="0002">${esc(inv.company.siren)}</ram:ID></ram:SpecifiedLegalOrganization>` : ''}
         <ram:PostalTradeAddress><ram:PostcodeCode>${esc(buyerAddr?.postalCode ?? '')}</ram:PostcodeCode><ram:LineOne>${esc(buyerAddr?.addressLine1 ?? '')}</ram:LineOne><ram:CityName>${esc(buyerAddr?.city ?? '')}</ram:CityName><ram:CountryID>FR</ram:CountryID></ram:PostalTradeAddress>${inv.company?.tvaNumber ? `
         <ram:SpecifiedTaxRegistration><ram:ID schemeID="VA">${esc(inv.company.tvaNumber)}</ram:ID></ram:SpecifiedTaxRegistration>` : ''}
-      </ram:BuyerTradeParty>
+      </ram:BuyerTradeParty>${inv.customerReference ? `
+      <ram:BuyerOrderReferencedDocument><ram:IssuerAssignedID>${esc(inv.customerReference)}</ram:IssuerAssignedID></ram:BuyerOrderReferencedDocument>` : ''}
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery/>
     <ram:ApplicableHeaderTradeSettlement>

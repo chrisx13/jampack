@@ -73,6 +73,8 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
   (`formatIban`) à l'affichage et **sur le RIB de la facture PDF**. ✅
 - **Acheteur** : identité + adresse ✅ ; **identifiants SIREN/TVA** (`Company.siren`/`siret`/`tvaNumber`)
   **portés sur la facture PDF et le Factur-X** (BuyerTradeParty : SIREN schemeID 0002, TVA schemeID VA). ✅
+- **Référence commande acheteur (BT-13)** : `Invoice.customerReference` → PDF + Factur-X
+  (`BuyerOrderReferencedDocument/IssuerAssignedID`). ✅
 - **Pièce** : numéro **séquentiel chronologique continu**, date d'émission, date de la vente/prestation,
   désignation, quantité, PU HT, **taux de TVA par ligne**, réductions, total HT/TVA/TTC. ✅ (numérotation
   atomique par société/type ; totaux par taux).
