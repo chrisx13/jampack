@@ -562,6 +562,23 @@ export function stockLevelsCsv(rows: StockLevelRow[]): string {
 }
 
 /**
+ * Sérialise le journal d'audit en CSV (séparateur `;`). Colonnes : Date ; Utilisateur ; Action ; Référence.
+ * `at` au format ISO → date+heure FR. Échappe `;`/`"`/retours ligne.
+ */
+export type AuditCsvRow = { at: string | Date; userEmail: string; action: string; ref?: string | null };
+export function auditLogCsv(rows: AuditCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const dt = (d: string | Date) => {
+    const x = new Date(d);
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${p(x.getUTCDate())}/${p(x.getUTCMonth() + 1)}/${x.getUTCFullYear()} ${p(x.getUTCHours())}:${p(x.getUTCMinutes())}`;
+  };
+  const head = 'Date;Utilisateur;Action;Référence';
+  const lines = rows.map((r) => [dt(r.at), esc(r.userEmail), esc(r.action), esc(r.ref ?? '')].join(';'));
+  return [head, ...lines].join('\n');
+}
+
+/**
  * Sérialise une balance comptable en CSV (séparateur `;`, décimale FR).
  * Colonnes : Compte ; Libellé ; Débit ; Crédit ; Solde. Échappe `;`/`"`/retours ligne.
  */

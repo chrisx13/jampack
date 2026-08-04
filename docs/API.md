@@ -42,7 +42,7 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 `summary` (KPI : CA, encours clients/fournisseurs, valeur stock, TVA) · `tresorerie` (prévisionnel encaissements/décaissements) · `agedReceivables` / `agedPayables` (balance âgée clients / fournisseurs par tranche) · `cashflowForecast` (`{weeks?}` : prévisionnel hebdomadaire encaissements/décaissements + position cumulée) · `agenda` (`{days?}` : échéances & tâches à venir — tâches CRM, factures clients/fournisseurs, livraisons ; retards signalés) · `agendaIcs` (`{days?}` : même agenda en iCalendar .ics)
 
 ### `audit`
-`list` (dernières entrées du journal d'audit du compte)
+`list` (dernières entrées du journal d'audit du compte) · `exportCsv` (export CSV du journal, jusqu'à 5000 entrées)
 
 ### `billing`
 `addresses.*` · `factors.*` · `bankAccounts.*` · `paymentTerms.*`

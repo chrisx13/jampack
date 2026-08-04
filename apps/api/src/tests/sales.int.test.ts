@@ -338,6 +338,13 @@ describe('Audit — journalisation des mutations', () => {
     const upd = logs.find((l: { action: string; ref: string | null }) => l.action === 'stock.warehouses.update' && l.ref === wh.id);
     expect(upd).toBeTruthy();
     expect(upd.userEmail).toContain('@');
+
+    // Export CSV du journal : en-tête normé + une ligne mentionnant l'action tracée.
+    const csv = await caller.audit.exportCsv();
+    expect(csv.filename).toBe('journal-audit.csv');
+    expect(csv.content.split('\n')[0]).toBe('Date;Utilisateur;Action;Référence');
+    expect(csv.content).toContain('stock.warehouses.create');
+
     await C.prisma.warehouse.delete({ where: { id: wh.id } });
   });
 });

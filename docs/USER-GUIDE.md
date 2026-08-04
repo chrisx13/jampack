@@ -80,7 +80,7 @@
   affacturage, conditions de paiement), **Apparence** (couleurs de marque du compte).
 - **Sociétés** : gérer les sociétés du compte.
 - **Utilisateurs & rôles** : gérer les membres et leurs rôles par société (RBAC cumulable).
-- **Journal d'audit** : consulter les mutations tracées (utilisateur, action, société, horodatage).
+- **Journal d'audit** : consulter les mutations tracées (utilisateur, action, société, horodatage) ; **Exporter CSV** pour archivage/contrôle.
 
 ## 9. Bonnes pratiques
 - Une pièce **validée** n'est plus modifiable (créer un avoir / une nouvelle pièce si besoin).

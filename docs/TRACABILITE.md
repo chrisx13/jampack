@@ -148,6 +148,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **6 Gestion** | **Agenda consolidé** (échéances & tâches à venir, 7/30/90 j, retards) + **export ICS** | ✅ | `analytics.agenda`/`agendaIcs`, `buildAgendaIcs` (RFC 5545), `Agenda.tsx` (domaine Gestion) |
 | **5 BI** | Tableaux de bord analytiques avancés (séries temporelles, marges) | 🔧 | KPI consolidés via `analytics.summary` (Dashboard) ; BI approfondie = phase future |
 | transverse | Administration in-app : inviter users, attribuer/révoquer rôles | ✅ | `iam.router` (`invite`/`grantRole`/`revokeRole`), garde-fou dernier admin, page `Members.tsx` |
+| transverse | **Journal d'audit** des mutations + **export CSV** | ✅ | middleware `auditMiddleware`, `audit.router` (`list`/`exportCsv`), `auditLogCsv`, `AuditLog.tsx` |
 
 **Position actuelle : Jalons 0 à 5 livrés (socle → trésorerie).** Ventes (devis → facture → avoir,
 règlements + échéancier client, un seul modèle `Invoice` discriminé par `docType`), **e-invoicing**

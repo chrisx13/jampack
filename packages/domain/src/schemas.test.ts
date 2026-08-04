@@ -6,7 +6,7 @@ import {
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
   isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
-  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs,
+  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs, auditLogCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -171,6 +171,19 @@ describe('buildAgendaIcs', () => {
     const ics = buildAgendaIcs([]);
     expect(ics.startsWith('BEGIN:VCALENDAR')).toBe(true);
     expect(ics.trimEnd().endsWith('END:VCALENDAR')).toBe(true);
+  });
+});
+
+describe('auditLogCsv', () => {
+  it('en-tête + date/heure FR + échappement', () => {
+    const csv = auditLogCsv([{ at: '2026-08-04T09:30:00Z', userEmail: 'a@b.fr', action: 'invoices.create', ref: 'FA-1' }]);
+    const lines = csv.split('\n');
+    expect(lines[0]).toBe('Date;Utilisateur;Action;Référence');
+    expect(lines[1]).toBe('04/08/2026 09:30;a@b.fr;invoices.create;FA-1');
+  });
+  it('référence absente → colonne vide ; liste vide → en-tête seul', () => {
+    expect(auditLogCsv([{ at: '2026-08-04T00:00:00Z', userEmail: '—', action: 'x' }]).split('\n')[1]).toBe('04/08/2026 00:00;—;x;');
+    expect(auditLogCsv([])).toBe('Date;Utilisateur;Action;Référence');
   });
 });
 
