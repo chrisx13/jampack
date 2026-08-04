@@ -7,6 +7,8 @@
 - **Sélecteur de société** (barre du haut) : basculer entre sociétés ou vue **consolidée**.
 - Navigation type VS Code : **barre d'activité** (domaines à gauche) → **panneau** (vues) → **onglets**.
   Le panneau peut être **épinglé** (statique) ou **à la volée** (se referme après sélection).
+- **Tableau de bord** : indicateurs clés (CRM + finances) et panneau **« À traiter »** (échéances et tâches
+  des 14 prochains jours, retards signalés) — l'essentiel visible sans naviguer.
 
 ## 2. CRM
 - **Clients** / **Contacts** : créer, modifier ; rattacher contacts et établissements (siège/facturation/livraison).

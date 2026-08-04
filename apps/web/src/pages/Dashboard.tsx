@@ -23,12 +23,17 @@ function Stat({ icon, tone, label, value }: { icon: string; tone: string; label:
   );
 }
 
+const KIND_ICON: Record<string, string> = {
+  tache: 'bi-check2-square', facture_client: 'bi-arrow-down-circle', facture_fournisseur: 'bi-arrow-up-circle', livraison: 'bi-truck',
+};
+
 export default function Dashboard() {
   const utils = trpc.useUtils();
   const companies = trpc.crm.companies.list.useQuery();
   const contacts = trpc.crm.contacts.list.useQuery();
   const opportunities = trpc.crm.opportunities.list.useQuery();
   const summary = trpc.analytics.summary.useQuery();
+  const agenda = trpc.analytics.agenda.useQuery({ days: 14 });
 
   const [name, setName] = useState('');
   const create = trpc.crm.companies.create.useMutation({
@@ -68,28 +73,28 @@ export default function Dashboard() {
         <Col lg={8}>
           <Card>
             <Card.Header className="d-flex align-items-center justify-content-between">
-              <span className="fw-semibold">Clients</span>
-              {companies.isFetching && <Spinner size="sm" />}
+              <span className="fw-semibold">À traiter <span className="text-secondary fw-normal small">— 14 prochains jours</span></span>
+              {agenda.data && agenda.data.overdueCount > 0 && <span className="badge bg-danger-subtle text-danger fw-normal">{agenda.data.overdueCount} en retard</span>}
             </Card.Header>
             <Card.Body className="p-0">
               <Table hover responsive className="mb-0 align-middle">
-                <thead className="text-secondary small">
-                  <tr>
-                    <th className="ps-3">Nom</th>
-                    <th>Société</th>
-                    <th className="text-end pe-3">Créé le</th>
-                  </tr>
-                </thead>
                 <tbody>
-                  {companies.data?.map((c) => (
-                    <tr key={c.id}>
-                      <td className="ps-3 fw-medium">{c.name}</td>
-                      <td className="text-secondary">{c.societe?.name ?? '—'}</td>
-                      <td className="text-end pe-3 text-secondary">{new Date(c.createdAt).toLocaleDateString('fr-FR')}</td>
+                  {agenda.isLoading && <tr><td className="text-center py-4"><Spinner size="sm" /></td></tr>}
+                  {(agenda.data?.events ?? []).slice(0, 8).map((e) => (
+                    <tr key={e.id}>
+                      <td className="ps-3" style={{ width: 36 }}><i className={`bi ${KIND_ICON[e.kind] ?? 'bi-dot'} text-secondary`} /></td>
+                      <td>
+                        <div className="fw-medium text-truncate">{e.label}</div>
+                        <div className="small text-secondary">{e.party}</div>
+                      </td>
+                      <td className="text-end pe-3 text-nowrap">
+                        {e.amount != null && <span className="fw-medium me-2">{euro.format(e.amount)}</span>}
+                        <span className={`small ${e.overdue ? 'text-danger' : 'text-secondary'}`}>{new Date(e.date as unknown as string).toLocaleDateString('fr-FR')}{e.overdue ? ' ⚠' : ''}</span>
+                      </td>
                     </tr>
                   ))}
-                  {companies.data?.length === 0 && (
-                    <tr><td colSpan={3} className="text-center text-secondary py-4">Aucun client pour cette société</td></tr>
+                  {agenda.isSuccess && (agenda.data?.events.length ?? 0) === 0 && (
+                    <tr><td className="text-center text-secondary py-4">Rien à traiter sur les 14 prochains jours 🎉</td></tr>
                   )}
                 </tbody>
               </Table>
