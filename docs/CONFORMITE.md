@@ -100,9 +100,32 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 - État : conservation 10 ans ✅ (règle) ; **coffre à valeur probante / horodatage / cachet** ⏳
   (dépend de la voie PDP — DO-1). → REG-9.
 
-## 4. Accessibilité (cible)
-- **RGAA / WCAG 2.1 AA** : cible pour l'UI publique. État : 🔧 à auditer (contrastes du thème,
-  navigation clavier, libellés ARIA).
+## 4. Accessibilité — RGAA 4.1 / WCAG 2.1 niveau AA
+
+### 4.1 Obligation
+- Le **RGAA** (Référentiel Général d'Amélioration de l'Accessibilité) transpose **WCAG 2.1 AA**. L'obligation
+  légale (art. 47 loi 2005-102) vise le **secteur public** et les **grandes entreprises** (CA France
+  > 250 M€). Un SaaS B2B n'y est pas directement soumis, **mais** dès qu'un **client public** (mairie,
+  hôpital, établissement public) l'utilise, la conformité RGAA devient **exigée contractuellement**.
+- Cible JAMPACK : **WCAG 2.1 AA** comme standard produit + **déclaration d'accessibilité** publiable.
+
+### 4.2 Cartographie par thématique RGAA (état)
+| Thématique RGAA | État | Notes |
+|---|---|---|
+| 3 Couleurs / contrastes | 🔧 | Thème Jampack clair/sombre à auditer (ratio ≥ 4,5:1 texte, 3:1 UI) ; ne pas véhiculer l'info par la seule couleur (badges de statut portent un libellé). |
+| 7 Scripts / composants | 🔧 | Composants react-bootstrap globalement accessibles ; vérifier rôles/états ARIA des menus, modales, onglets, kanban (drag&drop → alternative clavier). |
+| 8 Éléments obligatoires | 🔧 | `lang="fr"`, titres de page, structure HTML valide à confirmer. |
+| 9 Structuration | 🔧 | Hiérarchie des titres (h1→h6), régions/landmarks (nav, main). |
+| 10 Présentation | 🔧 | Zoom 200 %, responsive ≥ 360 px ✅ ; focus visible à vérifier. |
+| 11 Formulaires | 🔧 | Étiquettes `<label>` associées, messages d'erreur explicites, regroupements. |
+| 12 Navigation | 🔧 | Navigation clavier (barre d'activité → panneau → onglets), ordre de tabulation, lien d'évitement. |
+| 13 Consultation | ✅/🔧 | Pas de limite de temps bloquante ; PDF de facture : tag/accessibilité à vérifier. |
+
+### 4.3 Plan
+1. **Audit RGAA** (échantillon de pages : connexion, tableau de bord, liste, formulaire facture).
+2. Corriger **contrastes**, **focus visible**, **labels**, **landmarks**, **alternatives clavier** (kanban).
+3. Publier une **déclaration d'accessibilité** (taux de conformité, dérogations, contact).
+- État global : **🔧 à auditer** (aucune régression connue, mais conformité non mesurée). → NFR-UTI, DO-9.
 
 ## 5. Matrice de conformité (synthèse)
 | Obligation | Exigence liée | Échéance | État |
@@ -120,7 +143,8 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | TVA — CA12 / franchise / autoliquidation / débits-encaissements | REG-7 | — | ⏳ (DO-8) |
 | PCG (ANC 2014-03) + piste d'audit fiable | FR-CPT-*, REG-8 | Continu | 🔧 |
 | Archivage à valeur probante (NF Z42-013 / eIDAS) | REG-9 | 09/2026 | ⏳ (DO-1) |
-| RGPD (registre, UE, effacement) | REG-3 | Continu | 🔧 |
+| RGPD / CNIL (registre, droits, durées, sous-traitance) | REG-3 | Continu | 🔧 — voir [Sécurité & RGPD §5](SECURITE-RGPD.md) |
+| Accessibilité RGAA / WCAG 2.1 AA | NFR-UTI, DO-9 | Selon clients (public) | 🔧 (§4) |
 | Hébergement UE | C-1 | Continu | ✅ (choix imposé) |
 
 ## 6. Plan de mise en conformité

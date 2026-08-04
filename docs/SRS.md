@@ -188,6 +188,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 - **NFR-UTI-1 (M)** Interface FR, cohérente (thème Jampack), navigation type VS Code (domaines/onglets). ✅
 - **NFR-UTI-2 (S)** Modes clair/sombre. ✅
 - **NFR-UTI-3 (S)** Responsive ≥ 360 px ; panneau secondaire épinglé ou à la volée. ✅
+- **NFR-UTI-4 (S)** **Accessibilité RGAA 4.1 / WCAG 2.1 AA** (cible produit ; exigée si client public) : contrastes, navigation clavier, labels/ARIA, déclaration d'accessibilité. 🔧 (à auditer — DO-9) — voir [Conformité §4](CONFORMITE.md).
 
 ### 4.5 Fiabilité
 - **NFR-FIA-1 (M)** Cohérence transactionnelle : chaque opération multi-tables s'exécute dans une transaction. ✅
