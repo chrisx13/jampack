@@ -2,6 +2,8 @@
 // Profil pragmatique « BASIC » : identités vendeur/acheteur, lignes, ventilation de TVA, totaux.
 // Indépendant de toute PDP : ce document est la donnée structurée à embarquer (PDF/A-3) et/ou transmettre.
 
+import { effectiveDiscountFactor } from '@jampack/domain';
+
 type Line = { label: string; quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown };
 type Invoice = {
   number: string | null;
@@ -9,6 +11,8 @@ type Invoice = {
   dueDate: Date | null;
   vatReverseCharge?: boolean | null;
   customerReference?: string | null;
+  discountType?: string | null;
+  discountValue?: unknown;
   company: { name: string; siren?: string | null; siret?: string | null; tvaNumber?: string | null } | null;
   establishment: { addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
   lines: Line[];
@@ -22,12 +26,13 @@ const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '
 const dt = (d: Date | null) => { const x = d ? new Date(d) : new Date(); return `${x.getFullYear()}${String(x.getMonth() + 1).padStart(2, '0')}${String(x.getDate()).padStart(2, '0')}`; };
 const s = (soc: Societe, k: string) => (soc[k] ? String(soc[k]) : '');
 
-/** Ventilation de TVA par taux (base HT + montant) — requis par EN 16931 (BG-23). */
-function taxBreakdown(lines: Line[]) {
+/** Ventilation de TVA par taux (base HT + montant) — requis par EN 16931 (BG-23).
+ *  `factor` applique la remise globale (montants nets) pour garder le XML équilibré. */
+function taxBreakdown(lines: Line[], factor: number) {
   const map = new Map<number, { base: number; tax: number }>();
   for (const l of lines) {
     const rate = n(l.taxRatePct);
-    const ht = r2(n(l.quantity) * n(l.unitPriceHt));
+    const ht = r2(r2(n(l.quantity) * n(l.unitPriceHt)) * factor);
     const e = map.get(rate) ?? { base: 0, tax: 0 };
     e.base = r2(e.base + ht);
     e.tax = r2(e.tax + r2(ht * (rate / 100)));
@@ -38,7 +43,10 @@ function taxBreakdown(lines: Line[]) {
 
 /** Rendu du XML CII (Factur-X) d'une facture. */
 export function renderFacturXml(inv: Invoice, soc: Societe, totals: Totals): string {
-  const bd = taxBreakdown(inv.lines);
+  // Remise globale (pied) : facteur net appliqué aux lignes et à la ventilation TVA (XML cohérent avec le PDF).
+  const grossHt = inv.lines.reduce((sum, l) => sum + r2(n(l.quantity) * n(l.unitPriceHt)), 0);
+  const factor = effectiveDiscountFactor(r2(grossHt), { discountType: (inv.discountType as 'none' | 'percent' | 'amount') ?? 'none', discountValue: n(inv.discountValue) || 0 });
+  const bd = taxBreakdown(inv.lines, factor);
   // Régime de TVA → catégorie d'exonération EN 16931 : franchise « E » (293 B), autoliquidation « AE ».
   const franchise = !!soc.vatFranchise;
   const reverse = !!inv.vatReverseCharge;
@@ -50,7 +58,7 @@ export function renderFacturXml(inv: Invoice, soc: Societe, totals: Totals): str
       ? `<ram:ExemptionReasonCode>VATEX-EU-AE</ram:ExemptionReasonCode><ram:ExemptionReason>Autoliquidation — TVA due par le preneur (art. 283-2 du CGI)</ram:ExemptionReason>`
       : '';
   const line = (l: Line, i: number) => {
-    const qty = n(l.quantity), pu = n(l.unitPriceHt), rate = n(l.taxRatePct), ht = r2(qty * pu);
+    const qty = n(l.quantity), pu = r2(n(l.unitPriceHt) * factor), rate = n(l.taxRatePct), ht = r2(r2(qty * n(l.unitPriceHt)) * factor);
     return `      <ram:IncludedSupplyChainTradeLineItem>
         <ram:AssociatedDocumentLineDocument><ram:LineID>${i + 1}</ram:LineID></ram:AssociatedDocumentLineDocument>
         <ram:SpecifiedTradeProduct><ram:Name>${esc(l.label)}</ram:Name></ram:SpecifiedTradeProduct>

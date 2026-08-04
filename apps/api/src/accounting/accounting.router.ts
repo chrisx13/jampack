@@ -3,6 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
 import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv, fixedAssetCreate, fixedAssetUpdate, depreciationSchedule, balanceCsv, ledgerCsv } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
+import { salesTotals } from '../invoice/salesRouter';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
 function req(s: string | null): string {
@@ -369,7 +370,7 @@ export const accountingRouter = router({
       if (inv.docType !== 'facture') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Seule une facture se comptabilise.' });
       if (inv.status === 'draft' || inv.status === 'cancelled') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Validez la facture avant de la comptabiliser.' });
       if (inv.journalEntryId) return { id: inv.journalEntryId, alreadyPosted: true };
-      const totals = computeInvoiceTotals(inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+      const totals = salesTotals(inv);
       const [journal, client, ventes, tva] = await Promise.all([
         tx.journal.findFirst({ where: { ...scope(ctx.societeId), type: 'vente' } }),
         tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '411000' } }),

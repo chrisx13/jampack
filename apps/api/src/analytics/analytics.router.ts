@@ -6,8 +6,13 @@ import { router, protectedProcedure } from '../trpc/trpc';
 const scope = (s: string | null) => (s ? { societeId: s } : {});
 const n = (v: unknown) => Number(v as never);
 const r2 = (v: number) => Math.round(v * 100) / 100;
-const totalsOf = (lines: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }[]) =>
-  computeInvoiceTotals(lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+// Totaux d'une pièce en tenant compte de la remise globale (discountType/discountValue).
+// Les factures fournisseurs ne portent pas ces champs → traitées comme « sans remise ».
+const totalsOf = (inv: { lines: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }[]; discountType?: unknown; discountValue?: unknown }) =>
+  computeInvoiceTotals(
+    inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })),
+    { discountType: (inv.discountType as 'none' | 'percent' | 'amount') ?? 'none', discountValue: n(inv.discountValue) || 0 },
+  );
 
 export const analyticsRouter = router({
   /** KPI financiers consolidés de la société active (CA, encours, stock, TVA). */
@@ -20,7 +25,7 @@ export const analyticsRouter = router({
       });
       let caFacture = 0, encoursClients = 0;
       for (const f of factures) {
-        const t = totalsOf(f.lines);
+        const t = totalsOf(f);
         caFacture += t.totalTtc;
         if (f.status === 'validated') {
           const paid = f.payments.reduce((s, p) => s + n(p.amount), 0);
@@ -32,7 +37,7 @@ export const analyticsRouter = router({
       const sis = await tx.supplierInvoice.findMany({ where: { ...scope(ctx.societeId), status: 'validated' }, include: { lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
       const encoursFournisseurs = sis.reduce((s, si) => {
         const paid = si.payments.reduce((a, p) => a + n(p.amount), 0);
-        return s + Math.max(0, totalsOf(si.lines).totalTtc - paid);
+        return s + Math.max(0, totalsOf(si).totalTtc - paid);
       }, 0);
 
       // Stock : valeur au PMP
@@ -73,9 +78,9 @@ export const analyticsRouter = router({
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const now = Date.now();
       const remainingOf = (
-        lines: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }[],
+        rec: { lines: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }[]; discountType?: unknown; discountValue?: unknown },
         payments: { amount: unknown }[]
-      ) => r2(totalsOf(lines).totalTtc - payments.reduce((s, p) => s + n(p.amount), 0));
+      ) => r2(totalsOf(rec).totalTtc - payments.reduce((s, p) => s + n(p.amount), 0));
 
       // Encaissements attendus : factures clients validées non soldées.
       const factures = await tx.invoice.findMany({
@@ -84,7 +89,7 @@ export const analyticsRouter = router({
         orderBy: [{ dueDate: 'asc' }],
       });
       const encaissements = factures
-        .map((f) => ({ id: f.id, number: f.number, party: f.company?.name ?? '—', dueDate: f.dueDate, amount: remainingOf(f.lines, f.payments), overdue: f.dueDate ? new Date(f.dueDate).getTime() < now : false }))
+        .map((f) => ({ id: f.id, number: f.number, party: f.company?.name ?? '—', dueDate: f.dueDate, amount: remainingOf(f, f.payments), overdue: f.dueDate ? new Date(f.dueDate).getTime() < now : false }))
         .filter((r) => r.amount > 0.005);
 
       // Décaissements attendus : factures fournisseurs validées non soldées.
@@ -94,7 +99,7 @@ export const analyticsRouter = router({
         orderBy: [{ dueDate: 'asc' }],
       });
       const decaissements = sis
-        .map((s) => ({ id: s.id, number: s.reference, party: s.supplier?.name ?? '—', dueDate: s.dueDate, amount: remainingOf(s.lines, s.payments), overdue: s.dueDate ? new Date(s.dueDate).getTime() < now : false }))
+        .map((s) => ({ id: s.id, number: s.reference, party: s.supplier?.name ?? '—', dueDate: s.dueDate, amount: remainingOf(s, s.payments), overdue: s.dueDate ? new Date(s.dueDate).getTime() < now : false }))
         .filter((r) => r.amount > 0.005);
 
       const toReceive = r2(encaissements.reduce((s, r) => s + r.amount, 0));
@@ -116,7 +121,7 @@ export const analyticsRouter = router({
       const byCompany = new Map<string, Bucket>();
       const totals = empty();
       for (const f of factures) {
-        const remaining = totalsOf(f.lines).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0);
+        const remaining = totalsOf(f).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0);
         if (remaining <= 0.005) continue;
         const days = f.dueDate ? Math.floor((now - new Date(f.dueDate).getTime()) / 86400000) : -1;
         const bucket: keyof Bucket = days <= 0 ? 'notDue' : days <= 30 ? 'd1_30' : days <= 60 ? 'd31_60' : days <= 90 ? 'd61_90' : 'd90p';
@@ -145,7 +150,7 @@ export const analyticsRouter = router({
       const bySupplier = new Map<string, Bucket>();
       const totals = empty();
       for (const s of sis) {
-        const remaining = totalsOf(s.lines).totalTtc - s.payments.reduce((a, p) => a + n(p.amount), 0);
+        const remaining = totalsOf(s).totalTtc - s.payments.reduce((a, p) => a + n(p.amount), 0);
         if (remaining <= 0.005) continue;
         const days = s.dueDate ? Math.floor((now - new Date(s.dueDate).getTime()) / 86400000) : -1;
         const bucket: keyof Bucket = days <= 0 ? 'notDue' : days <= 30 ? 'd1_30' : days <= 60 ? 'd31_60' : days <= 90 ? 'd61_90' : 'd90p';
@@ -178,14 +183,14 @@ export const analyticsRouter = router({
         const diff = Math.floor((startOfWeek(new Date(due)).getTime() - week0.getTime()) / (7 * 86400000));
         return diff < 0 ? 0 : diff; // retards → semaine 0
       };
-      const remainingOf = (lines: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }[], payments: { amount: unknown }[]) =>
-        totalsOf(lines).totalTtc - payments.reduce((s, p) => s + n(p.amount), 0);
+      const remainingOf = (rec: { lines: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }[]; discountType?: unknown; discountValue?: unknown }, payments: { amount: unknown }[]) =>
+        totalsOf(rec).totalTtc - payments.reduce((s, p) => s + n(p.amount), 0);
 
       const factures = await tx.invoice.findMany({ where: { ...scope(ctx.societeId), docType: 'facture', status: 'validated' }, include: { lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
-      for (const f of factures) { const rem = remainingOf(f.lines, f.payments); if (rem > 0.005) { const i = idxOf(f.dueDate); if (i < weeks) buckets[i].in += rem; } }
+      for (const f of factures) { const rem = remainingOf(f, f.payments); if (rem > 0.005) { const i = idxOf(f.dueDate); if (i < weeks) buckets[i].in += rem; } }
 
       const sis = await tx.supplierInvoice.findMany({ where: { ...scope(ctx.societeId), status: 'validated' }, include: { lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
-      for (const s of sis) { const rem = remainingOf(s.lines, s.payments); if (rem > 0.005) { const i = idxOf(s.dueDate); if (i < weeks) buckets[i].out += rem; } }
+      for (const s of sis) { const rem = remainingOf(s, s.payments); if (rem > 0.005) { const i = idxOf(s.dueDate); if (i < weeks) buckets[i].out += rem; } }
 
       let cumul = 0;
       const rows = buckets.map((b) => { const net = b.in - b.out; cumul += net; return { weekStart: b.weekStart, encaissements: r2(b.in), decaissements: r2(b.out), net: r2(net), cumul: r2(cumul) }; });
@@ -218,7 +223,7 @@ export const analyticsRouter = router({
         include: { company: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } },
       });
       for (const f of factures) {
-        const remaining = r2(totalsOf(f.lines).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0));
+        const remaining = r2(totalsOf(f).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0));
         if (remaining > 0.005 && inWindow(f.dueDate)) events.push({ id: `inv:${f.id}`, date: f.dueDate as Date, kind: 'facture_client', label: `Encaissement ${f.number ?? ''}`.trim(), party: f.company?.name ?? '—', amount: remaining, overdue: new Date(f.dueDate as Date).getTime() < now });
       }
 
@@ -228,7 +233,7 @@ export const analyticsRouter = router({
         include: { supplier: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } },
       });
       for (const s of sis) {
-        const remaining = r2(totalsOf(s.lines).totalTtc - s.payments.reduce((a, p) => a + n(p.amount), 0));
+        const remaining = r2(totalsOf(s).totalTtc - s.payments.reduce((a, p) => a + n(p.amount), 0));
         if (remaining > 0.005 && inWindow(s.dueDate)) events.push({ id: `sinv:${s.id}`, date: s.dueDate as Date, kind: 'facture_fournisseur', label: `Décaissement ${s.reference ?? ''}`.trim(), party: s.supplier?.name ?? '—', amount: remaining, overdue: new Date(s.dueDate as Date).getTime() < now });
       }
 
@@ -255,10 +260,10 @@ export const analyticsRouter = router({
       for (const t of tasks) if (inWindow(t.dueAt)) items.push({ uid: `task-${t.id}`, date: t.dueAt as Date, summary: `Tâche : ${t.content}${t.company ? ` (${t.company.name})` : ''}` });
 
       const factures = await tx.invoice.findMany({ where: { ...scope(ctx.societeId), docType: 'facture', status: 'validated', dueDate: { not: null } }, include: { company: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
-      for (const f of factures) { const rem = r2(totalsOf(f.lines).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0)); if (rem > 0.005 && inWindow(f.dueDate)) items.push({ uid: `inv-${f.id}`, date: f.dueDate as Date, summary: `Encaissement ${f.number ?? ''} — ${f.company?.name ?? ''} (${rem.toFixed(2)} €)` }); }
+      for (const f of factures) { const rem = r2(totalsOf(f).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0)); if (rem > 0.005 && inWindow(f.dueDate)) items.push({ uid: `inv-${f.id}`, date: f.dueDate as Date, summary: `Encaissement ${f.number ?? ''} — ${f.company?.name ?? ''} (${rem.toFixed(2)} €)` }); }
 
       const sis = await tx.supplierInvoice.findMany({ where: { ...scope(ctx.societeId), status: 'validated', dueDate: { not: null } }, include: { supplier: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
-      for (const s of sis) { const rem = r2(totalsOf(s.lines).totalTtc - s.payments.reduce((a, p) => a + n(p.amount), 0)); if (rem > 0.005 && inWindow(s.dueDate)) items.push({ uid: `sinv-${s.id}`, date: s.dueDate as Date, summary: `Décaissement ${s.reference ?? ''} — ${s.supplier?.name ?? ''} (${rem.toFixed(2)} €)` }); }
+      for (const s of sis) { const rem = r2(totalsOf(s).totalTtc - s.payments.reduce((a, p) => a + n(p.amount), 0)); if (rem > 0.005 && inWindow(s.dueDate)) items.push({ uid: `sinv-${s.id}`, date: s.dueDate as Date, summary: `Décaissement ${s.reference ?? ''} — ${s.supplier?.name ?? ''} (${rem.toFixed(2)} €)` }); }
 
       const pos = await tx.purchaseOrder.findMany({ where: { ...scope(ctx.societeId), status: { in: ['sent', 'partial'] }, expectedDate: { not: null } }, include: { supplier: { select: { name: true } } } });
       for (const p of pos) if (inWindow(p.expectedDate)) items.push({ uid: `po-${p.id}`, date: p.expectedDate as Date, summary: `Livraison ${p.number ?? ''} — ${p.supplier?.name ?? ''}` });

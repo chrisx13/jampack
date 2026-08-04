@@ -1,10 +1,8 @@
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { SALES_DOCS, byId, computeInvoiceTotals, quoteDaysToExpiry } from '@jampack/domain';
+import { SALES_DOCS, byId, quoteDaysToExpiry } from '@jampack/domain';
 import { authed } from '../trpc/trpc';
-import { makeSalesRouter, requireSociete, copyLines } from './salesRouter';
-
-const nn = (v: unknown) => Number(v as never);
+import { makeSalesRouter, requireSociete, copyLines, salesTotals } from './salesRouter';
 
 /** Devis émis (non convertis) avec leur date de validité et le nb de jours avant expiration. */
 const expiring = authed('read', 'Quote').query(({ ctx }) =>
@@ -15,7 +13,7 @@ const expiring = authed('read', 'Quote').query(({ ctx }) =>
       orderBy: [{ validUntil: 'asc' }],
     });
     return rows.map((r) => {
-      const t = computeInvoiceTotals(r.lines.map((l) => ({ quantity: nn(l.quantity), unitPriceHt: nn(l.unitPriceHt), taxRatePct: nn(l.taxRatePct) })));
+      const t = salesTotals(r);
       return { id: r.id, number: r.number, company: r.company, validUntil: r.validUntil, totalTtc: t.totalTtc, daysToExpiry: quoteDaysToExpiry(r, new Date()), expired: quoteDaysToExpiry(r, new Date()) != null && (quoteDaysToExpiry(r, new Date()) as number) < 0 };
     });
   })

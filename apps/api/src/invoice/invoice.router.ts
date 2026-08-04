@@ -1,8 +1,8 @@
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { SALES_DOCS, byId, computeInvoiceTotals } from '@jampack/domain';
+import { SALES_DOCS, byId } from '@jampack/domain';
 import { authed } from '../trpc/trpc';
-import { makeSalesRouter, requireSociete, copyLines, fullInclude, n } from './salesRouter';
+import { makeSalesRouter, requireSociete, copyLines, fullInclude, salesTotals } from './salesRouter';
 import { renderFacturXml } from './facturx';
 import { getPdp } from './pdp';
 
@@ -16,6 +16,7 @@ const createCreditNote = authed('create', 'CreditNote').input(byId).mutation(({ 
       data: {
         docType: 'avoir', status: 'draft', organizationId: src.organizationId, societeId: src.societeId,
         companyId: src.companyId, establishmentId: src.establishmentId, factorId: src.factorId, bankAccountId: src.bankAccountId, paymentTermId: src.paymentTermId,
+        discountType: src.discountType, discountValue: src.discountValue,
         notes: `Avoir sur facture ${src.number ?? '(brouillon)'}`, sourceId: src.id, createdById: ctx.user.id, lines: copyLines(src.lines),
       },
     });
@@ -30,7 +31,7 @@ const facturx = authed('read', 'Invoice').input(byId).query(({ ctx, input }) => 
     const inv = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: fullInclude });
     if (inv.docType !== 'facture') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Factur-X uniquement pour les factures.' });
     const soc = await tx.societe.findUniqueOrThrow({ where: { id: societeId } });
-    const totals = computeInvoiceTotals(inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+    const totals = salesTotals(inv);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return { filename: `${inv.number ?? 'brouillon'}-facturx.xml`, xml: renderFacturXml(inv as any, soc as any, totals) };
   });
@@ -44,7 +45,7 @@ const sendToPdp = authed('update', 'Invoice').input(byId).mutation(({ ctx, input
     if (inv.docType !== 'facture') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Seule une facture s’envoie via PDP.' });
     if (inv.status === 'draft' || inv.status === 'cancelled') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Validez la facture avant transmission.' });
     const soc = await tx.societe.findUniqueOrThrow({ where: { id: societeId } });
-    const totals = computeInvoiceTotals(inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+    const totals = salesTotals(inv);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const xml = renderFacturXml(inv as any, soc as any, totals);
     const res = await getPdp().transmit({ invoiceNumber: inv.number ?? '', xml });

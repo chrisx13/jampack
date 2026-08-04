@@ -12,6 +12,18 @@ export function requireSociete(societeId: string | null): string {
 }
 export const n = (v: unknown) => Number(v as never);
 
+/**
+ * Totaux d'une pièce de vente en tenant compte de la **remise globale** (pied de pièce).
+ * Source unique de vérité : à utiliser partout (liste, PDF, paiements, compta, analytics, Factur-X)
+ * pour que les montants restent cohérents.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const salesTotals = (inv: { lines: any[]; discountType?: string | null; discountValue?: unknown }) =>
+  computeInvoiceTotals(
+    inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })),
+    { discountType: (inv.discountType as 'none' | 'percent' | 'amount') ?? 'none', discountValue: n(inv.discountValue) || 0 },
+  );
+
 export const lineData = (
   l: { productId?: string; label: string; quantity: number; unitPriceHt: number; taxRatePct: number; position?: number },
   i: number
@@ -80,7 +92,7 @@ export function makeSalesRouter(meta: SalesDocMeta, extra: Record<string, any> =
         return rows.map((r) => ({
           id: r.id, number: r.number, status: r.status, issueDate: r.issueDate, dueDate: r.dueDate, validUntil: r.validUntil,
           company: r.company,
-          ...computeInvoiceTotals(r.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) }))),
+          ...salesTotals(r),
         }));
       })
     ),
@@ -181,6 +193,8 @@ export function makeSalesRouter(meta: SalesDocMeta, extra: Record<string, any> =
             notes: src.notes,
             vatReverseCharge: src.vatReverseCharge,
             customerReference: src.customerReference,
+            discountType: src.discountType,
+            discountValue: src.discountValue,
             paymentTermId: src.paymentTermId,
             bankAccountId: src.bankAccountId,
             factorId: src.factorId,
@@ -197,7 +211,7 @@ export function makeSalesRouter(meta: SalesDocMeta, extra: Record<string, any> =
       const { html, filename } = await withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
         const doc = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: fullInclude });
         const soc = await tx.societe.findUniqueOrThrow({ where: { id: societeId } });
-        const totals = computeInvoiceTotals(doc.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+        const totals = salesTotals(doc);
         return { html: renderDocHtml(doc, soc, totals), filename: `${doc.number ?? 'brouillon'}.pdf` };
       });
       return { filename, base64: await htmlToPdf(html) };

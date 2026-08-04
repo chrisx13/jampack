@@ -17,15 +17,39 @@ describe('computeInvoiceTotals', () => {
     expect(computeInvoiceTotals([
       { quantity: 10, unitPriceHt: 5, taxRatePct: 20 },
       { quantity: 2, unitPriceHt: 50, taxRatePct: 5.5 },
-    ])).toEqual({ totalHt: 150, totalTva: 15.5, totalTtc: 165.5 });
+    ])).toMatchObject({ totalHt: 150, totalTva: 15.5, totalTtc: 165.5 });
   });
   it('gère une liste vide', () => {
-    expect(computeInvoiceTotals([])).toEqual({ totalHt: 0, totalTva: 0, totalTtc: 0 });
+    expect(computeInvoiceTotals([])).toMatchObject({ totalHt: 0, totalTva: 0, totalTtc: 0 });
   });
   it('arrondit au centime', () => {
     const t = computeInvoiceTotals([{ quantity: 3, unitPriceHt: 0.1, taxRatePct: 20 }]);
     expect(t.totalHt).toBeCloseTo(0.3, 2);
     expect(t.totalTtc).toBeCloseTo(0.36, 2);
+  });
+  it('remise globale en pourcentage (TVA par taux préservée)', () => {
+    const t = computeInvoiceTotals(
+      [{ quantity: 10, unitPriceHt: 10, taxRatePct: 20 }, { quantity: 1, unitPriceHt: 100, taxRatePct: 5.5 }],
+      { discountType: 'percent', discountValue: 10 },
+    );
+    expect(t.grossHt).toBe(200);
+    expect(t.totalHt).toBe(180);         // 100→90 (TVA 20) + 100→90 (TVA 5,5)
+    expect(t.discountHt).toBe(20);
+    expect(t.totalTva).toBeCloseTo(90 * 0.2 + 90 * 0.055, 2); // 18 + 4,95 = 22,95
+    expect(t.totalTtc).toBeCloseTo(202.95, 2);
+  });
+  it('remise globale en montant (répartie proportionnellement)', () => {
+    const t = computeInvoiceTotals(
+      [{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }, { quantity: 1, unitPriceHt: 100, taxRatePct: 20 }],
+      { discountType: 'amount', discountValue: 50 },
+    );
+    expect(t.grossHt).toBe(200);
+    expect(t.totalHt).toBe(150);
+    expect(t.discountHt).toBe(50);
+  });
+  it('remise ignorée si type none ou valeur nulle', () => {
+    expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'none', discountValue: 10 }).totalHt).toBe(100);
+    expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'percent', discountValue: 0 }).totalHt).toBe(100);
   });
 });
 

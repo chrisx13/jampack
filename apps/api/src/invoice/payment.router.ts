@@ -1,16 +1,16 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { paymentCreate, computeInvoiceTotals, byId, dunningMessage } from '@jampack/domain';
+import { paymentCreate, byId, dunningMessage } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
-import { requireSociete, scope, n } from './salesRouter';
+import { requireSociete, scope, n, salesTotals } from './salesRouter';
 
 /** Recalcule le statut d'une facture selon le cumul de ses règlements (payée / validée). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function recompute(tx: any, invoiceId: string) {
   const inv = await tx.invoice.findUnique({ where: { id: invoiceId }, include: { lines: true, payments: true } });
   if (!inv || inv.docType !== 'facture' || inv.status === 'draft' || inv.status === 'cancelled') return;
-  const { totalTtc } = computeInvoiceTotals(inv.lines.map((l: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+  const { totalTtc } = salesTotals(inv);
   const paid = inv.payments.reduce((s: number, p: { amount: unknown }) => s + n(p.amount), 0);
   const status = paid + 0.005 >= totalTtc ? 'paid' : 'validated';
   if (status !== inv.status) await tx.invoice.update({ where: { id: invoiceId }, data: { status } });
@@ -63,7 +63,7 @@ export const paymentRouter = router({
       return rows
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((r: any) => {
-          const { totalTtc } = computeInvoiceTotals(r.lines.map((l: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+          const { totalTtc } = salesTotals(r);
           const paid = r.payments.reduce((s: number, p: { amount: unknown }) => s + n(p.amount), 0);
           const remaining = Math.round((totalTtc - paid) * 100) / 100;
           const overdue = r.dueDate ? new Date(r.dueDate).getTime() < now : false;
@@ -83,7 +83,7 @@ export const paymentRouter = router({
       });
       return rows
         .map((r) => {
-          const { totalTtc } = computeInvoiceTotals(r.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+          const { totalTtc } = salesTotals(r);
           const remaining = Math.round((totalTtc - r.payments.reduce((s, p) => s + n(p.amount), 0)) * 100) / 100;
           return { id: r.id, number: r.number, company: r.company, dueDate: r.dueDate, remaining, reminderLevel: r.reminderLevel, lastReminderAt: r.lastReminderAt };
         })
@@ -104,7 +104,7 @@ export const paymentRouter = router({
   reminderLetter: authed('read', 'Payment').input(byId).query(({ ctx, input }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const inv = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, include: { lines: true, payments: true } });
-      const { totalTtc } = computeInvoiceTotals(inv.lines.map((l) => ({ quantity: n(l.quantity), unitPriceHt: n(l.unitPriceHt), taxRatePct: n(l.taxRatePct) })));
+      const { totalTtc } = salesTotals(inv);
       const remaining = Math.round((totalTtc - inv.payments.reduce((s, p) => s + n(p.amount), 0)) * 100) / 100;
       const level = Math.min((inv.reminderLevel || 0) + 1, 3);
       const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });

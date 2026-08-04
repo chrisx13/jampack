@@ -736,6 +736,8 @@ model Invoice {
   reminderLevel   Int            @default(0) // niveau de relance client atteint (0 = aucune)
   lastReminderAt  DateTime?      // date de la dernière relance
   customerReference String?      // référence commande / marché du client (B2B) portée sur la pièce
+  discountType    String         @default("none") // remise globale (pied) : none | percent | amount
+  discountValue   Decimal        @default(0) @db.Decimal(12, 2) // valeur de la remise globale
   notes           String?
   lines           InvoiceLine[]
   payments        Payment[]

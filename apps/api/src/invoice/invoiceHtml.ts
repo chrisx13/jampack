@@ -10,6 +10,8 @@ type Invoice = {
   validUntil?: Date | null;
   vatReverseCharge?: boolean | null;
   customerReference?: string | null;
+  discountType?: string | null;
+  discountValue?: unknown;
   source?: { number: string | null; issueDate: Date | null } | null;
   notes: string | null;
   company: { name: string; siren?: string | null; siret?: string | null; tvaNumber?: string | null } | null;
@@ -22,7 +24,7 @@ type Invoice = {
 
 const DOC_TITLES: Record<string, string> = { devis: 'DEVIS', facture: 'FACTURE', avoir: 'AVOIR' };
 type Societe = Record<string, unknown> & { name: string };
-type Totals = { totalHt: number; totalTva: number; totalTtc: number };
+type Totals = { totalHt: number; totalTva: number; totalTtc: number; grossHt?: number; discountHt?: number };
 
 const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const n = (v: unknown) => { const x = Number(v as never); return Number.isFinite(x) ? x : 0; };
@@ -135,6 +137,8 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
   </table>
 
   <div class="totals">
+    ${totals.discountHt && totals.discountHt > 0 ? `<div><span class="muted">Sous-total HT</span><span>${eur.format(totals.grossHt ?? totals.totalHt)}</span></div>
+    <div><span class="muted">Remise${docType && inv.discountType === 'percent' ? ` (${n(inv.discountValue)} %)` : ''}</span><span>− ${eur.format(totals.discountHt)}</span></div>` : ''}
     <div><span class="muted">Total HT</span><span>${eur.format(totals.totalHt)}</span></div>
     <div><span class="muted">TVA</span><span>${eur.format(totals.totalTva)}</span></div>
     <div class="ttc"><span>Total TTC</span><span>${eur.format(totals.totalTtc)}</span></div>

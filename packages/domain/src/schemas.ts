@@ -535,6 +535,8 @@ export const invoiceCreate = z.object({
   paymentTermId: z.string().nullable().optional(),
   vatReverseCharge: z.boolean().optional(),
   customerReference: z.string().max(80).nullable().optional(),
+  discountType: z.enum(['none', 'percent', 'amount']).optional(),
+  discountValue: z.number().min(0).optional(),
   lines: z.array(invoiceLineInput).default([]),
 });
 export type InvoiceCreate = z.infer<typeof invoiceCreate>;
@@ -552,6 +554,8 @@ export const invoiceUpdate = z.object({
   paymentTermId: z.string().nullable().optional(),
   vatReverseCharge: z.boolean().optional(),
   customerReference: z.string().max(80).nullable().optional(),
+  discountType: z.enum(['none', 'percent', 'amount']).optional(),
+  discountValue: z.number().min(0).optional(),
   lines: z.array(invoiceLineInput).optional(),
 });
 export type InvoiceUpdate = z.infer<typeof invoiceUpdate>;
@@ -938,18 +942,41 @@ export const PCG_MINIMAL = PCG_STANDARD;
 
 
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
+/**
+ * Remise globale (pied de pièce) : type et valeur.
+ * - `none` : aucune remise ;
+ * - `percent` : pourcentage (0–100) appliqué à chaque ligne (la TVA par taux reste exacte) ;
+ * - `amount` : montant HT réparti proportionnellement sur les lignes (converti en % effectif).
+ */
+export type DiscountOpts = { discountType?: 'none' | 'percent' | 'amount' | null; discountValue?: number | null };
+
+/** Facteur de remise effectif (0..1 retiré) pour un brut HT donné. */
+export function effectiveDiscountFactor(grossHt: number, opts?: DiscountOpts): number {
+  if (!opts || !opts.discountType || opts.discountType === 'none') return 1;
+  const v = Number(opts.discountValue) || 0;
+  if (v <= 0) return 1;
+  if (opts.discountType === 'percent') return 1 - Math.min(v, 100) / 100;
+  if (opts.discountType === 'amount' && grossHt > 0) return 1 - Math.min(v / grossHt, 1);
+  return 1;
+}
+
 export function computeInvoiceTotals(
-  lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[]
-): { totalHt: number; totalTva: number; totalTtc: number } {
+  lines: { quantity: number; unitPriceHt: number; taxRatePct: number }[],
+  opts?: DiscountOpts
+): { totalHt: number; totalTva: number; totalTtc: number; grossHt: number; discountHt: number } {
   const r2 = (n: number) => Math.round(n * 100) / 100;
+  let grossHt = 0;
+  for (const l of lines) grossHt += r2(l.quantity * l.unitPriceHt);
+  grossHt = r2(grossHt);
+  const factor = effectiveDiscountFactor(grossHt, opts);
   let totalHt = 0;
   let totalTva = 0;
   for (const l of lines) {
-    const lineHt = r2(l.quantity * l.unitPriceHt);
+    const lineHt = r2(r2(l.quantity * l.unitPriceHt) * factor);
     totalHt += lineHt;
     totalTva += r2(lineHt * (l.taxRatePct / 100));
   }
   totalHt = r2(totalHt);
   totalTva = r2(totalTva);
-  return { totalHt, totalTva, totalTtc: r2(totalHt + totalTva) };
+  return { totalHt, totalTva, totalTtc: r2(totalHt + totalTva), grossHt, discountHt: r2(grossHt - totalHt) };
 }

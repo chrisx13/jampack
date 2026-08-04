@@ -72,6 +72,8 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const [factorId, setFactorId] = useState('');
   const [vatReverseCharge, setVatReverseCharge] = useState(false);
   const [customerReference, setCustomerReference] = useState('');
+  const [discountType, setDiscountType] = useState<'none' | 'percent' | 'amount'>('none');
+  const [discountValue, setDiscountValue] = useState('');
 
   useEffect(() => {
     const doc = existing.data;
@@ -82,6 +84,8 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     setNotes(doc.notes ?? '');
     setVatReverseCharge(!!doc.vatReverseCharge);
     setCustomerReference(doc.customerReference ?? '');
+    setDiscountType((doc.discountType as 'none' | 'percent' | 'amount') ?? 'none');
+    setDiscountValue(doc.discountValue != null && num(doc.discountValue) > 0 ? String(num(doc.discountValue)) : '');
     setStatus(doc.status);
     setNumber(doc.number ?? null);
     setLines(doc.lines.map((l: Record<string, unknown>) => ({ productId: (l.productId as string) ?? undefined, label: l.label as string, quantity: num(l.quantity), unitPriceHt: num(l.unitPriceHt), taxRatePct: num(l.taxRatePct) })));
@@ -127,7 +131,10 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     }
   };
 
-  const totals = useMemo(() => computeInvoiceTotals(lines), [lines]);
+  const totals = useMemo(
+    () => computeInvoiceTotals(lines, { discountType, discountValue: num(discountValue) || 0 }),
+    [lines, discountType, discountValue],
+  );
   const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, k) => (k === i ? { ...l, ...patch } : l)));
   const addLine = () => setLines((ls) => [...ls, { label: '', quantity: 1, unitPriceHt: 0, taxRatePct: num(taxRates.data?.find((t) => t.isDefault)?.rate) || 20 }]);
   const removeLine = (i: number) => setLines((ls) => ls.filter((_, k) => k !== i));
@@ -147,6 +154,8 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     bankAccountId: bankAccountId || null,
     paymentTermId: paymentTermId || null,
     ...(cfg.key === 'invoices' ? { vatReverseCharge } : {}),
+    discountType,
+    discountValue: discountType === 'none' ? 0 : (num(discountValue) || 0),
     lines: lines.map((l, i) => ({ productId: l.productId, label: l.label || 'Ligne', quantity: l.quantity, unitPriceHt: l.unitPriceHt, taxRatePct: l.taxRatePct, position: i })),
   });
   const persist = async () => {
@@ -356,6 +365,24 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
         <div className="col-md-5">
           <Card>
             <Card.Body>
+              {!readOnly && (
+                <div className="d-flex align-items-center gap-2 mb-2">
+                  <Form.Select size="sm" style={{ width: 130 }} value={discountType} onChange={(e) => setDiscountType(e.target.value as 'none' | 'percent' | 'amount')}>
+                    <option value="none">Sans remise</option>
+                    <option value="percent">Remise %</option>
+                    <option value="amount">Remise €</option>
+                  </Form.Select>
+                  {discountType !== 'none' && (
+                    <Form.Control size="sm" type="number" min={0} step="0.01" style={{ width: 110 }} placeholder={discountType === 'percent' ? '%' : '€ HT'} value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} />
+                  )}
+                </div>
+              )}
+              {totals.discountHt > 0 && (
+                <>
+                  <div className="d-flex justify-content-between mb-1"><span className="text-secondary">Sous-total HT</span><span>{euro.format(totals.grossHt)}</span></div>
+                  <div className="d-flex justify-content-between mb-1 text-success"><span>Remise{discountType === 'percent' ? ` (${num(discountValue)} %)` : ''}</span><span>− {euro.format(totals.discountHt)}</span></div>
+                </>
+              )}
               <div className="d-flex justify-content-between mb-1"><span className="text-secondary">Total HT</span><span className="fw-medium">{euro.format(totals.totalHt)}</span></div>
               <div className="d-flex justify-content-between mb-1"><span className="text-secondary">TVA</span><span className="fw-medium">{euro.format(totals.totalTva)}</span></div>
               <hr className="my-2" />

@@ -185,6 +185,30 @@ describe('CRM — activités & tâches', () => {
   });
 });
 
+describe('Ventes — remise globale (pied de pièce)', () => {
+  it('remise 10 % : totaux nets cohérents jusqu\'au paiement et à la compta', async () => {
+    const companyId = await anyCustomer();
+    // 2 lignes à 100 HT (TVA 20) = 200 HT brut ; remise 10 % → 180 HT, TVA 36, TTC 216.
+    const inv = await caller.invoices.create({
+      companyId, notes: '[INT]', discountType: 'percent', discountValue: 10,
+      lines: [{ label: 'A', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }, { label: 'B', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }],
+    });
+    await caller.invoices.validate({ id: inv.id });
+    // La liste renvoie les totaux nets.
+    const row = (await caller.invoices.list()).find((r: { id: string }) => r.id === inv.id);
+    expect(row.totalHt).toBeCloseTo(180, 2);
+    expect(row.totalTtc).toBeCloseTo(216, 2);
+    // Un règlement du TTC net solde la facture (le reste dû tient compte de la remise).
+    await caller.payments.create({ invoiceId: inv.id, amount: 216, method: 'virement', paidAt: new Date().toISOString().slice(0, 10) });
+    const paid = await caller.invoices.get({ id: inv.id });
+    expect(paid.status).toBe('paid'); // le reste dû a tenu compte de la remise
+    // La comptabilisation part des montants nets et produit une écriture (équilibre garanti par ailleurs).
+    const posted = await caller.accounting.postSalesInvoice({ id: inv.id });
+    expect(posted.id).toBeTruthy();
+    expect(posted.alreadyPosted).toBe(false);
+  });
+});
+
 describe('Ventes — duplication de pièce', () => {
   it('duplique une facture en brouillon (mêmes lignes + réf. commande, sans numéro)', async () => {
     const companyId = await anyCustomer();
