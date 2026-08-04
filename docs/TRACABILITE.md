@@ -119,7 +119,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **3 Stock** | **Valorisation PMP** (par article) | ✅ | `stock.router.ts` (`valuation`) — PMP des entrées × quantité nette |
 | **3 Stock** | **Seuils de réapprovisionnement** + alertes rupture + **inventaire physique** | ✅ | `Product.reorderPoint`, `stock.router.ts` (`inventory`, `lowStock`), `StockLevels.tsx` (alerte + action inventaire) |
 | **3 Stock** | **Lots / n° de série** + péremption (DLC/DDM) | ✅ | `stock.lots`, `StockMovement.lotNumber`/`expiryDate`, `StockLots.tsx` (alertes périmé/bientôt) |
-| **3 Stock** | Valorisation FIFO | ❌ | phase future (DO-5) |
+| **3 Stock** | Valorisation **FIFO** (au choix, en plus du PMP) | ✅ | `stock.valuation({method:'fifo'})`, bascule PMP/FIFO dans `StockValuation.tsx` |
 | **3 Achats** | Commandes fournisseurs → **réceptions** (génèrent les entrées de stock) | ✅ | `purchase.router.ts` (`orders.validate`/`receive`), modèles `PurchaseOrder`/`PurchaseOrderLine` ; fournisseur = `Company.isSupplier` |
 | **3 Achats** | **Factures fournisseurs** + échéancier fournisseur (reste dû) | ✅ | `supplierInvoice.router.ts` (`validate`/`markPaid`/`echeancier`), modèles `SupplierInvoice`/`SupplierInvoiceLine` |
 | **3 Achats** | **Règlements fournisseurs partiels** + comptabilisation (401=512) | ✅ | `supplierPayment.router.ts` (`create`/`remove`/`listForInvoice`), modèle `SupplierPayment` (RLS), statut piloté par le cumul, `accounting.postSupplierPayment`, UI (panneau règlements + échéancier reste dû) |

@@ -56,6 +56,19 @@ describe('Stock — mouvements, niveaux, valorisation', () => {
     expect(row.value).toBeCloseTo(600, 2);
   });
 
+  it('valorisation FIFO vs PMP (100@2 + 100@4, sortie 150 → net 50)', async () => {
+    const p = await caller.catalog.products.create({ name: '[INT] FIFO Prod', kind: 'bien' });
+    const wh = await caller.stock.warehouses.create({ name: '[INT] FIFO' });
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'entree', quantity: 100, unitCost: 2 });
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'entree', quantity: 100, unitCost: 4 });
+    await caller.stock.movements.create({ warehouseId: wh.id, productId: p.id, kind: 'sortie', quantity: 150 });
+    const fifo = (await caller.stock.valuation({ method: 'fifo' })).rows.find((r: { productId: string }) => r.productId === p.id);
+    const pmp = (await caller.stock.valuation({ method: 'pmp' })).rows.find((r: { productId: string }) => r.productId === p.id);
+    expect(fifo.quantity).toBeCloseTo(50, 3);
+    expect(fifo.value).toBeCloseTo(200, 2); // 50 restants issus de la couche la plus récente @4
+    expect(pmp.value).toBeCloseTo(150, 2);  // PMP=3 × 50
+  });
+
   it('inventaire : aligne le niveau sur la quantité comptée via un ajustement', async () => {
     const p = await caller.catalog.products.create({ name: '[INT] Inv Prod', kind: 'bien' });
     const wh = await caller.stock.warehouses.create({ name: '[INT] Inv' });

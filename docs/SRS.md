@@ -138,7 +138,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-STK-4 | **Valorisation PMP** (prix moyen pondéré des entrées) par article. | S | ✅ |
 | FR-STK-5 | **Seuil de réapprovisionnement** par article + **alertes de rupture** ; **inventaire physique** (quantité comptée → mouvement d'ajustement). | S | ✅ |
 | FR-STK-6 | **Lots / n° de série** + **péremption** (DLC/DDM) : soldes par lot, alertes périmé/bientôt. | C | ✅ |
-| FR-STK-7 | Valorisation **FIFO** (aujourd'hui PMP) (DO-5). | C | ⏳ |
+| FR-STK-7 | Valorisation **FIFO** (premier entré, premier sorti) en plus du **PMP** (méthode au choix). | C | ✅ |
 
 ### 3.7 Comptabilité (Jalon 4)
 | ID | Exigence | Prio | Statut |

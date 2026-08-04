@@ -62,7 +62,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-STK-4 | `stock.router.ts` (`valuation`), `StockMovement.unitCost` | e2e : PMP démo = 390 (225+165) | ✅ |
 | FR-STK-5 | `stock.router.ts` (`inventory`, `lowStock`), `Product.reorderPoint`, `StockLevels.tsx` | e2e int : inventaire aligne le niveau (Δ) + idempotent ; article sous seuil listé, disparaît au-dessus | ✅ |
 | FR-STK-6 | `stock.lots`, `StockMovement.lotNumber`/`expiryDate`, `StockLots.tsx` | e2e int : solde net par lot + statut périmé | ✅ |
-| FR-STK-7 | valorisation FIFO (DO-5) | — | ⏳ |
+| FR-STK-7 | `stock.valuation({method:'fifo'})`, `StockValuation.tsx` (bascule PMP/FIFO) | e2e int : 100@2+100@4, sortie 150 → FIFO 200 vs PMP 150 | ✅ |
 
 ## Comptabilité
 | Exigence | Code | Test / Preuve | État |

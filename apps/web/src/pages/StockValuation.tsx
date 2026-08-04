@@ -1,25 +1,36 @@
-import { Card, Table, Spinner } from 'react-bootstrap';
+import { useState } from 'react';
+import { Card, Table, Spinner, ButtonGroup, Button } from 'react-bootstrap';
 import { trpc } from '../trpc';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const qfmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 3 });
 
 export default function StockValuation() {
-  const val = trpc.stock.valuation.useQuery();
+  const [method, setMethod] = useState<'pmp' | 'fifo'>('pmp');
+  const val = trpc.stock.valuation.useQuery({ method });
   const rows = val.data?.rows ?? [];
 
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
-        <div><h4 className="mb-1 fw-semibold">Valorisation du stock</h4><p className="text-secondary mb-0">Au prix moyen pondéré (PMP) des entrées</p></div>
-        {rows.length > 0 && <div className="text-end"><div className="text-secondary small">Valeur totale</div><div className="fs-5 fw-semibold">{euro.format(val.data?.total ?? 0)}</div></div>}
+        <div>
+          <h4 className="mb-1 fw-semibold">Valorisation du stock</h4>
+          <p className="text-secondary mb-0">{method === 'fifo' ? 'Méthode FIFO (premier entré, premier sorti)' : 'Méthode PMP (prix moyen pondéré des entrées)'}</p>
+        </div>
+        <div className="d-flex align-items-center gap-3">
+          <ButtonGroup size="sm">
+            <Button variant={method === 'pmp' ? 'primary' : 'outline-secondary'} onClick={() => setMethod('pmp')}>PMP</Button>
+            <Button variant={method === 'fifo' ? 'primary' : 'outline-secondary'} onClick={() => setMethod('fifo')}>FIFO</Button>
+          </ButtonGroup>
+          {rows.length > 0 && <div className="text-end"><div className="text-secondary small">Valeur totale</div><div className="fs-5 fw-semibold">{euro.format(val.data?.total ?? 0)}</div></div>}
+        </div>
       </div>
 
       <Card>
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Article</th><th>Référence</th><th className="text-end">Quantité</th><th className="text-end">PMP</th><th className="text-end pe-3">Valeur</th></tr>
+              <tr><th className="ps-3">Article</th><th>Référence</th><th className="text-end">Quantité</th><th className="text-end">Coût unit.</th><th className="text-end pe-3">Valeur</th></tr>
             </thead>
             <tbody>
               {val.isLoading && <tr><td colSpan={5} className="text-center py-4"><Spinner size="sm" /></td></tr>}
