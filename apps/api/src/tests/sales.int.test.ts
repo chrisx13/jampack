@@ -211,3 +211,24 @@ describe('Comptabilité — lettrage', () => {
     await C.prisma.journalEntry.delete({ where: { id: r.id } });
   });
 });
+
+describe('E-invoicing — Factur-X & PDP interne', () => {
+  it('génère le XML CII (Factur-X) et transmet via la PDP interne', async () => {
+    const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'e', quantity: 2, unitPriceHt: 50, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+
+    const fx = await caller.invoices.facturx({ id: inv.id });
+    expect(fx.filename).toMatch(/facturx\.xml$/);
+    expect(fx.xml).toContain('<rsm:CrossIndustryInvoice');
+    expect(fx.xml).toContain('urn:cen.eu:en16931:2017');
+    expect(fx.xml).toContain('<ram:GrandTotalAmount>120.00</ram:GrandTotalAmount>');
+
+    const res = await caller.invoices.sendToPdp({ id: inv.id });
+    expect(res.provider).toBe('internal');
+    expect(res.status).toBe('accepted');
+    const tx = await caller.invoices.transmissions({ id: inv.id });
+    expect(tx).toHaveLength(1);
+    expect(tx[0].providerRef).toContain('INT-');
+  });
+});

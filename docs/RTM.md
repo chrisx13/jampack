@@ -40,7 +40,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-VEN-5 | `billing.router.ts`, `resolveBilling` | subrogation dans le PDF | ✅ |
 | FR-VEN-6 | `invoice/payment.router.ts` | e2e : acompte→validée, solde→payée | ✅ |
 | FR-VEN-7 | `payment.router.ts` (`echeancier`) | e2e : reste dû, hors échéancier si payé | ✅ |
-| FR-VEN-8 | — | — | ⏳ (Factur-X/PDP) |
+| FR-VEN-8 | `invoice/facturx.ts`, `invoice/pdp.ts`, `invoice.router.ts` (`facturx`/`sendToPdp`/`transmissions`), `PdpTransmission` | `sales.int.test.ts` › *E-invoicing — Factur-X & PDP interne* | 🔧 (génération CII + connecteur ✅ ; immatriculation DGFiP/PPF/e-reporting ⛔ hors périmètre logiciel) |
 
 ## Achats
 | Exigence | Code | Test / Preuve | État |
@@ -89,6 +89,6 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | NFR-MNT-3 | `.github/workflows/ci.yml` | migrate→typecheck→build (lint/tests ⏳) | 🔧 |
 
 ## Couverture
-- Exigences **Must** livrées : socle, CRM, référentiels, ventes (hors e-invoicing), achats, stock.
-- Restant **Must** : e-invoicing Factur-X (FR-VEN-8), comptabilité/FEC (FR-CPT-*).
+- Exigences **Must** livrées : socle, CRM, référentiels, ventes (dont génération Factur-X + connecteur PDP), achats, stock, comptabilité/FEC.
+- Restant sur FR-VEN-8 : non pas du code mais un **choix réglementaire/business** — immatriculation PDP DGFiP + raccordement PPF **ou** branchement d'une PDP partenaire (hors périmètre logiciel).
 - Chaque feature livrée dispose d'un e2e via les vrais routers tRPC (RLS actif) — voir historique git.

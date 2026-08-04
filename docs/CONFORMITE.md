@@ -31,7 +31,18 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 - **Modèle** : le **PPF** (Portail Public de Facturation) joue le rôle d'annuaire/concentrateur ;
   l'échange passe par une **PDP agréée** (Plateforme de Dématérialisation Partenaire).
 - **Formats socle** : **Factur-X** (PDF/A-3 + XML hybride, adapté TPE/PME), **UBL**, **CII**.
-- **Décision structurante** : s'interfacer avec une PDP agréée (pas de plateforme propre). ⏳
+- **Décision structurante** : JAMPACK génère le **Factur-X (XML CII, EN 16931)** et expose un
+  **connecteur PDP** abstrait (adaptateur « interne » par défaut, adaptateur « partenaire »
+  branchable). 🔧
+- **Périmètre logiciel vs réglementaire** — ce qui relève du logiciel est **fait** ; le reste est
+  **hors périmètre du code** et relève d'un programme réglementaire/contractuel :
+  - ✅ **Dans le logiciel** : génération Factur-X CII, modèle `PdpTransmission` (journal des
+    transmissions, sous RLS), interface `PdpConnector` + adaptateur interne.
+  - ⛔ **Hors périmètre du logiciel** (ne peut pas être « codé ») : **immatriculation PDP auprès de
+    la DGFiP**, **raccordement au PPF** (annuaire + concentrateur), **e-reporting** officiel,
+    **interopérabilité inter-PDP**, **certification sécurité** (audit, ISO 27001 / SecNumCloud). Tant
+    que ces jalons ne sont pas franchis, l'adaptateur interne **n'a pas valeur de PDP agréée** : il
+    faut soit obtenir l'immatriculation, soit brancher l'adaptateur d'une **PDP partenaire**.
 - **Impact JAMPACK** : générer/consommer Factur-X, connecteur PDP. → FR-VEN-8, REG-1.
 
 ### 3.2 Fichier des Écritures Comptables (FEC)
@@ -53,15 +64,19 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 ## 5. Matrice de conformité (synthèse)
 | Obligation | Exigence liée | Échéance | État |
 |---|---|---|---|
-| Réception Factur-X | FR-VEN-8 | 09/2026 | ⏳ (dépend PDP) |
-| Émission Factur-X (TPE/PME) | FR-VEN-8 | 09/2027 | ⏳ |
+| Génération Factur-X (XML CII, EN 16931) | FR-VEN-8 | — | ✅ |
+| Connecteur PDP (interface + adaptateur interne + journal `PdpTransmission`) | FR-VEN-8 | — | ✅ |
+| Immatriculation PDP DGFiP + raccordement PPF + e-reporting | FR-VEN-8 | 09/2026-09/2027 | ⛔ hors périmètre logiciel |
+| Émission/réception via PDP agréée (interne immatriculée **ou** partenaire) | FR-VEN-8 | 09/2027 | ⏳ |
 | Export FEC | FR-CPT-3 | À la mise en service compta | ⏳ |
 | RGPD (registre, UE, effacement) | REG-3 | Continu | 🔧 |
 | Hébergement UE | C-1 | Continu | ✅ (choix imposé) |
 
 ## 6. Plan de mise en conformité
-1. **Choisir la PDP partenaire** (décision business bloquante pour l'e-invoicing).
-2. Implémenter la génération **Factur-X** + le connecteur PDP (émission/réception).
+1. ✅ Générer le **Factur-X (CII)** + poser le **connecteur PDP** abstrait (adaptateur interne). *(fait)*
+2. **Trancher la voie PDP** *(décision business)* : soit **s'immatriculer PDP** auprès de la DGFiP et se
+   **raccorder au PPF** (programme réglementaire lourd, hors code), soit **brancher une PDP partenaire**
+   sur l'adaptateur existant.
 3. Ouvrir le module **Comptabilité** et l'**export FEC**.
 4. Compléter le **journal d'audit** et l'outillage RGPD (export/effacement).
 5. Audit **RGAA/WCAG** de l'UI.

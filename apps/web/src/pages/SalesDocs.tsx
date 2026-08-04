@@ -94,6 +94,9 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const creditNote = cfg.key === 'invoices' ? api.createCreditNote.useMutation() : null;
   const postAcc = trpc.accounting.postSalesInvoice.useMutation();
   const posted = !!existing.data?.journalEntryId;
+  const sendPdp = cfg.key === 'invoices' ? api.sendToPdp.useMutation() : null;
+  const transmissions = cfg.key === 'invoices' ? api.transmissions.useQuery({ id }, { enabled: id !== 'new' && status !== 'draft' }) : null;
+  const lastTx = transmissions?.data?.[0];
   const busy = create.isPending || update.isPending || validate.isPending;
   const readOnly = status !== 'draft';
   const pdf = usePdf(api);
@@ -157,6 +160,16 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate();
     alert(r.alreadyPosted ? 'Facture déjà comptabilisée.' : 'Écriture comptable générée (journal des ventes) — voir Comptabilité ▸ Écritures.');
   };
+  const onFacturx = async () => {
+    const r = await uapi.facturx.fetch({ id });
+    const url = URL.createObjectURL(new Blob([r.xml], { type: 'application/xml' }));
+    const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url);
+  };
+  const onSendPdp = async () => {
+    const r = await sendPdp!.mutateAsync({ id });
+    uapi.transmissions.invalidate({ id });
+    alert(`Facture transmise (PDP « ${r.provider} ») — statut : ${r.status}, réf. ${r.providerRef}.`);
+  };
 
   const err = create.error || update.error || validate.error || convert?.error || accept?.error || refuse?.error || creditNote?.error;
 
@@ -191,6 +204,15 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
             <Button variant={posted ? 'success' : 'outline-primary'} onClick={onPost} disabled={postAcc.isPending || posted}>
               <i className={`bi ${posted ? 'bi-journal-check' : 'bi-journal-plus'} me-1`} />{posted ? 'Comptabilisée' : 'Comptabiliser'}
             </Button>
+          )}
+          {/* E-invoicing : Factur-X + envoi via PDP */}
+          {cfg.key === 'invoices' && readOnly && status !== 'cancelled' && (
+            <>
+              <Button variant="light" onClick={onFacturx} title="Télécharger le XML Factur-X"><i className="bi bi-filetype-xml me-1" />Factur-X</Button>
+              <Button variant={lastTx?.status === 'accepted' ? 'success' : 'outline-info'} onClick={onSendPdp} disabled={sendPdp.isPending}>
+                <i className="bi bi-send me-1" />{lastTx ? `PDP : ${lastTx.status}` : 'Envoyer via PDP'}
+              </Button>
+            </>
           )}
           {cfg.key === 'invoices' && readOnly && status !== 'cancelled' && (
             <Button variant="outline-secondary" onClick={onCreditNote} disabled={creditNote!.isPending}><i className="bi bi-arrow-counterclockwise me-1" />Créer un avoir</Button>

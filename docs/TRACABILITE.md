@@ -114,7 +114,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **2 Ventes** | **Devis** (+ conversion en facture) | ✅ | `quote.router.ts` (`convertToInvoice`, `accept`/`refuse`), `Invoice.docType='devis'` |
 | **2 Ventes** | **Avoirs** (depuis facture) | ✅ | `creditNote.router.ts`, `invoices.createCreditNote`, `Invoice.docType='avoir'` |
 | **2 Ventes** | **Règlements / échéancier** | ✅ | `payment.router.ts` (`create`/`remove`/`echeancier`), modèle `Payment`, statut facture recalculé (validée ⇄ payée) |
-| **2 Ventes** | **E-invoicing Factur-X / PDP** | ❌ | PDF simple (pas hybride Factur-X) ; aucune intégration PDP — **point réglementaire n°1, non commencé** |
+| **2 Ventes** | **E-invoicing Factur-X / PDP** | 🔧 | Génération **Factur-X (XML CII, EN 16931)** (`facturx.ts`), connecteur **PDP** abstrait + adaptateur interne (`pdp.ts`), procédures `facturx`/`sendToPdp`/`transmissions`, journal `PdpTransmission` (RLS), UI (bouton Factur-X + « Envoyer via PDP » + statut). **Reste hors périmètre logiciel** : immatriculation PDP DGFiP, raccordement PPF, e-reporting, certification — voir [Conformité §3.1](CONFORMITE.md) |
 | **3 Stock** | Entrepôts + mouvements (entrée/sortie/ajustement) + niveaux calculés | ✅ | `stock.router.ts` (`warehouses`, `movements`, `levels`), modèles `Warehouse`/`StockMovement` |
 | **3 Stock** | **Valorisation PMP** (par article) | ✅ | `stock.router.ts` (`valuation`) — PMP des entrées × quantité nette |
 | **3 Stock** | Inventaires, FIFO, lots/seuils | ❌ | phase future |

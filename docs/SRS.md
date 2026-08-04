@@ -65,7 +65,10 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 - **C-5** Stack unique TypeScript (productivité développeur solo).
 
 ### 2.6 Hypothèses et dépendances
-- **H-1** L'e-invoicing s'appuiera sur une **PDP agréée** tierce (pas de plateforme propre).
+- **H-1** L'e-invoicing repose sur un **connecteur PDP abstrait** : le logiciel génère le Factur-X et
+  transmet via un adaptateur. L'adaptateur « agréé » (PDP interne **immatriculée DGFiP** ou **PDP
+  partenaire**) et le raccordement PPF/e-reporting sont **hors périmètre logiciel** (programme
+  réglementaire). Voir [Conformité §3.1](CONFORMITE.md).
 - **H-2** L'authentification est déléguée à un IdP OIDC (Keycloak).
 
 ---
@@ -111,7 +114,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-VEN-5 | **Affacturage** : mention de subrogation, compte bancaire, condition de paiement résolus par défaut. | S | ✅ |
 | FR-VEN-6 | **Règlements** rattachés à une facture ; statut *payée* recalculé (partiel/total). | M | ✅ |
 | FR-VEN-7 | **Échéancier client** : factures validées non soldées, reste dû, retard. | M | ✅ |
-| FR-VEN-8 | **E-invoicing Factur-X / PDP** : émission/réception au format hybride via PDP agréée. | M | ⏳ |
+| FR-VEN-8 | **E-invoicing Factur-X / PDP** : génération **Factur-X (XML CII, EN 16931)**, connecteur **PDP** (interface + adaptateur interne), journal des transmissions (`PdpTransmission`, sous RLS). Émission/réception effective via PDP **immatriculée** ou **partenaire**. | M | 🔧 (génération + connecteur ✅ ; immatriculation DGFiP / PPF / e-reporting ⛔ hors périmètre logiciel) |
 
 ### 3.5 Achats
 | ID | Exigence | Prio | Statut |

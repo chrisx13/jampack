@@ -43,11 +43,12 @@ ALTER TABLE "Account"         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Journal"         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "JournalEntry"    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "AuditLog"        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "PdpTransmission" ENABLE ROW LEVEL SECURITY;
 
 DO $$
 DECLARE t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['Societe','Establishment','Company','Contact','Opportunity','Activity','PipelineStage','Role','Membership','SocieteRole','TaxRate','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice','Payment','Warehouse','StockMovement','PurchaseOrder','SupplierInvoice','Account','Journal','JournalEntry','AuditLog']
+  FOREACH t IN ARRAY ARRAY['Societe','Establishment','Company','Contact','Opportunity','Activity','PipelineStage','Role','Membership','SocieteRole','TaxRate','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice','Payment','Warehouse','StockMovement','PurchaseOrder','SupplierInvoice','Account','Journal','JournalEntry','AuditLog','PdpTransmission']
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS org_isolation ON %I;', t);
     EXECUTE format(
@@ -64,7 +65,7 @@ END $$;
 DO $$
 DECLARE t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['Establishment','Company','Contact','Opportunity','Activity','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice','Payment','Warehouse','StockMovement','PurchaseOrder','SupplierInvoice','Account','Journal','JournalEntry']
+  FOREACH t IN ARRAY ARRAY['Establishment','Company','Contact','Opportunity','Activity','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice','Payment','Warehouse','StockMovement','PurchaseOrder','SupplierInvoice','Account','Journal','JournalEntry','PdpTransmission']
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS societe_isolation ON %I;', t);
     EXECUTE format(

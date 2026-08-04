@@ -80,7 +80,7 @@ Paie/RH (externalisée), production/MRP (optionnel/tardif), devenir soi-même un
 |---|---|---|---|
 | 0 — Socle | Multi-société, auth OIDC, RBAC, RLS | Fondations sûres | ✅ |
 | 1 — CRM & Référentiels | Clients/contacts/pipeline, articles/TVA/numérotation | Produit démontrable | ✅ |
-| 2 — Ventes | Devis→facture→avoir, règlements, e-invoicing | Valeur commerciale + conformité | 🔧 (e-invoicing ⏳) |
+| 2 — Ventes | Devis→facture→avoir, règlements, e-invoicing | Valeur commerciale + conformité | 🔧 (Factur-X + connecteur PDP ✅ ; immatriculation DGFiP/PPF ⛔ hors périmètre logiciel) |
 | 3 — Achats & Stock | Commandes→réception, factures fournisseurs, mouvements/niveaux | Cycle marchandises | 🔧 (valorisation ⏳) |
 | 4 — Comptabilité | Écritures auto, TVA, FEC | Domaine réglementé | ⏳ |
 | 5 — Trésorerie & BI | Banque, prévisionnel, tableaux de bord | Pilotage | ⏳ |

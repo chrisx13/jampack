@@ -46,6 +46,7 @@ model Organization {
   journals        Journal[]
   journalEntries  JournalEntry[]
   auditLogs       AuditLog[]
+  pdpTransmissions PdpTransmission[]
 }
 
 // Journal d'audit : trace des mutations (qui, quoi, quand) — traçabilité sécurité/RGPD.
@@ -110,8 +111,28 @@ model Societe {
   accounts        Account[]
   journals        Journal[]
   journalEntries  JournalEntry[]
+  pdpTransmissions PdpTransmission[]
   @@unique([organizationId, name])
   @@index([organizationId])
+}
+
+// E-invoicing : transmission d'une facture via une PDP (Plateforme de Dématérialisation Partenaire).
+model PdpTransmission {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  invoice        Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId      String
+  provider       String       // simulated | <nom PDP>
+  status         String       // sent | accepted | rejected
+  providerRef    String?
+  format         String       @default("factur-x")
+  createdAt      DateTime     @default(now())
+  @@index([organizationId])
+  @@index([societeId])
+  @@index([invoiceId])
 }
 
 model User {
@@ -608,6 +629,7 @@ model Invoice {
   notes           String?
   lines           InvoiceLine[]
   payments        Payment[]
+  pdpTransmissions PdpTransmission[]
   // Comptabilisation : écriture générée (journal des ventes) — null tant que non comptabilisée.
   journalEntry    JournalEntry?  @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
   journalEntryId  String?
