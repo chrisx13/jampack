@@ -280,3 +280,11 @@ hr { border-color: var(--border); opacity: 1; }
 
 // ── Divers ──
 .stat-icon { width: 46px; height: 46px; border-radius: .7rem; display: grid; place-items: center; font-size: 1.3rem; }
+
+// ── Accessibilité (RGAA / WCAG 2.1 AA) ──
+// Focus clavier visible sur tout élément interactif (RGAA 10.7).
+:focus-visible { outline: 2px solid var(--bs-primary, #{$primary}); outline-offset: 2px; }
+.act:focus-visible, .subnav-act:focus-visible, .hk-tab:focus-visible, .nav-link:focus-visible { outline-offset: -2px; }
+.hk-content:focus { outline: none; } // cible du lien d'évitement : focus programmatique non visible
+// Lien d'évitement : masqué jusqu'au focus clavier (RGAA 12.7).
+.hk-skip-link:focus { position: fixed; top: .5rem; left: .5rem; z-index: 2000; padding: .5rem .75rem; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: .5rem; box-shadow: 0 8px 24px rgba(2, 6, 23, .18); }

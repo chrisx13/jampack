@@ -115,17 +115,20 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | 3 Couleurs / contrastes | 🔧 | Thème Jampack clair/sombre à auditer (ratio ≥ 4,5:1 texte, 3:1 UI) ; ne pas véhiculer l'info par la seule couleur (badges de statut portent un libellé). |
 | 7 Scripts / composants | 🔧 | Composants react-bootstrap globalement accessibles ; vérifier rôles/états ARIA des menus, modales, onglets, kanban (drag&drop → alternative clavier). |
 | 8 Éléments obligatoires | 🔧 | `lang="fr"`, titres de page, structure HTML valide à confirmer. |
-| 9 Structuration | 🔧 | Hiérarchie des titres (h1→h6), régions/landmarks (nav, main). |
-| 10 Présentation | 🔧 | Zoom 200 %, responsive ≥ 360 px ✅ ; focus visible à vérifier. |
+| 9 Structuration | 🔧 | **Landmarks `nav`/`main`/`aside` nommés** ✅ (`AppShell`) ; hiérarchie des titres h1→h6 à vérifier par page. |
+| 10 Présentation | 🔧 | Zoom 200 %, responsive ≥ 360 px ✅ ; **focus clavier visible** (`:focus-visible`) ✅. |
 | 11 Formulaires | 🔧 | Étiquettes `<label>` associées, messages d'erreur explicites, regroupements. |
-| 12 Navigation | 🔧 | Navigation clavier (barre d'activité → panneau → onglets), ordre de tabulation, lien d'évitement. |
+| 12 Navigation | 🔧 | **Lien d'évitement** ✅, **`aria-current`** sur domaine/vue actifs ✅, **liens de sous-domaine activables au clavier** ✅ ; ordre de tabulation des onglets à compléter. |
 | 13 Consultation | ✅/🔧 | Pas de limite de temps bloquante ; PDF de facture : tag/accessibilité à vérifier. |
 
 ### 4.3 Plan
 1. **Audit RGAA** (échantillon de pages : connexion, tableau de bord, liste, formulaire facture).
 2. Corriger **contrastes**, **focus visible**, **labels**, **landmarks**, **alternatives clavier** (kanban).
 3. Publier une **déclaration d'accessibilité** (taux de conformité, dérogations, contact).
-- État global : **🔧 à auditer** (aucune régression connue, mais conformité non mesurée). → NFR-UTI, DO-9.
+- **1er lot livré** (`AppShell` + thème) : lien d'évitement, landmarks nommés, `aria-current`/`aria-expanded`,
+  navigation clavier des vues, focus visible global. Reste : contrastes mesurés, formulaires (labels/erreurs),
+  onglets au clavier, alternative au kanban, déclaration d'accessibilité.
+- État global : **🔧 en cours** (premier incrément fait ; conformité non encore mesurée par audit). → NFR-UTI-4, DO-9.
 
 ## 5. Matrice de conformité (synthèse)
 | Obligation | Exigence liée | Échéance | État |

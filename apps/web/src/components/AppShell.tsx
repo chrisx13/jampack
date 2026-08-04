@@ -140,8 +140,10 @@ export default function AppShell() {
 
   return (
     <div className={`hk-wrapper${subnavOpen ? '' : ' subnav-collapsed'}${subnavMode === 'overlay' ? ' subnav-overlay' : ''}`}>
+      {/* Lien d'évitement (RGAA 12 — accès direct au contenu au clavier) */}
+      <a href="#main-content" className="visually-hidden-focusable hk-skip-link">Aller au contenu</a>
       {/* Barre du haut */}
-      <nav className="hk-navbar">
+      <nav className="hk-navbar" aria-label="Barre d'outils">
         <button className="btn btn-icon btn-sm btn-light border-0" onClick={() => setSubnavOpen((c) => !c)} aria-label="Basculer le panneau">
           <i className="bi bi-layout-sidebar fs-5" />
         </button>
@@ -176,10 +178,12 @@ export default function AppShell() {
       </nav>
 
       {/* Barre d'activité : grands domaines */}
-      <div className="hk-activity">
+      <nav className="hk-activity" aria-label="Domaines">
         <button
           className={`act${activeId === DASHBOARD_VIEW.id ? ' active' : ''}`}
           title="Accueil — tableau de bord"
+          aria-label="Accueil — tableau de bord"
+          aria-current={activeId === DASHBOARD_VIEW.id ? 'page' : undefined}
           onClick={() => setActiveId(DASHBOARD_VIEW.id)}
         >
           <i className="bi bi-house-door-fill" />
@@ -190,6 +194,9 @@ export default function AppShell() {
             key={d.id}
             className={`act${d.id === activeDomainId ? ' active' : ''}`}
             title={d.label}
+            aria-label={d.label}
+            aria-current={d.id === activeDomainId ? 'true' : undefined}
+            aria-expanded={d.id === activeDomainId ? subnavOpen : undefined}
             onClick={() => {
               // Comme VS Code : re-cliquer le domaine actif bascule son panneau ;
               // cliquer un autre domaine le sélectionne et ouvre le panneau.
@@ -200,13 +207,13 @@ export default function AppShell() {
             <i className={`bi ${d.icon}`} />
           </button>
         ))}
-      </div>
+      </nav>
 
       {/* Fond cliquable (mode à la volée) : referme le panneau au clic à côté */}
       {subnavMode === 'overlay' && subnavOpen && <div className="hk-subnav-backdrop" onClick={() => setSubnavOpen(false)} />}
 
       {/* Panneau secondaire : sous-domaines du domaine actif */}
-      <aside className="hk-subnav">
+      <aside className="hk-subnav" aria-label={`Vues — ${activeDomain?.label ?? ''}`}>
         <div className="subnav-head">
           <span className="subnav-title">{activeDomain?.label ?? '—'}</span>
           <div className="subnav-actions">
@@ -223,7 +230,15 @@ export default function AppShell() {
           </div>
         </div>
         {activeDomain?.views.map((v) => (
-          <a key={v.id} className={`nav-link${activeId === v.id ? ' active' : ''}`} onClick={() => openView(v.id)}>
+          <a
+            key={v.id}
+            className={`nav-link${activeId === v.id ? ' active' : ''}`}
+            role="button"
+            tabIndex={0}
+            aria-current={activeId === v.id ? 'page' : undefined}
+            onClick={() => openView(v.id)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openView(v.id); } }}
+          >
             <i className={`bi ${v.icon}`} />
             <span>{v.label}</span>
           </a>
@@ -259,7 +274,7 @@ export default function AppShell() {
       </div>
 
       {/* Espace de travail : contenu (onglets ouverts conservés, seul l'actif est visible) */}
-      <main className="hk-content">
+      <main className="hk-content" id="main-content" tabIndex={-1}>
         {openIds.map((id) => {
           const v = viewsById.get(id);
           if (!v) return null;
