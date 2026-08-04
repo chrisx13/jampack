@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { withTenant } from '@jampack/db';
-import { computeInvoiceTotals } from '@jampack/domain';
+import { computeInvoiceTotals, buildAgendaIcs } from '@jampack/domain';
 import { router, protectedProcedure } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -241,6 +241,30 @@ export const analyticsRouter = router({
 
       events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       return { events, overdueCount: events.filter((e) => e.overdue).length };
+    })
+  ),
+
+  /** Export iCalendar (.ics) de l'agenda : mêmes événements que `agenda`, importables dans un agenda externe. */
+  agendaIcs: protectedProcedure.input(z.object({ days: z.number().int().min(1).max(365).optional() }).optional()).query(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const horizon = Date.now() + (input?.days ?? 30) * 86400000;
+      const inWindow = (d: Date | null | undefined) => !!d && new Date(d).getTime() <= horizon;
+      const items: { uid: string; date: Date; summary: string }[] = [];
+
+      const tasks = await tx.activity.findMany({ where: { ...scope(ctx.societeId), type: 'tache', done: false, dueAt: { not: null } }, include: { company: { select: { name: true } } } });
+      for (const t of tasks) if (inWindow(t.dueAt)) items.push({ uid: `task-${t.id}`, date: t.dueAt as Date, summary: `Tâche : ${t.content}${t.company ? ` (${t.company.name})` : ''}` });
+
+      const factures = await tx.invoice.findMany({ where: { ...scope(ctx.societeId), docType: 'facture', status: 'validated', dueDate: { not: null } }, include: { company: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
+      for (const f of factures) { const rem = r2(totalsOf(f.lines).totalTtc - f.payments.reduce((s, p) => s + n(p.amount), 0)); if (rem > 0.005 && inWindow(f.dueDate)) items.push({ uid: `inv-${f.id}`, date: f.dueDate as Date, summary: `Encaissement ${f.number ?? ''} — ${f.company?.name ?? ''} (${rem.toFixed(2)} €)` }); }
+
+      const sis = await tx.supplierInvoice.findMany({ where: { ...scope(ctx.societeId), status: 'validated', dueDate: { not: null } }, include: { supplier: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
+      for (const s of sis) { const rem = r2(totalsOf(s.lines).totalTtc - s.payments.reduce((a, p) => a + n(p.amount), 0)); if (rem > 0.005 && inWindow(s.dueDate)) items.push({ uid: `sinv-${s.id}`, date: s.dueDate as Date, summary: `Décaissement ${s.reference ?? ''} — ${s.supplier?.name ?? ''} (${rem.toFixed(2)} €)` }); }
+
+      const pos = await tx.purchaseOrder.findMany({ where: { ...scope(ctx.societeId), status: { in: ['sent', 'partial'] }, expectedDate: { not: null } }, include: { supplier: { select: { name: true } } } });
+      for (const p of pos) if (inWindow(p.expectedDate)) items.push({ uid: `po-${p.id}`, date: p.expectedDate as Date, summary: `Livraison ${p.number ?? ''} — ${p.supplier?.name ?? ''}` });
+
+      items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      return { filename: 'agenda-jampack.ics', content: buildAgendaIcs(items) };
     })
   ),
 });

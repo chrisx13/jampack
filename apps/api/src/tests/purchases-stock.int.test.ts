@@ -309,6 +309,12 @@ describe('Agenda consolidé — échéances & tâches à venir', () => {
     expect(ev.overdue).toBe(true);
     expect(ag.overdueCount).toBeGreaterThanOrEqual(1);
 
+    // Export ICS : contient l'événement d'encaissement, calendrier valide.
+    const ics = await caller.analytics.agendaIcs({ days: 30 });
+    expect(ics.filename).toBe('agenda-jampack.ics');
+    expect(ics.content).toContain('BEGIN:VCALENDAR');
+    expect(ics.content).toContain(`UID:inv-${ci.id}@jampack`);
+
     await C.prisma.payment.deleteMany({ where: { invoiceId: ci.id } });
     await C.prisma.invoice.delete({ where: { id: ci.id } });
   });

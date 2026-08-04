@@ -15,8 +15,15 @@ const KIND: Record<string, { icon: string; color: string; label: string }> = {
 
 export default function Agenda() {
   const [days, setDays] = useState(30);
+  const utils = trpc.useUtils();
   const q = trpc.analytics.agenda.useQuery({ days });
   const events = q.data?.events ?? [];
+
+  const exportIcs = async () => {
+    const r = await utils.analytics.agendaIcs.fetch({ days });
+    const url = URL.createObjectURL(new Blob([r.content], { type: 'text/calendar;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url);
+  };
 
   // Regroupement par jour (l'ordre chronologique est garanti par le serveur).
   const groups: { day: string; items: typeof events }[] = [];
@@ -33,9 +40,12 @@ export default function Agenda() {
           <h4 className="mb-1 fw-semibold">Agenda</h4>
           <p className="text-secondary mb-0">Échéances et tâches à venir {q.data && q.data.overdueCount > 0 && <Badge bg="danger-subtle" text="danger" className="fw-normal ms-1">{q.data.overdueCount} en retard</Badge>}</p>
         </div>
-        <ButtonGroup size="sm">
-          {[7, 30, 90].map((d) => <Button key={d} variant={days === d ? 'primary' : 'outline-secondary'} onClick={() => setDays(d)}>{d} j</Button>)}
-        </ButtonGroup>
+        <div className="d-flex align-items-center gap-2">
+          <ButtonGroup size="sm">
+            {[7, 30, 90].map((d) => <Button key={d} variant={days === d ? 'primary' : 'outline-secondary'} onClick={() => setDays(d)}>{d} j</Button>)}
+          </ButtonGroup>
+          <Button size="sm" variant="outline-secondary" onClick={exportIcs} disabled={events.length === 0} title="Exporter au format iCalendar (.ics)"><i className="bi bi-calendar-plus me-1" />ICS</Button>
+        </div>
       </div>
 
       {q.isLoading && <div className="text-center py-5"><Spinner /></div>}

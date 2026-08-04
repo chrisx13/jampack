@@ -72,7 +72,8 @@
 ## 7 bis. Gestion — Agenda
 - **Agenda** : vue consolidée des échéances et tâches à venir sur **7 / 30 / 90 jours**, regroupées par jour :
   tâches CRM, encaissements (factures clients), décaissements (factures fournisseurs) et livraisons attendues.
-  Les éléments **en retard** sont signalés en rouge.
+  Les éléments **en retard** sont signalés en rouge. Bouton **ICS** : exporter l'agenda au format iCalendar
+  pour l'importer dans Outlook, Google Agenda ou Apple Calendrier.
 
 ## 8. Administration
 - **Paramètres**, **Société (facturation)** (en-tête, mentions légales, CGV), **Facturation** (banques,

@@ -574,6 +574,25 @@ export function balanceCsv(rows: BalanceCsvRow[]): string {
   return [head, ...lines].join('\n');
 }
 
+/**
+ * Génère un calendrier iCalendar (RFC 5545) d'événements « journée » (VALUE=DATE)
+ * importable dans Outlook/Google Agenda. `date` au format ISO ; `stamp` = DTSTAMP fixe (déterminisme).
+ */
+export type IcsEvent = { uid: string; date: string | Date; summary: string };
+export function buildAgendaIcs(events: IcsEvent[], stamp = '20260101T000000Z'): string {
+  const day = (d: string | Date) => {
+    const dt = new Date(d);
+    return `${dt.getUTCFullYear()}${String(dt.getUTCMonth() + 1).padStart(2, '0')}${String(dt.getUTCDate()).padStart(2, '0')}`;
+  };
+  const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//JAMPACK//Agenda//FR', 'CALSCALE:GREGORIAN'];
+  for (const e of events) {
+    lines.push('BEGIN:VEVENT', `UID:${e.uid}@jampack`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${day(e.date)}`, `SUMMARY:${esc(e.summary)}`, 'END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+
 /** Un devis émis est expiré si sa date de validité est dépassée (offre caduque). */
 export function isQuoteExpired(q: { status: string; validUntil?: Date | string | null }, now = new Date()): boolean {
   if (q.status !== 'sent' || !q.validUntil) return false;

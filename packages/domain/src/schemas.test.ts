@@ -6,7 +6,7 @@ import {
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
   isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
-  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv,
+  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -154,6 +154,23 @@ describe('commandes fournisseurs en retard', () => {
     expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: null }, now)).toBe(false);
     expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: '2026-08-10T00:00:00Z' }, now)).toBe(false);
     expect(purchaseOrderDaysLate({ status: 'received', expectedDate: '2026-08-01T00:00:00Z' }, now)).toBe(0);
+  });
+});
+
+describe('buildAgendaIcs', () => {
+  it('produit un VCALENDAR avec un VEVENT journée par entrée et échappe les caractères', () => {
+    const ics = buildAgendaIcs([{ uid: 'task-1', date: '2026-08-10T09:00:00Z', summary: 'Relancer; client' }], '20260101T000000Z');
+    expect(ics).toContain('BEGIN:VCALENDAR');
+    expect(ics).toContain('END:VCALENDAR');
+    expect(ics).toContain('UID:task-1@jampack');
+    expect(ics).toContain('DTSTART;VALUE=DATE:20260810');
+    expect(ics).toContain('SUMMARY:Relancer\\; client'); // ; échappé
+    expect(ics.split('\r\n').filter((l) => l === 'BEGIN:VEVENT')).toHaveLength(1);
+  });
+  it('calendrier vide reste valide', () => {
+    const ics = buildAgendaIcs([]);
+    expect(ics.startsWith('BEGIN:VCALENDAR')).toBe(true);
+    expect(ics.trimEnd().endsWith('END:VCALENDAR')).toBe(true);
   });
 });
 
