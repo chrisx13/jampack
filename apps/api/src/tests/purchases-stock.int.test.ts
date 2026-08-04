@@ -128,6 +128,31 @@ describe('Achats — commande → réception → stock ; factures fournisseurs',
   });
 });
 
+describe('Trésorerie — prévisionnel encaissements vs décaissements', () => {
+  it('agrège le reste dû clients (encaissements) et fournisseurs (décaissements)', async () => {
+    const sid = await supplier();
+    const cid = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+
+    // Facture fournisseur 240, acompte 100 → reste 140 (décaissement attendu).
+    const si = await caller.supplierInvoices.create({ supplierId: sid, reference: '[INT] TR', notes: '[INT]', lines: [{ label: 'Achat', quantity: 1, unitPriceHt: 200, taxRatePct: 20 }] });
+    await caller.supplierInvoices.validate({ id: si.id });
+    await caller.supplierPayments.create({ supplierInvoiceId: si.id, amount: 100, method: 'virement' });
+
+    // Facture client 120, non réglée → encaissement attendu 120.
+    const ci = await caller.invoices.create({ companyId: cid, notes: '[INT]', lines: [{ label: 'Vente', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: ci.id });
+
+    const t = await caller.analytics.tresorerie();
+    expect(t.decaissements.find((r: { id: string; amount: number }) => r.id === si.id)?.amount).toBeCloseTo(140, 2);
+    expect(t.encaissements.find((r: { id: string; amount: number }) => r.id === ci.id)?.amount).toBeCloseTo(120, 2);
+    expect(t.net).toBeCloseTo(Math.round((t.toReceive - t.toPay) * 100) / 100, 2);
+
+    // Nettoyage de la facture client (le fournisseur est nettoyé par l'afterAll).
+    await C.prisma.payment.deleteMany({ where: { invoiceId: ci.id } });
+    await C.prisma.invoice.delete({ where: { id: ci.id } });
+  });
+});
+
 describe('Comptabilité — écriture équilibrée & rejet du déséquilibre', () => {
   it('crée une écriture équilibrée et rejette un déséquilibre', async () => {
     const acc = async (code: string) => (await C.prisma.account.findFirstOrThrow({ where: { societeId: C.soc.id, code } })).id;

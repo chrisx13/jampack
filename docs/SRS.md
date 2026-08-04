@@ -143,14 +143,20 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CPT-2 | **Écritures** manuelles multi-lignes, contrôle d'**équilibre** (débit = crédit). | M | ✅ |
 | FR-CPT-3 | **Balance générale** (totaux/soldes par compte). | M | ✅ |
 | FR-CPT-4 | Écritures **générées automatiquement** depuis les **factures de vente** (411/707/44571). | M | ✅ |
-| FR-CPT-4b | Écritures auto depuis les **règlements** (journal banque 512/411) et les **factures fournisseurs** (journal achat 607/44566/401). | M | ✅ |
+| FR-CPT-4b | Écritures auto depuis les **règlements clients** (journal banque 512/411), les **factures fournisseurs** (journal achat 607/44566/401) et les **règlements fournisseurs** (journal banque 401/512). | M | ✅ |
 | FR-CPT-5 | **Déclaration de TVA (CA3)** : collectée − déductible → à décaisser / crédit. | M | ✅ |
 | FR-CPT-5b | **Lettrage** des comptes de tiers (rapprochement débit/crédit équilibré). | M | ✅ |
 | FR-CPT-5c | **Écriture de clôture de TVA** (solde 44571/44566 → 44551/44567, journal OD). | M | ✅ |
 | FR-CPT-5d | Rapprochement bancaire, déclaration périodique (mensuelle/trimestrielle). | M | ⏳ |
 | FR-CPT-6 | Export **FEC** (Fichier des Écritures Comptables) tabulé normé. | M | ✅ |
 
-### 3.8 Transverse
+### 3.8 Trésorerie (Jalon 5)
+| ID | Exigence | Prio | Statut |
+|---|---|---|---|
+| FR-TRE-1 | **Prévisionnel de trésorerie** : encaissements clients attendus (reste dû) vs décaissements fournisseurs, position nette, mise en évidence des retards. | S | ✅ |
+| FR-TRE-2 | Rapprochement bancaire (relevé ↔ écritures 512) et projection par période. | C | ⏳ |
+
+### 3.9 Transverse
 | ID | Exigence | Prio | Statut |
 |---|---|---|---|
 | FR-TRV-1 | Paramétrage société (en-tête facturation, mentions légales, CGV). | M | ✅ |

@@ -123,11 +123,13 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **3 Achats** | **Règlements fournisseurs partiels** + comptabilisation (401=512) | ✅ | `supplierPayment.router.ts` (`create`/`remove`/`listForInvoice`), modèle `SupplierPayment` (RLS), statut piloté par le cumul, `accounting.postSupplierPayment`, UI (panneau règlements + échéancier reste dû) |
 | **3 Achats** | Rapprochement 3 voies commande/réception/facture | ❌ | phase future (lien `SupplierInvoice.purchaseOrderId` déjà présent) |
 | **4 Compta** | Plan comptable + journaux + écritures équilibrées + balance | ✅ | `accounting.router.ts` (`accounts`/`journals`/`entries`/`balance`), contrôle débit=crédit |
-| **4 Compta** | **Comptabilisation auto** : ventes (411/707/44571), règlements (512/411), factures fournisseurs (607/44566/401) | ✅ | `accounting.postSalesInvoice`/`postPayment`/`postSupplierInvoice`, liens `journalEntryId` |
+| **4 Compta** | **Comptabilisation auto** : ventes (411/707/44571), règlements clients (512/411), factures fournisseurs (607/44566/401), règlements fournisseurs (401/512) | ✅ | `accounting.postSalesInvoice`/`postPayment`/`postSupplierInvoice`/`postSupplierPayment`, liens `journalEntryId` |
 | **4 Compta** | **Export FEC** (Fichier des Écritures Comptables, tabulé normé) | ✅ | `accounting.fec` — bouton « Exporter le FEC » (Balance) |
 | **4 Compta** | **Déclaration de TVA (CA3)** | ✅ | `accounting.vatReturn` — collectée (44571) − déductible (44566) |
-| **4 Compta** | Lettrage, rapprochement bancaire, clôture TVA | ❌ | phase future |
-| **5** | Trésorerie & BI | ❌ | phase future |
+| **4 Compta** | **Lettrage** (rapprochement débit/crédit) + **clôture TVA** (OD) | ✅ | `accounting` (`letter`/lettrage, écriture de clôture 44571/44566→44551/44567), page `Lettrage.tsx` |
+| **4 Compta** | Rapprochement bancaire (relevé ↔ écritures 512) | ❌ | phase future |
+| **5 Trésorerie** | **Prévisionnel de trésorerie** : encaissements clients vs décaissements fournisseurs, position nette, retards | ✅ | `analytics.tresorerie`, page `Tresorerie.tsx` (domaine Trésorerie) |
+| **5 BI** | Tableaux de bord analytiques avancés (séries temporelles, marges) | 🔧 | KPI consolidés via `analytics.summary` (Dashboard) ; BI approfondie = phase future |
 | transverse | Administration in-app : inviter users, attribuer/révoquer rôles | ✅ | `iam.router` (`invite`/`grantRole`/`revokeRole`), garde-fou dernier admin, page `Members.tsx` |
 
 **Position actuelle : Jalon 2 (Ventes) quasi complet.** Chaîne devis → facture → avoir + **règlements

@@ -27,9 +27,12 @@ export const analyticsRouter = router({
         }
       }
 
-      // Achats : encours fournisseurs (factures fournisseurs validées)
-      const sis = await tx.supplierInvoice.findMany({ where: { ...scope(ctx.societeId), status: 'validated' }, include: { lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } } } });
-      const encoursFournisseurs = sis.reduce((s, si) => s + totalsOf(si.lines).totalTtc, 0);
+      // Achats : encours fournisseurs (factures fournisseurs validées, net des règlements)
+      const sis = await tx.supplierInvoice.findMany({ where: { ...scope(ctx.societeId), status: 'validated' }, include: { lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
+      const encoursFournisseurs = sis.reduce((s, si) => {
+        const paid = si.payments.reduce((a, p) => a + n(p.amount), 0);
+        return s + Math.max(0, totalsOf(si.lines).totalTtc - paid);
+      }, 0);
 
       // Stock : valeur au PMP
       const movements = await tx.stockMovement.findMany({ where: scope(ctx.societeId), select: { productId: true, quantity: true, kind: true, unitCost: true } });
@@ -61,6 +64,41 @@ export const analyticsRouter = router({
         valeurStock: r2(valeurStock),
         tvaAPayer,
       };
+    })
+  ),
+
+  /** Prévisionnel de trésorerie : encaissements clients attendus vs décaissements fournisseurs, reste dû et retard. */
+  tresorerie: protectedProcedure.query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const now = Date.now();
+      const remainingOf = (
+        lines: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }[],
+        payments: { amount: unknown }[]
+      ) => r2(totalsOf(lines).totalTtc - payments.reduce((s, p) => s + n(p.amount), 0));
+
+      // Encaissements attendus : factures clients validées non soldées.
+      const factures = await tx.invoice.findMany({
+        where: { ...scope(ctx.societeId), docType: 'facture', status: 'validated' },
+        include: { company: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } },
+        orderBy: [{ dueDate: 'asc' }],
+      });
+      const encaissements = factures
+        .map((f) => ({ id: f.id, number: f.number, party: f.company?.name ?? '—', dueDate: f.dueDate, amount: remainingOf(f.lines, f.payments), overdue: f.dueDate ? new Date(f.dueDate).getTime() < now : false }))
+        .filter((r) => r.amount > 0.005);
+
+      // Décaissements attendus : factures fournisseurs validées non soldées.
+      const sis = await tx.supplierInvoice.findMany({
+        where: { ...scope(ctx.societeId), status: 'validated' },
+        include: { supplier: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } },
+        orderBy: [{ dueDate: 'asc' }],
+      });
+      const decaissements = sis
+        .map((s) => ({ id: s.id, number: s.reference, party: s.supplier?.name ?? '—', dueDate: s.dueDate, amount: remainingOf(s.lines, s.payments), overdue: s.dueDate ? new Date(s.dueDate).getTime() < now : false }))
+        .filter((r) => r.amount > 0.005);
+
+      const toReceive = r2(encaissements.reduce((s, r) => s + r.amount, 0));
+      const toPay = r2(decaissements.reduce((s, r) => s + r.amount, 0));
+      return { encaissements, decaissements, toReceive, toPay, net: r2(toReceive - toPay) };
     })
   ),
 });
