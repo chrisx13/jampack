@@ -44,6 +44,11 @@ async function main() {
     ['read', 'Invoice'], ['create', 'Invoice'], ['update', 'Invoice'],
     ['read', 'CreditNote'], ['create', 'CreditNote'], ['update', 'CreditNote'],
     ['read', 'Payment'], ['create', 'Payment'], ['delete', 'Payment'],
+    ['read', 'Warehouse'], ['create', 'Warehouse'], ['update', 'Warehouse'],
+    ['read', 'StockMovement'], ['create', 'StockMovement'], ['delete', 'StockMovement'],
+    ['read', 'PurchaseOrder'], ['create', 'PurchaseOrder'], ['update', 'PurchaseOrder'],
+    ['read', 'SupplierInvoice'], ['create', 'SupplierInvoice'], ['update', 'SupplierInvoice'],
+    ['read', 'Accounting'], ['create', 'Accounting'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -71,11 +76,17 @@ async function main() {
     'read:Invoice', 'create:Invoice', 'update:Invoice',
     'read:CreditNote', 'create:CreditNote', 'update:CreditNote',
     'read:Payment', 'create:Payment', 'delete:Payment',
+    'read:Warehouse', 'create:Warehouse', 'update:Warehouse',
+    'read:StockMovement', 'create:StockMovement', 'delete:StockMovement',
+    'read:PurchaseOrder', 'create:PurchaseOrder', 'update:PurchaseOrder',
+    'read:SupplierInvoice', 'create:SupplierInvoice', 'update:SupplierInvoice',
   ]);
   const comptable = await role('Comptable', [
     'read:Company', 'read:Contact', 'read:Opportunity', 'read:Product',
     'read:Quote', 'read:Invoice', 'read:CreditNote',
     'read:Payment', 'create:Payment', 'delete:Payment',
+    'read:PurchaseOrder', 'read:SupplierInvoice', 'create:SupplierInvoice', 'update:SupplierInvoice',
+    'read:Accounting', 'create:Accounting',
   ]);
 
   // ── Utilisateurs ──
@@ -261,6 +272,86 @@ async function main() {
         where: { societeId_docType: { societeId: s.id, docType } },
         update: {},
         create: { organizationId: org.id, societeId: s.id, docType, prefix },
+      });
+    }
+  }
+
+  // ── Stock : entrepôts + stock initial de démonstration ──
+  const ensureWarehouse = async (societeId: string, name: string, data: Record<string, unknown> = {}) => {
+    const f = await prisma.warehouse.findFirst({ where: { societeId, name } });
+    return f ?? prisma.warehouse.create({ data: { organizationId: org.id, societeId, name, ...data } });
+  };
+  const whBoul = await ensureWarehouse(boulangerie.id, 'Fournil — Réserve', { code: 'BOUL-1', city: 'Lyon', isDefault: true });
+  await ensureWarehouse(studio.id, 'Studio — Local', { code: 'STU-1', city: 'Nantes', isDefault: true });
+
+  const boulHasStock = await prisma.stockMovement.findFirst({ where: { societeId: boulangerie.id } });
+  if (!boulHasStock) {
+    for (const [productName, qty, unitCost] of [['Baguette tradition', 500, 0.45], ['Croissant', 300, 0.55]] as [string, number, number][]) {
+      const p = await prisma.product.findFirst({ where: { societeId: boulangerie.id, name: productName } });
+      if (p) await prisma.stockMovement.create({ data: { organizationId: org.id, societeId: boulangerie.id, warehouseId: whBoul.id, productId: p.id, kind: 'entree', quantity: qty, unitCost, note: 'Stock initial' } });
+    }
+  }
+
+  // ── Achats : fournisseur + commande de démonstration (brouillon) ──
+  const supplier = await ensureCompany(boulangerie.id, 'Moulins de Lyon');
+  await prisma.company.update({ where: { id: supplier.id }, data: { isSupplier: true, isCustomer: false } });
+  const poExists = await prisma.purchaseOrder.findFirst({ where: { societeId: boulangerie.id } });
+  if (!poExists) {
+    await prisma.purchaseOrder.create({
+      data: {
+        organizationId: org.id, societeId: boulangerie.id, supplierId: supplier.id, warehouseId: whBoul.id, status: 'draft',
+        notes: 'Commande de démonstration',
+        lines: {
+          create: [
+            { label: 'Farine T65 (sac 25 kg)', quantity: 40, unitPriceHt: 18, position: 0 },
+            { label: 'Levure fraîche (kg)', quantity: 10, unitPriceHt: 3.5, position: 1 },
+          ],
+        },
+      },
+    });
+  }
+
+  // ── Achats : facture fournisseur de démonstration (validée, à payer) ──
+  const supInvExists = await prisma.supplierInvoice.findFirst({ where: { societeId: boulangerie.id } });
+  if (!supInvExists) {
+    await prisma.supplierInvoice.create({
+      data: {
+        organizationId: org.id, societeId: boulangerie.id, supplierId: supplier.id, status: 'validated',
+        reference: 'FR-2026-0421', issueDate: new Date('2026-07-20'), dueDate: new Date('2026-08-19'),
+        notes: 'Facture fournisseur de démonstration',
+        lines: {
+          create: [
+            { label: 'Farine T65 (sac 25 kg)', quantity: 40, unitPriceHt: 18, taxRatePct: 5.5, position: 0 },
+            { label: 'Levure fraîche (kg)', quantity: 10, unitPriceHt: 3.5, taxRatePct: 5.5, position: 1 },
+          ],
+        },
+      },
+    });
+  }
+
+  // ── Comptabilité : plan comptable minimal + journaux (par société) ──
+  const PCG: [string, string][] = [
+    ['401000', 'Fournisseurs'], ['411000', 'Clients'], ['445660', 'TVA déductible'], ['445710', 'TVA collectée'],
+    ['445510', 'TVA à décaisser'], ['445670', 'Crédit de TVA à reporter'],
+    ['512000', 'Banque'], ['530000', 'Caisse'], ['607000', 'Achats de marchandises'], ['627000', 'Services bancaires'],
+    ['707000', 'Ventes de marchandises'], ['706000', 'Prestations de services'],
+  ];
+  const JOURNALS: [string, string, string][] = [
+    ['VT', 'Ventes', 'vente'], ['AC', 'Achats', 'achat'], ['BQ', 'Banque', 'banque'], ['OD', 'Opérations diverses', 'od'],
+  ];
+  for (const s of [boulangerie, studio]) {
+    for (const [code, name] of PCG) {
+      await prisma.account.upsert({
+        where: { societeId_code: { societeId: s.id, code } },
+        update: {},
+        create: { organizationId: org.id, societeId: s.id, code, name, class: Number(code[0]) },
+      });
+    }
+    for (const [code, name, type] of JOURNALS) {
+      await prisma.journal.upsert({
+        where: { societeId_code: { societeId: s.id, code } },
+        update: {},
+        create: { organizationId: org.id, societeId: s.id, code, name, type },
       });
     }
   }

@@ -94,6 +94,9 @@ Fait :
 - [x] Facturation : factures (brouillon → validée → annulée), calcul TVA, PDF ; affacturage, comptes bancaires et conditions de paiement.
 - [x] Chaîne **devis → facture → avoir** : devis (envoi, accepté/refusé, conversion en facture) et avoirs (depuis facture), pièces unifiées par `docType`.
 - [x] **Règlements & échéancier** : encaissements rattachés aux factures, statut *payée* automatique, échéancier des factures non soldées.
+- [x] **Stock** (Jalon 3) : entrepôts, mouvements (entrée/sortie/ajustement), niveaux calculés, **valorisation PMP**.
+- [x] **Achats** (Jalon 3) : commandes fournisseurs (fournisseur = tiers `isSupplier`) → **réception** qui alimente automatiquement le stock ; **factures fournisseurs** + échéancier fournisseur (comptes à payer).
+- [x] **Comptabilité** (Jalon 4) : PCG + journaux, écritures équilibrées, balance, **comptabilisation auto** (ventes 411/707/44571, règlements 512/411, achats 607/44566/401), **déclaration TVA (CA3)** et **export FEC**.
 - [x] Personnalisation du thème (couleurs de marque) au niveau du compte.
 
 En cours / à venir (Jalon 2 — Ventes) :
@@ -107,4 +110,4 @@ En cours / à venir (Jalon 2 — Ventes) :
 
 ## Feuille de route
 
-Phase 0 (socle multi-société) ✓ → CRM ✓ → Référentiels ✓ → **Ventes / facturation** (devis → facture → avoir + règlements/échéancier faits ; e-invoicing Factur-X à venir) → Achats + Stock → Comptabilité (FEC).
+Phase 0 (socle multi-société) ✓ → CRM ✓ → Référentiels ✓ → **Ventes / facturation** (devis → facture → avoir + règlements/échéancier faits ; e-invoicing Factur-X à venir) → **Stock & Achats** (entrepôts/mouvements/niveaux/valorisation + commandes → réception + factures fournisseurs) → **Comptabilité** (écritures auto ventes/achats/règlements, balance, **FEC** faits ; TVA CA3 à venir). Reste transverse : e-invoicing Factur-X / PDP.

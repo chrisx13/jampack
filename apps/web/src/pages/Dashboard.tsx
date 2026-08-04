@@ -28,6 +28,7 @@ export default function Dashboard() {
   const companies = trpc.crm.companies.list.useQuery();
   const contacts = trpc.crm.contacts.list.useQuery();
   const opportunities = trpc.crm.opportunities.list.useQuery();
+  const summary = trpc.analytics.summary.useQuery();
 
   const [name, setName] = useState('');
   const create = trpc.crm.companies.create.useMutation({
@@ -52,6 +53,15 @@ export default function Dashboard() {
         <Col sm={6} xl={3}><Stat icon="bi-people" tone="info" label="Contacts" value={contacts.data?.length ?? '—'} /></Col>
         <Col sm={6} xl={3}><Stat icon="bi-graph-up-arrow" tone="success" label="Opportunités" value={opportunities.data?.length ?? '—'} /></Col>
         <Col sm={6} xl={3}><Stat icon="bi-cash-stack" tone="warning" label="CA pipeline" value={euro.format(pipelineValue)} /></Col>
+      </Row>
+
+      <div className="text-secondary small text-uppercase fw-semibold mb-2" style={{ letterSpacing: '.05em' }}>Finances</div>
+      <Row className="g-3 mb-4">
+        <Col sm={6} xl>{<Stat icon="bi-receipt" tone="primary" label="CA facturé" value={summary.data ? euro.format(summary.data.caFacture) : '—'} />}</Col>
+        <Col sm={6} xl><Stat icon="bi-hourglass-split" tone="warning" label="Encours clients" value={summary.data ? euro.format(summary.data.encoursClients) : '—'} /></Col>
+        <Col sm={6} xl><Stat icon="bi-cart" tone="danger" label="Encours fournisseurs" value={summary.data ? euro.format(summary.data.encoursFournisseurs) : '—'} /></Col>
+        <Col sm={6} xl><Stat icon="bi-boxes" tone="info" label="Valeur stock" value={summary.data ? euro.format(summary.data.valeurStock) : '—'} /></Col>
+        <Col sm={6} xl><Stat icon="bi-percent" tone="success" label="TVA à décaisser" value={summary.data ? euro.format(summary.data.tvaAPayer) : '—'} /></Col>
       </Row>
 
       <Row className="g-3">

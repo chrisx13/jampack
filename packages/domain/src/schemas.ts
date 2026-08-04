@@ -196,6 +196,16 @@ export const activityCreate = z.object({
 });
 export type ActivityCreate = z.infer<typeof activityCreate>;
 
+// ── Création d'une société ──
+export const societeCreate = z.object({
+  name: z.string().min(1),
+  siren: z.string().optional(),
+  siret: z.string().optional(),
+  tvaNumber: z.string().optional(),
+  city: z.string().optional(),
+});
+export type SocieteCreate = z.infer<typeof societeCreate>;
+
 // ── Paramétrage société (facturation) ──
 const optStr = z.string().max(2000).nullable().optional();
 export const societeSettingsUpdate = z.object({
@@ -313,6 +323,159 @@ export const paymentCreate = z.object({
   note: z.string().optional(),
 });
 export type PaymentCreate = z.infer<typeof paymentCreate>;
+
+// ── Stock : entrepôts & mouvements ──
+export const STOCK_KINDS = ['entree', 'sortie', 'ajustement'] as const;
+export type StockKind = (typeof STOCK_KINDS)[number];
+export const STOCK_KIND_LABELS: Record<StockKind, string> = { entree: 'Entrée', sortie: 'Sortie', ajustement: 'Ajustement' };
+
+export const warehouseCreate = z.object({
+  name: z.string().min(1),
+  code: z.string().optional(),
+  addressLine1: z.string().optional(),
+  postalCode: z.string().optional(),
+  city: z.string().optional(),
+  isDefault: z.boolean().optional(),
+});
+export const warehouseUpdate = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).optional(),
+  code: z.string().nullable().optional(),
+  addressLine1: z.string().nullable().optional(),
+  postalCode: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  isDefault: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+});
+export type WarehouseCreate = z.infer<typeof warehouseCreate>;
+
+export const stockMovementCreate = z.object({
+  warehouseId: z.string().min(1),
+  productId: z.string().min(1),
+  kind: z.enum(STOCK_KINDS),
+  // Quantité saisie (positive pour entrée/sortie ; signée autorisée pour un ajustement).
+  quantity: z.number().refine((v) => v !== 0, 'Quantité non nulle attendue'),
+  unitCost: z.number().nonnegative().optional(),
+  note: z.string().optional(),
+  date: z.string().optional(),
+});
+export type StockMovementCreate = z.infer<typeof stockMovementCreate>;
+
+// ── Achats : commandes fournisseurs ──
+export const PO_STATUS_LABELS: Record<string, string> = {
+  draft: 'Brouillon', sent: 'Envoyée', received: 'Réceptionnée', cancelled: 'Annulée',
+};
+
+export const poLineInput = z.object({
+  productId: z.string().optional(),
+  label: z.string().min(1),
+  quantity: z.number().positive(),
+  unitPriceHt: z.number().nonnegative(),
+  position: z.number().int().optional(),
+});
+export type PoLineInput = z.infer<typeof poLineInput>;
+
+export const purchaseOrderCreate = z.object({
+  supplierId: z.string().min(1),
+  warehouseId: z.string().optional(),
+  orderDate: z.string().optional(),
+  expectedDate: z.string().optional(),
+  notes: z.string().optional(),
+  lines: z.array(poLineInput).default([]),
+});
+export type PurchaseOrderCreate = z.infer<typeof purchaseOrderCreate>;
+
+export const purchaseOrderUpdate = z.object({
+  id: z.string().min(1),
+  supplierId: z.string().optional(),
+  warehouseId: z.string().nullable().optional(),
+  orderDate: z.string().nullable().optional(),
+  expectedDate: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  lines: z.array(poLineInput).optional(),
+});
+export type PurchaseOrderUpdate = z.infer<typeof purchaseOrderUpdate>;
+
+// ── Achats : factures fournisseurs (comptes à payer) ──
+export const supplierInvoiceLineInput = z.object({
+  label: z.string().min(1),
+  quantity: z.number().positive(),
+  unitPriceHt: z.number().nonnegative(),
+  taxRatePct: z.number().min(0).max(100),
+  position: z.number().int().optional(),
+});
+export const supplierInvoiceCreate = z.object({
+  supplierId: z.string().min(1),
+  purchaseOrderId: z.string().optional(),
+  reference: z.string().optional(),
+  issueDate: z.string().optional(),
+  dueDate: z.string().optional(),
+  notes: z.string().optional(),
+  lines: z.array(supplierInvoiceLineInput).default([]),
+});
+export type SupplierInvoiceCreate = z.infer<typeof supplierInvoiceCreate>;
+
+export const supplierInvoiceUpdate = z.object({
+  id: z.string().min(1),
+  supplierId: z.string().optional(),
+  purchaseOrderId: z.string().nullable().optional(),
+  reference: z.string().nullable().optional(),
+  issueDate: z.string().nullable().optional(),
+  dueDate: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  lines: z.array(supplierInvoiceLineInput).optional(),
+});
+export type SupplierInvoiceUpdate = z.infer<typeof supplierInvoiceUpdate>;
+
+// ── Comptabilité : plan comptable, journaux, écritures ──
+export const JOURNAL_TYPES = ['vente', 'achat', 'banque', 'od'] as const;
+export type JournalType = (typeof JOURNAL_TYPES)[number];
+export const JOURNAL_TYPE_LABELS: Record<JournalType, string> = { vente: 'Ventes', achat: 'Achats', banque: 'Banque', od: 'Opérations diverses' };
+
+export const accountCreate = z.object({ code: z.string().min(1), name: z.string().min(1) });
+export const accountUpdate = z.object({ id: z.string().min(1), code: z.string().min(1).optional(), name: z.string().min(1).optional(), isActive: z.boolean().optional() });
+export type AccountCreate = z.infer<typeof accountCreate>;
+
+export const journalCreate = z.object({ code: z.string().min(1), name: z.string().min(1), type: z.enum(JOURNAL_TYPES) });
+export type JournalCreate = z.infer<typeof journalCreate>;
+
+export const journalEntryLineInput = z.object({
+  accountId: z.string().min(1),
+  label: z.string().optional(),
+  debit: z.number().nonnegative().default(0),
+  credit: z.number().nonnegative().default(0),
+});
+export const journalEntryCreate = z
+  .object({
+    journalId: z.string().min(1),
+    date: z.string(),
+    reference: z.string().optional(),
+    label: z.string().min(1),
+    lines: z.array(journalEntryLineInput).min(2),
+  })
+  .refine((e) => {
+    const d = e.lines.reduce((s, l) => s + (l.debit || 0), 0);
+    const c = e.lines.reduce((s, l) => s + (l.credit || 0), 0);
+    return Math.abs(d - c) < 0.005 && d > 0;
+  }, { message: "L'écriture doit être équilibrée (débit = crédit) et non nulle." });
+export type JournalEntryCreate = z.infer<typeof journalEntryCreate>;
+
+/** Plan comptable minimal (PCG) proposé par défaut à une société. */
+export const PCG_MINIMAL: { code: string; name: string }[] = [
+  { code: '401000', name: 'Fournisseurs' },
+  { code: '411000', name: 'Clients' },
+  { code: '445660', name: 'TVA déductible' },
+  { code: '445710', name: 'TVA collectée' },
+  { code: '445510', name: 'TVA à décaisser' },
+  { code: '445670', name: 'Crédit de TVA à reporter' },
+  { code: '512000', name: 'Banque' },
+  { code: '530000', name: 'Caisse' },
+  { code: '607000', name: 'Achats de marchandises' },
+  { code: '627000', name: 'Services bancaires' },
+  { code: '707000', name: 'Ventes de marchandises' },
+  { code: '706000', name: 'Prestations de services' },
+];
+
 
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */
 export function computeInvoiceTotals(

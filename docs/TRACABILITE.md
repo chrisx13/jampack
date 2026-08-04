@@ -115,10 +115,19 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **2 Ventes** | **Avoirs** (depuis facture) | ✅ | `creditNote.router.ts`, `invoices.createCreditNote`, `Invoice.docType='avoir'` |
 | **2 Ventes** | **Règlements / échéancier** | ✅ | `payment.router.ts` (`create`/`remove`/`echeancier`), modèle `Payment`, statut facture recalculé (validée ⇄ payée) |
 | **2 Ventes** | **E-invoicing Factur-X / PDP** | ❌ | PDF simple (pas hybride Factur-X) ; aucune intégration PDP — **point réglementaire n°1, non commencé** |
-| **3** | Achats & stock | ❌ | phase future |
-| **4** | Comptabilité (écritures, TVA/CA3, FEC) | ❌ | phase future |
+| **3 Stock** | Entrepôts + mouvements (entrée/sortie/ajustement) + niveaux calculés | ✅ | `stock.router.ts` (`warehouses`, `movements`, `levels`), modèles `Warehouse`/`StockMovement` |
+| **3 Stock** | **Valorisation PMP** (par article) | ✅ | `stock.router.ts` (`valuation`) — PMP des entrées × quantité nette |
+| **3 Stock** | Inventaires, FIFO, lots/seuils | ❌ | phase future |
+| **3 Achats** | Commandes fournisseurs → **réceptions** (génèrent les entrées de stock) | ✅ | `purchase.router.ts` (`orders.validate`/`receive`), modèles `PurchaseOrder`/`PurchaseOrderLine` ; fournisseur = `Company.isSupplier` |
+| **3 Achats** | **Factures fournisseurs** + échéancier fournisseur | ✅ | `supplierInvoice.router.ts` (`validate`/`markPaid`/`echeancier`), modèles `SupplierInvoice`/`SupplierInvoiceLine` |
+| **3 Achats** | Rapprochement commande/réception/facture, règlements fournisseurs partiels | ❌ | phase future (lien `SupplierInvoice.purchaseOrderId` déjà présent) |
+| **4 Compta** | Plan comptable + journaux + écritures équilibrées + balance | ✅ | `accounting.router.ts` (`accounts`/`journals`/`entries`/`balance`), contrôle débit=crédit |
+| **4 Compta** | **Comptabilisation auto** : ventes (411/707/44571), règlements (512/411), factures fournisseurs (607/44566/401) | ✅ | `accounting.postSalesInvoice`/`postPayment`/`postSupplierInvoice`, liens `journalEntryId` |
+| **4 Compta** | **Export FEC** (Fichier des Écritures Comptables, tabulé normé) | ✅ | `accounting.fec` — bouton « Exporter le FEC » (Balance) |
+| **4 Compta** | **Déclaration de TVA (CA3)** | ✅ | `accounting.vatReturn` — collectée (44571) − déductible (44566) |
+| **4 Compta** | Lettrage, rapprochement bancaire, clôture TVA | ❌ | phase future |
 | **5** | Trésorerie & BI | ❌ | phase future |
-| transverse | Administration in-app (inviter users, gérer sociétés/rôles) | ⚠️ | lecture seule (`iam.members`) ; pas d'invitation ni d'édition de rôles |
+| transverse | Administration in-app : inviter users, attribuer/révoquer rôles | ✅ | `iam.router` (`invite`/`grantRole`/`revokeRole`), garde-fou dernier admin, page `Members.tsx` |
 
 **Position actuelle : Jalon 2 (Ventes) quasi complet.** Chaîne devis → facture → avoir + **règlements
 et échéancier client** opérationnels (un seul modèle `Invoice` discriminé par `docType`, PDF partagé,

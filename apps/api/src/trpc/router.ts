@@ -9,6 +9,12 @@ import { quoteRouter } from '../invoice/quote.router';
 import { creditNoteRouter } from '../invoice/creditNote.router';
 import { paymentRouter } from '../invoice/payment.router';
 import { billingRouter } from '../billing/billing.router';
+import { stockRouter } from '../stock/stock.router';
+import { purchaseRouter } from '../purchases/purchase.router';
+import { supplierInvoiceRouter } from '../purchases/supplierInvoice.router';
+import { accountingRouter } from '../accounting/accounting.router';
+import { analyticsRouter } from '../analytics/analytics.router';
+import { auditRouter } from '../iam/audit.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -21,6 +27,12 @@ export const appRouter = router({
   creditNotes: creditNoteRouter,
   payments: paymentRouter,
   billing: billingRouter,
+  stock: stockRouter,
+  purchases: purchaseRouter,
+  supplierInvoices: supplierInvoiceRouter,
+  accounting: accountingRouter,
+  analytics: analyticsRouter,
+  audit: auditRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */

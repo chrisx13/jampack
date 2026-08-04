@@ -138,7 +138,7 @@ export const crmRouter = router({
 
   // ── Activités ──
   activities: router({
-    list: authed('read', 'Opportunity').input(byId.partial()).query(({ ctx, input }) =>
+    list: authed('read', 'Opportunity').input(byId.partial()).query(({ ctx }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
         tx.activity.findMany({ where: { ...scope(ctx.societeId) }, orderBy: { createdAt: 'desc' }, take: 50 })
       )
