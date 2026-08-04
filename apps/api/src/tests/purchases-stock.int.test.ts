@@ -118,6 +118,26 @@ describe('Stock — mouvements, niveaux, valorisation', () => {
   });
 });
 
+describe('Référentiels — import CSV du catalogue', () => {
+  it('crée les nouveaux articles puis met à jour par référence (upsert)', async () => {
+    const ref = `[INT]-CSV-${Date.now()}`;
+    const csv1 = `Référence;Nom;Prix HT;Unité;Type\n${ref};[INT] Article importé;9,90;pièce;bien`;
+    const r1 = await caller.catalog.products.importCsv({ csv: csv1 });
+    expect(r1).toMatchObject({ imported: 1, created: 1, updated: 0 });
+    const p1 = await C.prisma.product.findFirstOrThrow({ where: { societeId: C.soc.id, reference: ref } });
+    expect(N(p1.priceHt)).toBeCloseTo(9.9, 2);
+
+    // Réimport avec la même référence → mise à jour, pas de doublon.
+    const csv2 = `${ref};[INT] Article importé v2;12,00;pièce;bien`;
+    const r2 = await caller.catalog.products.importCsv({ csv: csv2 });
+    expect(r2).toMatchObject({ imported: 1, created: 0, updated: 1 });
+    const all = await C.prisma.product.findMany({ where: { societeId: C.soc.id, reference: ref } });
+    expect(all).toHaveLength(1);
+    expect(N(all[0].priceHt)).toBeCloseTo(12, 2);
+    expect(all[0].name).toBe('[INT] Article importé v2');
+  });
+});
+
 describe('Achats — commande → réception → stock ; factures fournisseurs', () => {
   it('réception d’une commande alimente le stock', async () => {
     const [pid, sid] = [await product(), await supplier()];

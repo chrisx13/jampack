@@ -13,7 +13,7 @@ transaction RLS (`withTenant`).
 `companies.{list,create,update,remove,exportData,anonymize,purgeCandidates}` (exportData = export RGPD ; anonymize = effacement art. 17 ; purgeCandidates = tiers > 3 ans à purger) · `contacts.{list,create,update,remove}` · `establishments.{list,create,update,remove}` · `opportunities.{list,create,update,move,remove}` · `stages.list` · `activities.{list,tasks,create,complete,reopen,remove}` (list filtrable par client/contact/opportunité ; tasks = tâches ouvertes triées par échéance ; complete/reopen = état fait)
 
 ### `catalog`
-`products.{list,create,update,remove}` · `taxRates.{list,create,update,remove}` · `categories.{list,create,update,archive}` · `sequences.list`
+`products.{list,create,update,remove,importCsv}` (importCsv = upsert par référence depuis un CSV `réf ; nom ; prix HT ; unité ; type`) · `taxRates.{list,create,update,remove}` · `categories.{list,create,update,archive}` · `sequences.list`
 
 ### `quotes` / `invoices` / `creditNotes` (pièces de vente)
 Commun (`makeSalesRouter`) : `list · get · create · update · validate · cancel · pdf`

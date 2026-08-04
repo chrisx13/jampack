@@ -5,7 +5,7 @@ import {
   stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
-  isPurchaseOrderOverdue, purchaseOrderDaysLate,
+  isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -127,6 +127,23 @@ describe('commandes fournisseurs en retard', () => {
     expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: null }, now)).toBe(false);
     expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: '2026-08-10T00:00:00Z' }, now)).toBe(false);
     expect(purchaseOrderDaysLate({ status: 'received', expectedDate: '2026-08-01T00:00:00Z' }, now)).toBe(0);
+  });
+});
+
+describe('parseProductsCsv', () => {
+  it('parse réf ; nom ; prix ; unité ; type et ignore l’en-tête', () => {
+    const csv = 'Référence;Nom;Prix HT;Unité;Type\nREF-1;Baguette;0,90;pièce;bien\nREF-2;Conseil;120,00;heure;service\n';
+    const rows = parseProductsCsv(csv);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toEqual({ reference: 'REF-1', name: 'Baguette', priceHt: 0.9, unit: 'pièce', kind: 'bien' });
+    expect(rows[1].kind).toBe('service');
+    expect(rows[1].priceHt).toBe(120);
+  });
+  it('nom obligatoire ; prix invalide → indéfini ; réf. facultative ; type par défaut bien', () => {
+    const rows = parseProductsCsv(';;;;\nREF;Prix invalide;abc\n;Sans réf;12');
+    expect(rows).toHaveLength(2); // la 1re ligne (sans nom) est ignorée
+    expect(rows[0]).toEqual({ reference: 'REF', name: 'Prix invalide', priceHt: undefined, unit: undefined, kind: 'bien' });
+    expect(rows[1]).toEqual({ reference: undefined, name: 'Sans réf', priceHt: 12, unit: undefined, kind: 'bien' });
   });
 });
 

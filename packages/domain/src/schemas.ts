@@ -113,6 +113,36 @@ export const productCreate = z.object({
 });
 export type ProductCreate = z.infer<typeof productCreate>;
 
+/**
+ * Import CSV d'articles : colonnes `référence ; nom ; prix HT ; unité ; type`.
+ * Séparateur `;` ou `,` ; décimale FR (virgule) tolérée ; en-tête ignoré ; nom obligatoire.
+ * `type` accepte bien/service (défaut : bien). Retourne des lignes prêtes pour `productCreate`.
+ */
+export type ProductCsvRow = { reference?: string; name: string; priceHt?: number; unit?: string; kind: 'bien' | 'service' };
+export function parseProductsCsv(text: string): ProductCsvRow[] {
+  const out: ProductCsvRow[] = [];
+  for (const raw of (text ?? '').split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    const cols = (line.includes(';') ? line.split(';') : line.split(',')).map((c) => c.trim());
+    const [reference, name, priceRaw, unit, kindRaw] = cols;
+    if (!name) continue; // ligne sans nom : en-tête ou vide
+    const lname = name.toLowerCase();
+    if (lname === 'nom' || lname === 'name' || lname === 'libellé' || lname === 'libelle') continue; // en-tête
+    const priceClean = (priceRaw ?? '').replace(/\s/g, '').replace('€', '').replace(',', '.');
+    const price = priceClean === '' ? undefined : Number(priceClean);
+    const kind = (kindRaw ?? '').toLowerCase().startsWith('serv') ? 'service' : 'bien';
+    out.push({
+      reference: reference || undefined,
+      name,
+      priceHt: price != null && Number.isFinite(price) && price >= 0 ? Math.round(price * 100) / 100 : undefined,
+      unit: unit || undefined,
+      kind,
+    });
+  }
+  return out;
+}
+
 export const productUpdate = z.object({
   id: z.string().min(1),
   name: z.string().min(1).optional(),

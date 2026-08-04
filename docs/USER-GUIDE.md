@@ -15,7 +15,8 @@
   Les tâches à faire s'affichent triées par échéance (les **en retard** signalées) ; bouton ✓ pour les clôturer.
 
 ## 3. Ventes
-- **Catalogue** : articles/services, catégories, taux de TVA.
+- **Catalogue** : articles/services, catégories, taux de TVA. **Importer CSV** (`référence ; nom ; prix HT ;
+  unité ; type`) : crée les nouveaux articles et met à jour ceux dont la référence existe déjà — idéal pour l'onboarding.
 - **Devis** : créer → **Envoyer** (numéro DE-) → **Accepter/Refuser** → **Convertir en facture**.
 - **Factures** : créer → **Valider** (numéro FA-, échéance) → **PDF**. Depuis une facture validée :
   **Créer un avoir** ; saisir des **Règlements** (acompte, reste dû, passage *payée*).

@@ -105,6 +105,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-REF-1 | Catalogue **articles & services** (par société), catégories. | M | ✅ |
 | FR-REF-2 | Taux de **TVA** paramétrables (référentiel compte). | M | ✅ |
 | FR-REF-3 | **Numérotation des pièces** par société et type (facture/devis/avoir/commande), atomique. | M | ✅ |
+| FR-REF-4 | **Import CSV du catalogue** (`référence ; nom ; prix HT ; unité ; type`) : création + mise à jour par référence (upsert). | C | ✅ |
 
 ### 3.4 Ventes
 | ID | Exigence | Prio | Statut |

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Card, Table, Button, Modal, Form, Spinner, Badge, InputGroup } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
@@ -78,6 +78,20 @@ export default function Catalogue() {
   const update = trpc.catalog.products.update.useMutation({ onSuccess: done });
   const remove = trpc.catalog.products.remove.useMutation({ onSuccess: () => { utils.catalog.products.list.invalidate(); setDel(null); } });
 
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importResult, setImportResult] = useState<string | null>(null);
+  const importCsv = trpc.catalog.products.importCsv.useMutation({
+    onSuccess: (r) => { utils.catalog.products.list.invalidate(); setImportResult(`${r.imported} ligne(s) : ${r.created} créé(s), ${r.updated} mis à jour.`); },
+  });
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const csv = await f.text();
+    setImportResult(null);
+    importCsv.mutate({ csv });
+    e.target.value = '';
+  };
+
   const open = (r?: Row) => {
     setForm(r ? { name: r.name, reference: r.reference ?? '', kind: r.kind, unit: r.unit, priceHt: String(r.priceHt ?? ''), reorderPoint: r.reorderPoint != null ? String(r.reorderPoint) : '', taxRateId: r.taxRateId ?? '', categoryId: r.categoryId ?? '' } : blank);
     setEdit(r ? { id: r.id } : {});
@@ -107,9 +121,14 @@ export default function Catalogue() {
             {activeCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </Form.Select>
           {can('update', 'Product') && <Button variant="outline-secondary" onClick={() => setShowCats(true)}><i className="bi bi-tags me-1" />Catégories</Button>}
+          {can('create', 'Product') && <Button variant="outline-secondary" title="Importer un CSV : référence ; nom ; prix HT ; unité ; type" onClick={() => fileRef.current?.click()} disabled={importCsv.isPending}>{importCsv.isPending ? <Spinner size="sm" /> : <><i className="bi bi-upload me-1" />Importer CSV</>}</Button>}
           {can('create', 'Product') && <Button onClick={() => open()}><i className="bi bi-plus-lg me-1" />Nouvel article</Button>}
+          <input ref={fileRef} type="file" accept=".csv,text/csv" hidden onChange={onFile} />
         </div>
       </div>
+
+      {importResult && <div className="alert alert-success py-2 px-3 d-flex justify-content-between align-items-center"><span><i className="bi bi-check-circle me-2" />{importResult}</span><Button size="sm" variant="link" className="text-decoration-none p-0" onClick={() => setImportResult(null)}>×</Button></div>}
+      {importCsv.error && <div className="alert alert-danger py-2 px-3">{importCsv.error.message}</div>}
 
       <Card>
         <Card.Body className="p-0">

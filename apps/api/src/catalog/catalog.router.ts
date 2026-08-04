@@ -1,9 +1,11 @@
+import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
 import {
   productCreate, productUpdate,
   productCategoryCreate, productCategoryUpdate,
   taxRateCreate, taxRateUpdate, byId,
+  parseProductsCsv,
 } from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
@@ -36,6 +38,24 @@ export const catalogRouter = router({
     remove: authed('delete', 'Product').input(byId).mutation(({ ctx, input }) =>
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.product.delete({ where: { id: input.id } }))
     ),
+    /**
+     * Import CSV du catalogue (`référence ; nom ; prix HT ; unité ; type`).
+     * Crée les nouveaux articles ; met à jour ceux dont la référence existe déjà (upsert par référence).
+     */
+    importCsv: authed('create', 'Product').input(z.object({ csv: z.string().min(1) })).mutation(({ ctx, input }) => {
+      const societeId = requireSociete(ctx.societeId);
+      const rows = parseProductsCsv(input.csv);
+      return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        let created = 0, updated = 0;
+        for (const r of rows) {
+          const data = { name: r.name, reference: r.reference, priceHt: r.priceHt, unit: r.unit, kind: r.kind };
+          const existing = r.reference ? await tx.product.findFirst({ where: { ...scope(societeId), reference: r.reference }, select: { id: true } }) : null;
+          if (existing) { await tx.product.update({ where: { id: existing.id }, data }); updated++; }
+          else { await tx.product.create({ data: { ...data, organizationId: ctx.user.organizationId, societeId } }); created++; }
+        }
+        return { imported: rows.length, created, updated };
+      });
+    }),
   }),
 
   // ── Taux de TVA (lecture ouverte ; écriture réservée à Admin) ──
