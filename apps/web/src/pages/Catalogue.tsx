@@ -109,13 +109,24 @@ export default function Catalogue() {
   };
   const busy = create.isPending || update.isPending;
 
-  const rows = (list.data ?? []).filter((p) => !filterCat || (p as { categoryId?: string }).categoryId === filterCat);
+  const [search, setSearch] = useState('');
+  const q = search.trim().toLowerCase();
+  const rows = (list.data ?? []).filter((p) =>
+    (!filterCat || (p as { categoryId?: string }).categoryId === filterCat) &&
+    (!q || p.name.toLowerCase().includes(q) || (p.reference ?? '').toLowerCase().includes(q))
+  );
 
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div><h4 className="mb-1 fw-semibold">Catalogue</h4><p className="text-secondary mb-0">Articles & services</p></div>
         <div className="d-flex align-items-center gap-2">
+          {(list.data?.length ?? 0) > 5 && (
+            <div className="position-relative">
+              <i className="bi bi-search position-absolute text-secondary" style={{ left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '.85rem' }} />
+              <Form.Control size="sm" className="ps-4" style={{ width: 200 }} placeholder="Rechercher…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+          )}
           <Form.Select size="sm" style={{ width: 200 }} value={filterCat} onChange={(e) => setFilterCat(e.target.value)}>
             <option value="">Toutes les catégories</option>
             {activeCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
