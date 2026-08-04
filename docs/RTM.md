@@ -109,6 +109,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-TRV-5 | `analytics.router.ts` (`summary`), `Dashboard.tsx` | e2e int : CA facturé Δ +120 | ✅ |
 | FR-TRV-6 | `analytics.agenda`/`agendaIcs` (tâches CRM + échéances clients/fournisseurs + livraisons), `buildAgendaIcs` (RFC 5545), `Agenda.tsx` (domaine Gestion, export ICS) | unit : VCALENDAR/VEVENT + échappement ; e2e int : facture échue en retard + ICS contient l'événement | ✅ |
 | FR-TRV-4 | middleware `auditMiddleware` (`trpc.ts`), `AuditLog`, `audit.router.ts` (`list`/`exportCsv`), `auditLogCsv`, `AuditLog.tsx` | unit : CSV en-tête/date FR/échappement ; e2e int : mutation → entrée (action, user, réf) + export CSV contient l'action | ✅ |
+| FR-TRV-7 | `notes.router.ts` (`list`/`create`/`edit`/`move`/`setColor`/`history`/`remove`), `ViewNote`/`ViewNoteRevision` (+ RLS org/société), sujet CASL `Note`, `NotesOverlay.tsx` (monté par vue dans `AppShell`) | e2e int (`notes.int.test.ts`) : création visible dans la vue ; édition → historisation (1 révision/modif, no-op ignoré) ; déplacement persisté sans révision ; suppression | ✅ |
 | NFR-FON-1/2 | `computeInvoiceTotals`, `nextDocumentNumber` | e2e totaux + numérotation | ✅ |
 | NFR-SEC-1 | `rls.sql`, rôle `jampack_app` | RLS actif au boot (policies vérifiées) | ✅ |
 | NFR-SEC-3 | `authed()` | mutations FORBIDDEN sans droit | ✅ |

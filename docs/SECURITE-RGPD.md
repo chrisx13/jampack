@@ -24,6 +24,8 @@
 - **Société** : policy restrictive `societe_isolation` (`societeId = app.current_societe`).
 - Contexte positionné par transaction via `withTenant()` (paramètre lié, pas d'injection).
 - Rôle applicatif `jampack_app` non-propriétaire → le RLS s'applique réellement.
+- Les **notes de vue** (`ViewNote` org+société, `ViewNoteRevision` org) sont soumises aux mêmes policies :
+  un pense-bête n'est visible que dans son compte et sa société.
 - Référence : `packages/db/prisma/rls.sql`, `packages/db/src/index.ts`.
 
 ## 4. Protection des données en transit et au repos

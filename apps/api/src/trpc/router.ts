@@ -16,6 +16,7 @@ import { supplierPaymentRouter } from '../purchases/supplierPayment.router';
 import { accountingRouter } from '../accounting/accounting.router';
 import { analyticsRouter } from '../analytics/analytics.router';
 import { auditRouter } from '../iam/audit.router';
+import { notesRouter } from '../notes/notes.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -35,6 +36,7 @@ export const appRouter = router({
   accounting: accountingRouter,
   analytics: analyticsRouter,
   audit: auditRouter,
+  notes: notesRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */

@@ -45,7 +45,12 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
   (`debit`/`credit`, `letter` = lettrage, **`reconciled`** = rapprochement bancaire) ·
   **`FixedAsset`** (immobilisation : `amountHt`, `acquisitionDate`, `durationYears`, `method` — plan d'amortissement calculé).
 
+### Transverse
+- **`ViewNote`** (pense-bête de vue : `viewKey`, `content`, `color`, `x`/`y`, `createdBy`, sous RLS org+société) ·
+  **`ViewNoteRevision`** (historisation du contenu : une entrée par modification, `author`, `createdAt`, sous RLS org).
+
 ## 3. Relations clés
+- `ViewNote 1─* ViewNoteRevision` : historique des modifications d'une note (édition tracée).
 - `Invoice.source → Invoice` : traçabilité devis→facture→avoir.
 - `PurchaseOrder.receive` → crée des `StockMovement` d'entrée (intégration Achats↔Stock).
 - `Payment → Invoice` : recalcul du statut *payée*.

@@ -9,6 +9,10 @@
   Le panneau peut être **épinglé** (statique) ou **à la volée** (se referme après sélection).
 - **Tableau de bord** : indicateurs clés (CRM + finances) et panneau **« À traiter »** (échéances et tâches
   des 14 prochains jours, retards signalés) — l'essentiel visible sans naviguer.
+- **Notes de vue** (bouton **Note**, en bas à droite de chaque vue) : pense-bêtes **partagés** — visibles par
+  tous les utilisateurs ayant accès à la vue. On peut en créer **plusieurs**, les **déplacer** (glisser l'en-tête)
+  pour ne pas masquer les données, changer leur **couleur**, et consulter l'**historique** des modifications
+  (chaque enregistrement est tracé : qui, quand, quel contenu). Le compteur permet de les masquer/afficher.
 
 ## 2. CRM
 - **Clients** / **Contacts** : créer, modifier ; rattacher contacts et établissements (siège/facturation/livraison).

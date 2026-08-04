@@ -44,6 +44,11 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 ### `audit`
 `list` (dernières entrées du journal d'audit du compte) · `exportCsv` (export CSV du journal, jusqu'à 5000 entrées)
 
+### `notes`
+Pense-bêtes partagés par vue (`viewKey`) et par société. `list · create · edit · move · setColor · history · remove`.
+`edit` historise le contenu (une `ViewNoteRevision` par modification) ; `move` persiste la position (déplacement) ;
+`history` renvoie les révisions (récent → ancien). Visibles par tout utilisateur ayant le droit `read Note`.
+
 ### `billing`
 `addresses.*` · `factors.*` · `bankAccounts.*` · `paymentTerms.*`
 

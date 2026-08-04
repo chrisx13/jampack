@@ -6,6 +6,7 @@ import { activeSociete, ALL } from '../activeSociete';
 import { defineAbilityFor } from '@jampack/domain';
 import { applyTheme } from '../theme/applyTheme';
 import { DOMAINS, DASHBOARD_VIEW, type View } from '../nav';
+import NotesOverlay from './NotesOverlay';
 
 function SocieteSwitcher() {
   const utils = trpc.useUtils();
@@ -282,8 +283,9 @@ export default function AppShell() {
           const v = viewsById.get(id);
           if (!v) return null;
           return (
-            <div key={id} className={activeId === id ? '' : 'd-none'}>
+            <div key={id} className={`position-relative${activeId === id ? '' : ' d-none'}`} style={{ minHeight: '100%' }}>
               {v.element}
+              <NotesOverlay viewKey={id} />
             </div>
           );
         })}

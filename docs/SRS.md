@@ -186,6 +186,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-TRV-4 | **Journal d'audit** des mutations (qui, quoi, quand) via middleware tRPC ; **export CSV** (traçabilité RGPD/sécurité). | S | ✅ |
 | FR-TRV-5 | **Tableau de bord** : KPI consolidés (CA facturé, encours clients/fournisseurs, valeur stock, TVA). | S | ✅ |
 | FR-TRV-6 | **Agenda consolidé** : échéances et tâches à venir (fenêtre 7/30/90 j) — tâches CRM, échéances factures clients/fournisseurs, livraisons attendues ; retards signalés ; **export iCalendar (.ics)**. | S | ✅ |
+| FR-TRV-7 | **Notes de vue** : pense-bêtes partagés ancrés à une vue, visibles par tout utilisateur ayant accès à la vue ; **édition historisée** ; **déplaçables** (ne masquent pas les données) ; plusieurs par vue. | C | ✅ |
 
 ---
 

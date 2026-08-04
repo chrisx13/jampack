@@ -49,6 +49,8 @@ model Organization {
   journalEntries  JournalEntry[]
   auditLogs       AuditLog[]
   pdpTransmissions PdpTransmission[]
+  viewNotes        ViewNote[]
+  viewNoteRevisions ViewNoteRevision[]
 }
 
 // Journal d'audit : trace des mutations (qui, quoi, quand) — traçabilité sécurité/RGPD.
@@ -120,6 +122,7 @@ model Societe {
   journals        Journal[]
   journalEntries  JournalEntry[]
   pdpTransmissions PdpTransmission[]
+  viewNotes       ViewNote[]
   @@unique([organizationId, name])
   @@index([organizationId])
 }
@@ -150,6 +153,44 @@ model User {
   createdAt    DateTime      @default(now())
   memberships  Membership[]
   societeRoles SocieteRole[]
+  viewNotes         ViewNote[]
+  viewNoteRevisions ViewNoteRevision[]
+}
+
+// ── Notes de vue : pense-bêtes partagés, ancrés à une vue (viewKey) et à une société. ──
+// Visibles par tous les utilisateurs ayant accès à la vue ; éditables avec historisation
+// (ViewNoteRevision) ; déplaçables (x/y) pour ne pas masquer les données ; plusieurs par vue.
+model ViewNote {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  viewKey        String       // identifiant de la vue (cf. nav.tsx : « invoices », « companies »…)
+  content        String       @default("")
+  color          String       @default("amber") // teinte du pense-bête
+  x              Int          @default(24)
+  y              Int          @default(24)
+  createdBy      User         @relation(fields: [createdById], references: [id])
+  createdById    String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  revisions      ViewNoteRevision[]
+  @@index([organizationId, societeId, viewKey])
+}
+
+// Historisation du contenu d'une note (une entrée par enregistrement de modification).
+model ViewNoteRevision {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  note           ViewNote     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId         String
+  content        String
+  author         User         @relation(fields: [authorId], references: [id])
+  authorId       String
+  createdAt      DateTime     @default(now())
+  @@index([noteId, createdAt])
 }
 
 // ── Appartenance au compte (accès au tenant, sans rôle : les rôles sont par société) ──

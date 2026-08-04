@@ -3,6 +3,23 @@ import { z } from 'zod';
 export const byId = z.object({ id: z.string().min(1) });
 export type ById = z.infer<typeof byId>;
 
+// ── Notes de vue (pense-bêtes partagés, historisés, déplaçables) ──
+/** Teintes proposées pour un pense-bête (classes de thème, pas de valeur brute côté domaine). */
+export const NOTE_COLORS = ['amber', 'blue', 'green', 'pink', 'slate'] as const;
+export type NoteColor = (typeof NOTE_COLORS)[number];
+
+export const byViewKey = z.object({ viewKey: z.string().min(1).max(64) });
+export const viewNoteCreate = z.object({
+  viewKey: z.string().min(1).max(64),
+  content: z.string().max(2000).default(''),
+  color: z.enum(NOTE_COLORS).default('amber'),
+  x: z.number().int().min(0).max(20000).default(24),
+  y: z.number().int().min(0).max(20000).default(24),
+});
+export const viewNoteEdit = z.object({ id: z.string().min(1), content: z.string().max(2000) });
+export const viewNoteMove = z.object({ id: z.string().min(1), x: z.number().int().min(0).max(20000), y: z.number().int().min(0).max(20000) });
+export const viewNoteColor = z.object({ id: z.string().min(1), color: z.enum(NOTE_COLORS) });
+
 /**
  * Mentions légales de paiement obligatoires sur une facture (LME — art. L441-10 C. com.) :
  * taux des pénalités de retard et indemnité forfaitaire de recouvrement de 40 €.
