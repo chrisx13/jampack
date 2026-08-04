@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, Table, Button, Form, Spinner, Badge } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
-import { computeInvoiceTotals } from '@jampack/domain';
+import { computeInvoiceTotals, PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '@jampack/domain';
+
+type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const num = (v: unknown) => { const n = Number(v as never); return Number.isFinite(n) ? n : 0; };
@@ -180,8 +182,105 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
           </Card.Body></Card>
         </div>
       </div>
+      {(status === 'validated' || status === 'paid') && id !== 'new' && (
+        <SupplierPaymentsCard supplierInvoiceId={id} totalTtc={totals.totalTtc} />
+      )}
       {err && <div className="text-danger small mt-2">{err.message}</div>}
     </>
+  );
+}
+
+/** Décaissements d'une facture fournisseur : liste, ajout, reste dû, comptabilisation (401=512). */
+function SupplierPaymentsCard({ supplierInvoiceId, totalTtc }: { supplierInvoiceId: string; totalTtc: number }) {
+  const utils = trpc.useUtils();
+  const can = useCan();
+  const list = trpc.supplierPayments.listForInvoice.useQuery({ supplierInvoiceId });
+  const create = trpc.supplierPayments.create.useMutation();
+  const remove = trpc.supplierPayments.remove.useMutation();
+  const postPay = trpc.accounting.postSupplierPayment.useMutation();
+
+  const paid = (list.data ?? []).reduce((s, p) => s + num(p.amount), 0);
+  const remaining = Math.round((totalTtc - paid) * 100) / 100;
+
+  const [amount, setAmount] = useState(0);
+  const [method, setMethod] = useState<PaymentMethod>('virement');
+  const [date, setDate] = useState('');
+  const [reference, setReference] = useState('');
+  useEffect(() => { setAmount(remaining > 0 ? remaining : 0); }, [list.data]); // montant réinitialisé au reste dû
+
+  const refresh = () => {
+    utils.supplierPayments.listForInvoice.invalidate({ supplierInvoiceId });
+    utils.supplierInvoices.get.invalidate({ id: supplierInvoiceId });
+    utils.supplierInvoices.list.invalidate();
+    utils.supplierInvoices.echeancier.invalidate();
+  };
+  const add = async () => {
+    if (!(amount > 0)) return;
+    await create.mutateAsync({ supplierInvoiceId, amount, method, date: date || undefined, reference: reference || undefined });
+    setReference(''); refresh();
+  };
+  const del = async (id: string) => { await remove.mutateAsync({ id }); refresh(); };
+  const post = async (id: string) => { await postPay.mutateAsync({ id }); utils.supplierPayments.listForInvoice.invalidate({ supplierInvoiceId }); utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate(); };
+
+  return (
+    <Card className="mt-3">
+      <Card.Body>
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h6 className="mb-0 fw-semibold"><i className="bi bi-cash-coin me-2" />Règlements fournisseur</h6>
+          <div className="small">
+            <span className="text-secondary me-3">Réglé <span className="fw-medium text-body">{euro.format(paid)}</span></span>
+            <span className={remaining > 0 ? 'text-danger' : 'text-success'}>Reste dû <span className="fw-semibold">{euro.format(remaining)}</span></span>
+          </div>
+        </div>
+
+        <Table size="sm" className="align-middle mb-2">
+          <tbody>
+            {(list.data ?? []).map((p) => (
+              <tr key={p.id}>
+                <td className="text-secondary" style={{ width: 110 }}>{dfmt(p.date)}</td>
+                <td>{PAYMENT_METHOD_LABELS[p.method as PaymentMethod] ?? p.method}</td>
+                <td className="text-secondary">{p.reference}</td>
+                <td className="text-end fw-medium">{euro.format(num(p.amount))}</td>
+                <td className="text-end" style={{ width: 90 }}>
+                  {p.journalEntryId
+                    ? <i className="bi bi-journal-check text-success me-1" title="Comptabilisé" />
+                    : can('create', 'Accounting') && <Button variant="light" size="sm" className="me-1" title="Comptabiliser (journal banque)" onClick={() => post(p.id)}><i className="bi bi-journal-plus" /></Button>}
+                  {!p.journalEntryId && can('update', 'SupplierInvoice') && <Button variant="light" size="sm" className="text-danger" onClick={() => del(p.id)}><i className="bi bi-trash" /></Button>}
+                </td>
+              </tr>
+            ))}
+            {list.data?.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-2">Aucun règlement</td></tr>}
+          </tbody>
+        </Table>
+
+        {can('update', 'SupplierInvoice') && remaining > 0 && (
+          <div className="row g-2 align-items-end">
+            <div className="col-6 col-md-3">
+              <Form.Label className="small mb-1">Montant</Form.Label>
+              <Form.Control size="sm" type="number" step="0.01" value={amount} onChange={(e) => setAmount(num(e.target.value))} />
+            </div>
+            <div className="col-6 col-md-3">
+              <Form.Label className="small mb-1">Moyen</Form.Label>
+              <Form.Select size="sm" value={method} onChange={(e) => setMethod(e.target.value as PaymentMethod)}>
+                {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</option>)}
+              </Form.Select>
+            </div>
+            <div className="col-6 col-md-2">
+              <Form.Label className="small mb-1">Date</Form.Label>
+              <Form.Control size="sm" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div className="col-6 col-md-2">
+              <Form.Label className="small mb-1">Référence</Form.Label>
+              <Form.Control size="sm" value={reference} onChange={(e) => setReference(e.target.value)} />
+            </div>
+            <div className="col-12 col-md-2">
+              <Button size="sm" className="w-100" onClick={add} disabled={create.isPending || !(amount > 0)}><i className="bi bi-plus-lg me-1" />Régler</Button>
+            </div>
+          </div>
+        )}
+        {create.error && <div className="text-danger small mt-2">{create.error.message}</div>}
+      </Card.Body>
+    </Card>
   );
 }
 

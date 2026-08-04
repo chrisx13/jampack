@@ -324,6 +324,17 @@ export const paymentCreate = z.object({
 });
 export type PaymentCreate = z.infer<typeof paymentCreate>;
 
+/** Règlement fournisseur (décaissement) — symétrique du règlement client. */
+export const supplierPaymentCreate = z.object({
+  supplierInvoiceId: z.string().min(1),
+  amount: z.number().positive(),
+  date: z.string().optional(),
+  method: z.enum(PAYMENT_METHODS).optional(),
+  reference: z.string().optional(),
+  note: z.string().optional(),
+});
+export type SupplierPaymentCreate = z.infer<typeof supplierPaymentCreate>;
+
 // ── Stock : entrepôts & mouvements ──
 export const STOCK_KINDS = ['entree', 'sortie', 'ajustement'] as const;
 export type StockKind = (typeof STOCK_KINDS)[number];

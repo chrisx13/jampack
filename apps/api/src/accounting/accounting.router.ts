@@ -192,6 +192,34 @@ export const accountingRouter = router({
     });
   }),
 
+  /** Comptabilise un règlement fournisseur : journal de banque (401 débit = 512 crédit). */
+  postSupplierPayment: authed('create', 'Accounting').input(byId).mutation(({ ctx, input }) => {
+    const societeId = req(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const p = await tx.supplierPayment.findUniqueOrThrow({ where: { id: input.id }, include: { supplierInvoice: { select: { reference: true } } } });
+      if (p.journalEntryId) return { id: p.journalEntryId, alreadyPosted: true };
+      const [journal, banque, fourn] = await Promise.all([
+        tx.journal.findFirst({ where: { ...scope(ctx.societeId), type: 'banque' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '512000' } }),
+        tx.account.findFirst({ where: { ...scope(ctx.societeId), code: '401000' } }),
+      ]);
+      if (!journal || !banque || !fourn) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Initialisez le plan comptable et les journaux.' });
+      const amount = n(p.amount);
+      const entry = await tx.journalEntry.create({
+        data: {
+          organizationId: ctx.user.organizationId, societeId, journalId: journal.id, date: p.date, reference: p.supplierInvoice?.reference ?? undefined,
+          label: `Règlement fourn. ${p.supplierInvoice?.reference ?? ''}`.trim(), createdById: ctx.user.id,
+          lines: { create: [
+            { accountId: fourn.id, label: 'Fournisseur', debit: amount, credit: 0, position: 0 },
+            { accountId: banque.id, label: 'Banque', debit: 0, credit: amount, position: 1 },
+          ] },
+        },
+      });
+      await tx.supplierPayment.update({ where: { id: p.id }, data: { journalEntryId: entry.id } });
+      return { id: entry.id, alreadyPosted: false };
+    });
+  }),
+
   /** Comptabilise une facture fournisseur : journal d'achat (607 HT + 44566 TVA déd. = 401 TTC). */
   postSupplierInvoice: authed('create', 'Accounting').input(byId).mutation(({ ctx, input }) => {
     const societeId = req(ctx.societeId);

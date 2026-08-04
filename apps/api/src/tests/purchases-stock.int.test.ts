@@ -17,8 +17,12 @@ afterAll(async () => {
   await prisma.product.deleteMany({ where: { name: { contains: '[INT]' } } });
   await prisma.warehouse.deleteMany({ where: { id: { in: whIds } } });
   const sis = await prisma.supplierInvoice.findMany({ where: { notes: { contains: '[INT]' } }, select: { id: true, journalEntryId: true } });
-  await prisma.supplierInvoice.deleteMany({ where: { id: { in: sis.map((s) => s.id) } } });
-  await prisma.journalEntry.deleteMany({ where: { id: { in: sis.map((s) => s.journalEntryId).filter((x): x is string => !!x) } } });
+  const spays = await prisma.supplierPayment.findMany({ where: { supplierInvoiceId: { in: sis.map((s) => s.id) } }, select: { journalEntryId: true } });
+  await prisma.supplierInvoice.deleteMany({ where: { id: { in: sis.map((s) => s.id) } } }); // cascade des règlements fournisseurs
+  const jeIds = [...sis.map((s) => s.journalEntryId), ...spays.map((s) => s.journalEntryId)].filter((x): x is string => !!x);
+  await prisma.journalEntry.deleteMany({ where: { id: { in: jeIds } } });
+  // Écritures de règlement dont la pièce n'existe plus (règlement supprimé) : balayage par référence.
+  await prisma.journalEntry.deleteMany({ where: { societeId: soc.id, reference: { contains: '[INT]' } } });
   await prisma.numberSequence.updateMany({ where: { societeId: soc.id, docType: 'commande' }, data: { nextValue: 1 } });
   await prisma.auditLog.deleteMany({});
 });
@@ -91,6 +95,36 @@ describe('Achats — commande → réception → stock ; factures fournisseurs',
     expect(N(entry.lines.find((l) => l.account.code === '401000')!.credit)).toBeCloseTo(240, 2);
     expect(N(entry.lines.find((l) => l.account.code === '445660')!.debit)).toBeCloseTo(40, 2);
     expect((await caller.accounting.postSupplierInvoice({ id: inv.id })).alreadyPosted).toBe(true);
+  });
+
+  it('règlements fournisseurs partiels : reste dû dans l’échéancier, soldée hors échéancier, écriture 401=512', async () => {
+    const sid = await supplier();
+    const inv = await caller.supplierInvoices.create({ supplierId: sid, reference: '[INT] FP', notes: '[INT]', dueDate: '2026-09-01', lines: [{ label: 'Achat', quantity: 1, unitPriceHt: 200, taxRatePct: 20 }] });
+    await caller.supplierInvoices.validate({ id: inv.id }); // TTC = 240
+
+    // Acompte partiel → reste dû 140, toujours dans l'échéancier.
+    const p1 = await caller.supplierPayments.create({ supplierInvoiceId: inv.id, amount: 100, method: 'virement' });
+    const ech1 = (await caller.supplierInvoices.echeancier()).find((r: { id: string; remaining: number }) => r.id === inv.id);
+    expect(ech1.remaining).toBeCloseTo(140, 2);
+    expect((await caller.supplierInvoices.get({ id: inv.id })).status).toBe('validated');
+
+    // Comptabilisation du règlement : 401 débit = 512 crédit, équilibrée & idempotente.
+    const post = await caller.accounting.postSupplierPayment({ id: p1.id });
+    expect(post.alreadyPosted).toBe(false);
+    const entry = await C.prisma.journalEntry.findUniqueOrThrow({ where: { id: post.id }, include: { lines: { include: { account: true } } } });
+    expect(N(entry.lines.find((l) => l.account.code === '401000')!.debit)).toBeCloseTo(100, 2);
+    expect(N(entry.lines.find((l) => l.account.code === '512000')!.credit)).toBeCloseTo(100, 2);
+    expect((await caller.accounting.postSupplierPayment({ id: p1.id })).alreadyPosted).toBe(true);
+
+    // Solde → facture payée, hors échéancier.
+    await caller.supplierPayments.create({ supplierInvoiceId: inv.id, amount: 140, method: 'cheque' });
+    expect((await caller.supplierInvoices.get({ id: inv.id })).status).toBe('paid');
+    expect((await caller.supplierInvoices.echeancier()).some((r: { id: string }) => r.id === inv.id)).toBe(false);
+
+    // Suppression d'un règlement → repasse en validée (reste dû > 0).
+    await caller.supplierPayments.remove({ id: p1.id });
+    expect((await caller.supplierInvoices.get({ id: inv.id })).status).toBe('validated');
+    expect((await caller.supplierPayments.listForInvoice({ supplierInvoiceId: inv.id }))).toHaveLength(1);
   });
 });
 

@@ -42,6 +42,7 @@ model Organization {
   stockMovements  StockMovement[]
   purchaseOrders  PurchaseOrder[]
   supplierInvoices SupplierInvoice[]
+  supplierPayments SupplierPayment[]
   accounts        Account[]
   journals        Journal[]
   journalEntries  JournalEntry[]
@@ -108,6 +109,7 @@ model Societe {
   stockMovements  StockMovement[]
   purchaseOrders  PurchaseOrder[]
   supplierInvoices SupplierInvoice[]
+  supplierPayments SupplierPayment[]
   accounts        Account[]
   journals        Journal[]
   journalEntries  JournalEntry[]
@@ -456,6 +458,7 @@ model SupplierInvoice {
   paidDate        DateTime?
   notes           String?
   lines           SupplierInvoiceLine[]
+  payments        SupplierPayment[]
   journalEntry    JournalEntry?  @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
   journalEntryId  String?
   createdById     String?
@@ -464,6 +467,28 @@ model SupplierInvoice {
   @@index([organizationId])
   @@index([societeId])
   @@index([supplierId])
+}
+
+model SupplierPayment {
+  id                String          @id @default(cuid())
+  organization      Organization    @relation(fields: [organizationId], references: [id])
+  organizationId    String
+  societe           Societe         @relation(fields: [societeId], references: [id])
+  societeId         String
+  supplierInvoice   SupplierInvoice @relation(fields: [supplierInvoiceId], references: [id], onDelete: Cascade)
+  supplierInvoiceId String
+  amount            Decimal         @db.Decimal(12, 2)
+  date              DateTime        @default(now())
+  method            String          @default("virement") // virement | cheque | cb | especes | prelevement
+  reference         String?
+  note              String?
+  journalEntry      JournalEntry?   @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)
+  journalEntryId    String?
+  createdById       String?
+  createdAt         DateTime        @default(now())
+  @@index([organizationId])
+  @@index([societeId])
+  @@index([supplierInvoiceId])
 }
 
 model SupplierInvoiceLine {
@@ -747,8 +772,9 @@ model JournalEntry {
   label          String
   lines          JournalEntryLine[]
   salesInvoice   Invoice[]         // facture(s) de vente comptabilisée(s) par cette écriture
-  payments       Payment[]         // règlement(s) comptabilisé(s)
+  payments       Payment[]         // règlement(s) client comptabilisé(s)
   supplierInvoices SupplierInvoice[] // facture(s) fournisseur comptabilisée(s)
+  supplierPayments SupplierPayment[] // règlement(s) fournisseur comptabilisé(s)
   createdById    String?
   createdAt      DateTime     @default(now())
   @@index([organizationId])

@@ -119,8 +119,9 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **3 Stock** | **Valorisation PMP** (par article) | ✅ | `stock.router.ts` (`valuation`) — PMP des entrées × quantité nette |
 | **3 Stock** | Inventaires, FIFO, lots/seuils | ❌ | phase future |
 | **3 Achats** | Commandes fournisseurs → **réceptions** (génèrent les entrées de stock) | ✅ | `purchase.router.ts` (`orders.validate`/`receive`), modèles `PurchaseOrder`/`PurchaseOrderLine` ; fournisseur = `Company.isSupplier` |
-| **3 Achats** | **Factures fournisseurs** + échéancier fournisseur | ✅ | `supplierInvoice.router.ts` (`validate`/`markPaid`/`echeancier`), modèles `SupplierInvoice`/`SupplierInvoiceLine` |
-| **3 Achats** | Rapprochement commande/réception/facture, règlements fournisseurs partiels | ❌ | phase future (lien `SupplierInvoice.purchaseOrderId` déjà présent) |
+| **3 Achats** | **Factures fournisseurs** + échéancier fournisseur (reste dû) | ✅ | `supplierInvoice.router.ts` (`validate`/`markPaid`/`echeancier`), modèles `SupplierInvoice`/`SupplierInvoiceLine` |
+| **3 Achats** | **Règlements fournisseurs partiels** + comptabilisation (401=512) | ✅ | `supplierPayment.router.ts` (`create`/`remove`/`listForInvoice`), modèle `SupplierPayment` (RLS), statut piloté par le cumul, `accounting.postSupplierPayment`, UI (panneau règlements + échéancier reste dû) |
+| **3 Achats** | Rapprochement 3 voies commande/réception/facture | ❌ | phase future (lien `SupplierInvoice.purchaseOrderId` déjà présent) |
 | **4 Compta** | Plan comptable + journaux + écritures équilibrées + balance | ✅ | `accounting.router.ts` (`accounts`/`journals`/`entries`/`balance`), contrôle débit=crédit |
 | **4 Compta** | **Comptabilisation auto** : ventes (411/707/44571), règlements (512/411), factures fournisseurs (607/44566/401) | ✅ | `accounting.postSalesInvoice`/`postPayment`/`postSupplierInvoice`, liens `journalEntryId` |
 | **4 Compta** | **Export FEC** (Fichier des Écritures Comptables, tabulé normé) | ✅ | `accounting.fec` — bouton « Exporter le FEC » (Balance) |

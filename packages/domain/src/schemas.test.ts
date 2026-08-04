@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate,
+  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate,
   PAYMENT_METHODS, PAYMENT_METHOD_LABELS, SALES_DOCS, STOCK_KINDS, STOCK_KIND_LABELS,
   stockMovementCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
@@ -66,6 +66,12 @@ describe('schémas de saisie', () => {
     expect(paymentCreate.safeParse({ invoiceId: 'i', amount: 10, method: 'virement' }).success).toBe(true);
     expect(paymentCreate.safeParse({ invoiceId: 'i', amount: 0 }).success).toBe(false);
     expect(paymentCreate.safeParse({ invoiceId: 'i', amount: 10, method: 'bogus' }).success).toBe(false);
+  });
+  it('supplierPaymentCreate exige un montant positif et une méthode valide', () => {
+    expect(supplierPaymentCreate.safeParse({ supplierInvoiceId: 'i', amount: 10, method: 'virement' }).success).toBe(true);
+    expect(supplierPaymentCreate.safeParse({ supplierInvoiceId: 'i', amount: 0 }).success).toBe(false);
+    expect(supplierPaymentCreate.safeParse({ supplierInvoiceId: 'i', amount: 10, method: 'bogus' }).success).toBe(false);
+    expect(supplierPaymentCreate.safeParse({ amount: 10 }).success).toBe(false);
   });
   it('account/journal/warehouse/PO/facture-fournisseur/byId', () => {
     expect(accountCreate.safeParse({ code: '707000', name: 'Ventes' }).success).toBe(true);

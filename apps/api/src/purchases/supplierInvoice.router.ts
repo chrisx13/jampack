@@ -88,16 +88,27 @@ export const supplierInvoiceRouter = router({
     withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.supplierInvoice.update({ where: { id: input.id }, data: { status: 'cancelled' } }))
   ),
 
-  /** Échéancier fournisseur : factures validées non réglées, avec retard. */
+  /** Échéancier fournisseur : factures validées non soldées, avec reste dû et retard. */
   echeancier: authed('read', 'SupplierInvoice').query(({ ctx }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const rows = await tx.supplierInvoice.findMany({
         where: { ...scope(ctx.societeId), status: 'validated' },
-        include: { supplier: { select: { name: true } }, lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } } },
+        include: {
+          supplier: { select: { name: true } },
+          lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } },
+          payments: { select: { amount: true } },
+        },
         orderBy: [{ dueDate: 'asc' }],
       });
       const now = Date.now();
-      return rows.map((r) => ({ id: r.id, reference: r.reference, supplier: r.supplier, dueDate: r.dueDate, ...totalsOf(r.lines), overdue: r.dueDate ? new Date(r.dueDate).getTime() < now : false }));
+      return rows
+        .map((r) => {
+          const { totalTtc } = totalsOf(r.lines);
+          const paid = r.payments.reduce((s, p) => s + n(p.amount), 0);
+          const remaining = Math.round((totalTtc - paid) * 100) / 100;
+          return { id: r.id, reference: r.reference, supplier: r.supplier, dueDate: r.dueDate, totalTtc, paid, remaining, overdue: r.dueDate ? new Date(r.dueDate).getTime() < now : false };
+        })
+        .filter((r) => r.remaining > 0.005);
     })
   ),
 });
