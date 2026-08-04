@@ -9,8 +9,9 @@ que le thème initial. Les tokens décrits ici sont ceux réellement appliqués 
 
 ## 1. Logo
 
-- **Signe (mark)** : tuile arrondie (rayon 11/40) en dégradé indigo→sky, portant **trois barres blanches
-  ascendantes** — la croissance et les modules d'un ERP unifiés en un « pack ».
+- **Signe (mark)** : tuile arrondie (rayon 11/40) en **encre `#0F172A`** (même base de couleur que le
+  logotype), portant **trois barres ascendantes en dégradé indigo→sky** — la croissance et les modules
+  d'un ERP unifiés en un « pack ». Un liseré indigo discret assure la lisibilité sur fond sombre.
 - **Logotype (wordmark)** : `JAMPACK` en **Inter 700**, interlettrage serré (‑0,02em). « JAM » en encre
   (`#0F172A`), « PACK » en indigo (`#4F46E5`).
 - **Fichiers** : [`jampack-mark.svg`](../apps/web/public/brand/jampack-mark.svg) (signe seul, favicon,

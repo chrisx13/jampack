@@ -1,12 +1,11 @@
 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JAMPACK">
   <defs>
-    <linearGradient id="jpg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#6366F1"/>
-      <stop offset="1" stop-color="#0EA5E9"/>
+    <linearGradient id="jpg" x1="10" y1="30" x2="30" y2="10" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1"/><stop offset="1" stop-color="#0EA5E9"/>
     </linearGradient>
   </defs>
-  <rect width="40" height="40" rx="11" fill="url(#jpg)"/>
-  <g fill="#ffffff">
+  <rect x="0.6" y="0.6" width="38.8" height="38.8" rx="10.7" fill="#0F172A" stroke="#6366F1" stroke-opacity="0.4"/>
+  <g fill="url(#jpg)">
     <rect x="10.4" y="21.0" width="4.6" height="8.0"  rx="2.3"/>
     <rect x="17.7" y="15.0" width="4.6" height="14.0" rx="2.3"/>
     <rect x="25.0" y="10.6" width="4.6" height="18.4" rx="2.3"/>
