@@ -26,6 +26,7 @@ Documents versionnés avec le code, tenus à jour à chaque incrément.
 | 13 | [Conformité & normes](CONFORMITE.md) | Cartographie des normes applicables | multi-normes |
 | 14 | [Conventions de code](CODING-STANDARDS.md) | Style, conventions, revue | — |
 | 15 | [Glossaire](GLOSSAIRE.md) | Terminologie métier & technique | — |
+| 16 | [Kit de marque](BRAND-KIT.md) | Identité visuelle : logo, palette, typo, composants, modèles de documents | — |
 | — | [Traçabilité code ↔ specs](TRACABILITE.md) | État d'avancement code vs spécifications | — |
 
 ## Normes et référentiels couverts

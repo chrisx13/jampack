@@ -27,6 +27,9 @@ const d = (v: Date | null) => (v ? new Date(v).toLocaleDateString('fr-FR') : '�
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 const s = (soc: Societe, k: string) => (soc[k] ? String(soc[k]) : '');
 
+/** Mini-logo JAMPACK (attribution produit, pied de page). */
+const PRODUCT_MARK = '<svg width="13" height="13" viewBox="0 0 40 40" style="vertical-align:-2px"><defs><linearGradient id="fm" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#0EA5E9"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#fm)"/><g fill="#fff"><rect x="10.4" y="21" width="4.6" height="8" rx="2.3"/><rect x="17.7" y="15" width="4.6" height="14" rx="2.3"/><rect x="25" y="10.6" width="4.6" height="18.4" rx="2.3"/></g></svg>';
+
 /** Rendu HTML A4 d'une pièce de vente (devis / facture / avoir). */
 export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): string {
   const docType = inv.docType ?? 'facture';
@@ -68,29 +71,34 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
 
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>
   * { box-sizing: border-box; }
-  body { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2F343A; font-size: 12px; margin: 0; }
-  .head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+  body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A; font-size: 12px; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .accent { height: 5px; background: linear-gradient(90deg, #6366F1, #0EA5E9); }
+  .wrap { padding: 34px 40px; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 26px; }
   .brand { max-width: 55%; }
-  .brand .logo { max-height: 56px; margin-bottom: 8px; }
-  .brand .name { font-size: 18px; font-weight: 700; color: #007D88; }
-  .muted { color: #6c757d; }
+  .brand .logo { max-height: 52px; margin-bottom: 8px; }
+  .brand .name { font-size: 18px; font-weight: 700; color: #0F172A; letter-spacing: -.01em; }
+  .muted { color: #64748B; }
   .doc { text-align: right; }
-  .doc h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: .04em; }
+  .doc h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: .08em; color: #4F46E5; font-weight: 700; }
   .doc .num { font-size: 15px; font-weight: 700; }
   .parties { display: flex; justify-content: space-between; gap: 24px; margin: 12px 0 22px; }
-  .box { background: #f6f8f9; border: 1px solid #e6eaec; border-radius: 8px; padding: 12px 14px; min-width: 240px; }
-  .box .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: #6c757d; margin-bottom: 4px; }
+  .box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px 14px; min-width: 240px; }
+  .box .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #64748B; margin-bottom: 4px; }
   table.lines { width: 100%; border-collapse: collapse; margin-top: 6px; }
-  table.lines th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: #6c757d; border-bottom: 2px solid #007D88; padding: 8px 8px; }
-  table.lines td { padding: 8px 8px; border-bottom: 1px solid #eee; }
+  table.lines th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: #475569; border-bottom: 2px solid #4F46E5; padding: 9px 8px; }
+  table.lines td { padding: 9px 8px; border-bottom: 1px solid #EEF2F7; }
   .r { text-align: right; }
-  .totals { width: 280px; margin-left: auto; margin-top: 14px; }
-  .totals div { display: flex; justify-content: space-between; padding: 4px 0; }
-  .totals .ttc { border-top: 2px solid #007D88; margin-top: 6px; padding-top: 8px; font-size: 15px; font-weight: 700; }
-  .subro { margin-top: 18px; border: 1px solid #ffc400; background: #fff8e1; border-radius: 8px; padding: 10px 12px; }
+  .totals { width: 290px; margin-left: auto; margin-top: 14px; }
+  .totals div { display: flex; justify-content: space-between; padding: 5px 0; }
+  .totals .ttc { border-top: 2px solid #4F46E5; margin-top: 6px; padding-top: 9px; font-size: 15px; font-weight: 700; color: #0F172A; }
+  .subro { margin-top: 18px; border: 1px solid #F59E0B; background: #FFFBEB; border-radius: 10px; padding: 10px 12px; }
   .pay { margin-top: 18px; }
-  .foot { margin-top: 26px; border-top: 1px solid #e6eaec; padding-top: 8px; color: #6c757d; font-size: 10px; text-align: center; }
+  .foot { margin-top: 26px; border-top: 1px solid #E2E8F0; padding-top: 10px; color: #94A3B8; font-size: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .foot .made { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
   </style></head><body>
+  <div class="accent"></div>
+  <div class="wrap">
   <div class="head">
     <div class="brand">
       ${s(soc, 'logoUrl') ? `<img class="logo" src="${esc(s(soc, 'logoUrl'))}" />` : ''}
@@ -138,6 +146,10 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
     ${s(soc, 'legalMentions') ? `<div class="muted" style="margin-top:6px">${esc(s(soc, 'legalMentions'))}</div>` : ''}
   </div>
 
-  <div class="foot">${esc(legalBits)}</div>
+  <div class="foot">
+    <span>${esc(legalBits)}</span>
+    <span class="made">${PRODUCT_MARK}Édité avec JAMPACK</span>
+  </div>
+  </div>
   </body></html>`;
 }

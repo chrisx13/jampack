@@ -147,7 +147,10 @@ export default function AppShell() {
         <button className="btn btn-icon btn-sm btn-light border-0" onClick={() => setSubnavOpen((c) => !c)} aria-label="Basculer le panneau">
           <i className="bi bi-layout-sidebar fs-5" />
         </button>
-        <span className="brand ms-1 me-3">JAMPACK</span>
+        <span className="brand-lockup ms-1 me-3" title="JAMPACK">
+          <img src="/brand/jampack-mark.svg" alt="" width={26} height={26} className="brand-mark" />
+          <span className="brand">JAMPACK</span>
+        </span>
         <SocieteSwitcher />
 
         <div className="ms-auto d-flex align-items-center gap-2">

@@ -164,7 +164,9 @@ hr { border-color: var(--border); opacity: 1; }
   border-bottom: 1px solid var(--border);
   backdrop-filter: saturate(180%) blur(8px);
 }
-.hk-navbar .brand { font-weight: 700; font-size: 1.15rem; letter-spacing: -.02em; color: var(--bs-primary); }
+.hk-navbar .brand-lockup { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
+.hk-navbar .brand-mark { display: block; border-radius: 7px; box-shadow: 0 2px 6px rgba(79, 70, 229, .28); }
+.hk-navbar .brand { font-weight: 700; font-size: 1.12rem; letter-spacing: -.02em; color: var(--text); }
 
 // ── Barre d'activité (grands domaines) ──
 .hk-activity {
