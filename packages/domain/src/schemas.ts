@@ -561,6 +561,19 @@ export function stockLevelsCsv(rows: StockLevelRow[]): string {
   return [head, ...lines].join('\n');
 }
 
+/**
+ * Sérialise une balance comptable en CSV (séparateur `;`, décimale FR).
+ * Colonnes : Compte ; Libellé ; Débit ; Crédit ; Solde. Échappe `;`/`"`/retours ligne.
+ */
+export type BalanceCsvRow = { code: string; name: string; debit: number; credit: number; solde: number };
+export function balanceCsv(rows: BalanceCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
+  const head = 'Compte;Libellé;Débit;Crédit;Solde';
+  const lines = rows.map((r) => [esc(r.code), esc(r.name), fr(r.debit), fr(r.credit), fr(r.solde)].join(';'));
+  return [head, ...lines].join('\n');
+}
+
 /** Un devis émis est expiré si sa date de validité est dépassée (offre caduque). */
 export function isQuoteExpired(q: { status: string; validUntil?: Date | string | null }, now = new Date()): boolean {
   if (q.status !== 'sent' || !q.validUntil) return false;

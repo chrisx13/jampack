@@ -164,6 +164,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CPT-6 | Export **FEC** (Fichier des Écritures Comptables) tabulé normé. | M | ✅ |
 | FR-CPT-7 | **Immobilisations** amortissables + **plan d'amortissement linéaire** (prorata temporis) + **comptabilisation de la dotation** (681 → 281). | S | ✅ |
 | FR-CPT-8 | **États de synthèse** : compte de résultat (produits cl. 7 − charges cl. 6) et bilan simplifié (actif/passif par classe PCG, résultat au passif), dérivés de la balance. | S | ✅ |
+| FR-CPT-9 | **Export CSV de la balance générale** (compte ; libellé ; débit ; crédit ; solde) — échange avec l'expert-comptable. | C | ✅ |
 
 ### 3.8 Trésorerie (Jalon 5)
 | ID | Exigence | Prio | Statut |

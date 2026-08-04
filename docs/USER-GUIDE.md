@@ -54,7 +54,7 @@
 ## 6. Comptabilité
 - **Plan comptable** : consulter/gérer les comptes (PCG).
 - **Écritures** : saisir et consulter les écritures (générées automatiquement depuis les pièces validées).
-- **Balance** : soldes par compte.
+- **Balance** : soldes par compte ; **Exporter CSV** (compte ; libellé ; débit ; crédit ; solde) ou **le FEC**.
 - **Grand livre** : détail des mouvements d'un compte avec solde progressif.
 - **États financiers** : **compte de résultat** (produits − charges → bénéfice/perte) et **bilan simplifié**
   (actif/passif par classe, résultat de l'exercice) — vue de gestion, sans se substituer à la liasse fiscale.

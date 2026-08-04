@@ -222,6 +222,19 @@ describe('Comptabilité — grand livre', () => {
   });
 });
 
+describe('Comptabilité — export CSV de la balance', () => {
+  it('export contient l’en-tête et le compte client mouvementé', async () => {
+    const companyId = await anyCustomer();
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'BAL', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    await caller.accounting.postSalesInvoice({ id: inv.id });
+    const { filename, content } = await caller.accounting.exportBalance();
+    expect(filename).toBe('balance.csv');
+    expect(content.split('\n')[0]).toBe('Compte;Libellé;Débit;Crédit;Solde');
+    expect(content).toContain('411000;');
+  });
+});
+
 describe('Comptabilité — états de synthèse (résultat & bilan)', () => {
   it('compte de résultat : une vente comptabilisée ajoute un produit 707 ; bilan équilibré', async () => {
     const companyId = await anyCustomer();

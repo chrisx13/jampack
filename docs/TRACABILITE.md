@@ -135,6 +135,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **3 Achats** | **Réception partielle** (livraisons échelonnées, statut partial → received) | ✅ | `purchases.orders.receivePartial`, `purchaseReceipt`, `PurchaseOrderLine.quantityReceived`, panneau `PurchaseOrders.tsx` |
 | **4 Compta** | Plan comptable + journaux + écritures équilibrées + balance + **grand livre** | ✅ | `accounting.router.ts` (`accounts`/`journals`/`entries`/`balance`/`ledger`), contrôle débit=crédit |
 | **4 Compta** | **États de synthèse** : compte de résultat + bilan simplifié (classes PCG) | ✅ | `accounting.incomeStatement`/`balanceSheet`, `FinancialStatements.tsx` — actif=passif+résultat |
+| **4 Compta** | **Export CSV de la balance générale** | ✅ | `accounting.exportBalance`, `balanceCsv`, bouton `TrialBalance.tsx` |
 | **4 Compta** | **Comptabilisation auto** : ventes (411/707/44571), règlements clients (512/411), factures fournisseurs (607/44566/401), règlements fournisseurs (401/512) | ✅ | `accounting.postSalesInvoice`/`postPayment`/`postSupplierInvoice`/`postSupplierPayment`, liens `journalEntryId` |
 | **4 Compta** | **Export FEC** (Fichier des Écritures Comptables, tabulé normé) | ✅ | `accounting.fec` — bouton « Exporter le FEC » (Balance) |
 | **4 Compta** | **Déclaration de TVA (CA3)** | ✅ | `accounting.vatReturn` — collectée (44571) − déductible (44566) |

@@ -11,23 +11,31 @@ export default function TrialBalance() {
   const equilibre = (bal.data?.totalDebit ?? 0) === (bal.data?.totalCredit ?? 0);
   const [exporting, setExporting] = useState(false);
 
+  const download = (content: string, filename: string, mime: string) => {
+    const url = URL.createObjectURL(new Blob([content], { type: mime }));
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
   const exportFec = async () => {
     setExporting(true);
-    try {
-      const r = await utils.accounting.fec.fetch({});
-      const blob = new Blob([r.content], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = r.filename; a.click();
-      URL.revokeObjectURL(url);
-    } finally { setExporting(false); }
+    try { const r = await utils.accounting.fec.fetch({}); download(r.content, r.filename, 'text/plain;charset=utf-8'); }
+    finally { setExporting(false); }
+  };
+  const exportCsv = async () => {
+    setExporting(true);
+    try { const r = await utils.accounting.exportBalance.fetch(); download(r.content, r.filename, 'text/csv;charset=utf-8'); }
+    finally { setExporting(false); }
   };
 
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div><h4 className="mb-1 fw-semibold">Balance générale</h4><p className="text-secondary mb-0">Totaux et soldes par compte</p></div>
-        <Button variant="light" onClick={exportFec} disabled={exporting || rows.length === 0}><i className="bi bi-file-earmark-arrow-down me-1" />Exporter le FEC</Button>
+        <div className="d-flex gap-2">
+          <Button variant="light" onClick={exportCsv} disabled={exporting || rows.length === 0}><i className="bi bi-filetype-csv me-1" />Exporter CSV</Button>
+          <Button variant="light" onClick={exportFec} disabled={exporting || rows.length === 0}><i className="bi bi-file-earmark-arrow-down me-1" />Exporter le FEC</Button>
+        </div>
       </div>
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">

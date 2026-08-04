@@ -6,7 +6,7 @@ import {
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
   isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
-  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt,
+  isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -154,6 +154,19 @@ describe('commandes fournisseurs en retard', () => {
     expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: null }, now)).toBe(false);
     expect(isPurchaseOrderOverdue({ status: 'sent', expectedDate: '2026-08-10T00:00:00Z' }, now)).toBe(false);
     expect(purchaseOrderDaysLate({ status: 'received', expectedDate: '2026-08-01T00:00:00Z' }, now)).toBe(0);
+  });
+});
+
+describe('balanceCsv', () => {
+  it('en-tête + montants FR à 2 décimales + solde', () => {
+    const csv = balanceCsv([{ code: '411000', name: 'Clients', debit: 120, credit: 0, solde: 120 }, { code: '707000', name: 'Ventes', debit: 0, credit: 100, solde: -100 }]);
+    const lines = csv.split('\n');
+    expect(lines[0]).toBe('Compte;Libellé;Débit;Crédit;Solde');
+    expect(lines[1]).toBe('411000;Clients;120,00;0,00;120,00');
+    expect(lines[2]).toBe('707000;Ventes;0,00;100,00;-100,00');
+  });
+  it('liste vide → en-tête seul', () => {
+    expect(balanceCsv([])).toBe('Compte;Libellé;Débit;Crédit;Solde');
   });
 });
 

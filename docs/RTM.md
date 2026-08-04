@@ -88,6 +88,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-CPT-6 | `accounting.fec` (18 colonnes normées, tabulé) | e2e int : entête FEC + lignes 411000, filename .txt | ✅ |
 | FR-CPT-7 | `accounting.fixedAssets` (+ `schedule`/`postDepreciation`), `depreciationSchedule`, `FixedAsset`, `FixedAssets.tsx` | unit : 1200/3 ans → [400,400,400] et prorata [200,400,400,200] ; e2e int : 3000/3 ans → 1000/an, dotation 681/281 équilibrée & idempotente | ✅ |
 | FR-CPT-8 | `accounting.incomeStatement`/`balanceSheet` (classes PCG), `FinancialStatements.tsx` | e2e int : vente comptabilisée → produit 707 au CR ; bilan équilibré (actif=passif+résultat), résultat CR=bilan | ✅ |
+| FR-CPT-9 | `accounting.exportBalance`, `balanceCsv`, bouton export CSV `TrialBalance.tsx` | unit : en-tête + montants FR + liste vide ; e2e int : export contient 411000 après vente comptabilisée | ✅ |
 
 ## Trésorerie
 | Exigence | Code | Test / Preuve | État |

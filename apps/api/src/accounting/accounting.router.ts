@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv, fixedAssetCreate, fixedAssetUpdate, depreciationSchedule } from '@jampack/domain';
+import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv, fixedAssetCreate, fixedAssetUpdate, depreciationSchedule, balanceCsv } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -210,6 +210,23 @@ export const accountingRouter = router({
         })
         .sort((a, b) => a.code.localeCompare(b.code));
       return { rows, totalDebit: r2(rows.reduce((s, r) => s + r.debit, 0)), totalCredit: r2(rows.reduce((s, r) => s + r.credit, 0)) };
+    })
+  ),
+
+  /** Export CSV de la balance générale (compte ; libellé ; débit ; crédit ; solde). */
+  exportBalance: authed('read', 'Accounting').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const grouped = await tx.journalEntryLine.groupBy({ by: ['accountId'], where: { entry: { is: scope(ctx.societeId) } }, _sum: { debit: true, credit: true } });
+      const accounts = await tx.account.findMany({ where: scope(ctx.societeId), select: { id: true, code: true, name: true } });
+      const aById = new Map(accounts.map((a) => [a.id, a]));
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      const rows = grouped
+        .map((g) => {
+          const debit = n(g._sum.debit), credit = n(g._sum.credit);
+          return { code: aById.get(g.accountId)?.code ?? '—', name: aById.get(g.accountId)?.name ?? '—', debit: r2(debit), credit: r2(credit), solde: r2(debit - credit) };
+        })
+        .sort((a, b) => a.code.localeCompare(b.code));
+      return { filename: 'balance.csv', content: balanceCsv(rows) };
     })
   ),
 
