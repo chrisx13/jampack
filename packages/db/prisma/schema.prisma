@@ -204,6 +204,8 @@ model Company {
   societeId      String
   name           String
   siren          String?
+  siret          String?       // établissement principal (14 chiffres)
+  tvaNumber      String?       // n° TVA intracommunautaire
   isCustomer     Boolean       @default(true)
   isSupplier     Boolean       @default(false)
   contacts       Contact[]

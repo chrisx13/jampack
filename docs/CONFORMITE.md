@@ -65,9 +65,8 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 ### 3.5 Mentions obligatoires des factures (art. 242 nonies A CGI · art. L441-9 C. com.)
 - **Vendeur** : dénomination, forme juridique + capital, adresse, **SIRET/SIREN**, **n° TVA
   intracommunautaire**, RCS/APE. → portés par le gabarit (`invoiceHtml.ts`) depuis les champs société. ✅
-- **Acheteur** : identité + adresse. ✅ — **identifiants SIREN/TVA de l'acheteur** (requis pour le routage
-  e-invoicing B2B et l'autoliquidation) : champ `Company.siren` présent, **à porter sur la facture et le
-  Factur-X**. 🔧
+- **Acheteur** : identité + adresse ✅ ; **identifiants SIREN/TVA** (`Company.siren`/`siret`/`tvaNumber`)
+  **portés sur la facture PDF et le Factur-X** (BuyerTradeParty : SIREN schemeID 0002, TVA schemeID VA). ✅
 - **Pièce** : numéro **séquentiel chronologique continu**, date d'émission, date de la vente/prestation,
   désignation, quantité, PU HT, **taux de TVA par ligne**, réductions, total HT/TVA/TTC. ✅ (numérotation
   atomique par société/type ; totaux par taux).
@@ -139,7 +138,7 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | Émission/réception via PDP agréée (interne immatriculée **ou** partenaire) | FR-VEN-8 | 09/2027 | ⏳ |
 | Export FEC | FR-CPT-6 | À la mise en service compta | ✅ |
 | Mentions obligatoires facture (vendeur, pièce, subrogation) | FR-VEN-3, FR-TRV-1 | Continu | ✅ |
-| Identifiants acheteur (SIREN/TVA) sur facture & Factur-X | FR-VEN-3/8 | 09/2026 | 🔧 |
+| Identifiants acheteur (SIREN/TVA) sur facture & Factur-X | FR-VEN-3/8 | 09/2026 | ✅ |
 | Mentions spéciales TVA (autoliquidation, franchise 293 B) | FR-VEN-3 | Continu | 🔧 (DO-7) |
 | Délais de paiement LME (échéance, pénalités, indemnité 40 €) | FR-TRV-1, REG-6 | Continu | 🔧 |
 | TVA — taux FR paramétrables + CA3 | FR-CPT-5, REG-7 | Continu | ✅ |

@@ -7,6 +7,8 @@ export type ById = z.infer<typeof byId>;
 export const companyCreate = z.object({
   name: z.string().min(1),
   siren: z.string().optional(),
+  siret: z.string().optional(),
+  tvaNumber: z.string().optional(),
   isCustomer: z.boolean().optional(),
   isSupplier: z.boolean().optional(),
   factorId: z.string().optional(),
@@ -19,6 +21,8 @@ export const companyUpdate = z.object({
   id: z.string().min(1),
   name: z.string().min(1).optional(),
   siren: z.string().nullable().optional(),
+  siret: z.string().nullable().optional(),
+  tvaNumber: z.string().nullable().optional(),
   isCustomer: z.boolean().optional(),
   isSupplier: z.boolean().optional(),
   factorId: z.string().nullable().optional(),

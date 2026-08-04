@@ -215,6 +215,8 @@ describe('Comptabilité — lettrage', () => {
 describe('E-invoicing — Factur-X & PDP interne', () => {
   it('génère le XML CII (Factur-X) et transmet via la PDP interne', async () => {
     const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    // Identifiants légaux acheteur (REG-5 / e-invoicing B2B) : SIREN (routage) + TVA.
+    await caller.crm.companies.update({ id: companyId, siren: '552081317', tvaNumber: 'FR89552081317' });
     const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'e', quantity: 2, unitPriceHt: 50, taxRatePct: 20 }] });
     await caller.invoices.validate({ id: inv.id });
 
@@ -223,6 +225,10 @@ describe('E-invoicing — Factur-X & PDP interne', () => {
     expect(fx.xml).toContain('<rsm:CrossIndustryInvoice');
     expect(fx.xml).toContain('urn:cen.eu:en16931:2017');
     expect(fx.xml).toContain('<ram:GrandTotalAmount>120.00</ram:GrandTotalAmount>');
+    // BuyerTradeParty porte le SIREN (schemeID 0002) et le n° de TVA (schemeID VA).
+    const buyer = fx.xml.slice(fx.xml.indexOf('<ram:BuyerTradeParty>'));
+    expect(buyer).toContain('schemeID="0002">552081317</ram:ID>');
+    expect(buyer).toContain('schemeID="VA">FR89552081317</ram:ID>');
 
     const res = await caller.invoices.sendToPdp({ id: inv.id });
     expect(res.provider).toBe('internal');

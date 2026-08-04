@@ -15,8 +15,9 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
   `AuditLog` (trace des mutations tRPC : `action`, `userId`, `metadata`).
 
 ### CRM
-- `Company` (`isCustomer`/`isSupplier`, `factorId`, `paymentTermId`) · `Contact` · `Establishment`
-  (siège/facturation/livraison) · `PipelineStage` · `Opportunity` · `Activity`.
+- `Company` (`isCustomer`/`isSupplier`, **`siren`/`siret`/`tvaNumber`** = identifiants légaux, `factorId`,
+  `paymentTermId`) · `Contact` · `Establishment` (siège/facturation/livraison) · `PipelineStage` ·
+  `Opportunity` · `Activity`.
 
 ### Référentiels
 - `TaxRate` (compte) · `Product` (+ `reorderPoint` = seuil de réappro.) · `ProductCategory` (arbre) · `NumberSequence` (société×docType, atomique).
@@ -62,7 +63,7 @@ Répertoire `packages/db/prisma/migrations/` (appliquées par `prisma migrate de
 init → société → rôles → établissements → référentiels → facturation → catégories → thème → billing →
 billing_entities → **sales_documents** (docType) → **payments** → **stock** → **purchases** →
 **supplier_invoices** → **accounting** → invoice_accounting_link → posting_links → **audit_log** →
-**lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point**.
+**lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point** → **company_legal_ids**.
 
 ## 7. Schéma (extrait relationnel)
 ```

@@ -7,7 +7,7 @@ type Invoice = {
   number: string | null;
   issueDate: Date | null;
   dueDate: Date | null;
-  company: { name: string; siren?: string | null } | null;
+  company: { name: string; siren?: string | null; siret?: string | null; tvaNumber?: string | null } | null;
   establishment: { addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
   lines: Line[];
 };
@@ -74,8 +74,10 @@ ${inv.lines.map(line).join('\n')}
         <ram:SpecifiedTaxRegistration><ram:ID schemeID="VA">${esc(s(soc, 'tvaNumber'))}</ram:ID></ram:SpecifiedTaxRegistration>
       </ram:SellerTradeParty>
       <ram:BuyerTradeParty>
-        <ram:Name>${esc(inv.company?.name ?? '')}</ram:Name>
-        <ram:PostalTradeAddress><ram:PostcodeCode>${esc(buyerAddr?.postalCode ?? '')}</ram:PostcodeCode><ram:LineOne>${esc(buyerAddr?.addressLine1 ?? '')}</ram:LineOne><ram:CityName>${esc(buyerAddr?.city ?? '')}</ram:CityName><ram:CountryID>FR</ram:CountryID></ram:PostalTradeAddress>
+        <ram:Name>${esc(inv.company?.name ?? '')}</ram:Name>${inv.company?.siren ? `
+        <ram:SpecifiedLegalOrganization><ram:ID schemeID="0002">${esc(inv.company.siren)}</ram:ID></ram:SpecifiedLegalOrganization>` : ''}
+        <ram:PostalTradeAddress><ram:PostcodeCode>${esc(buyerAddr?.postalCode ?? '')}</ram:PostcodeCode><ram:LineOne>${esc(buyerAddr?.addressLine1 ?? '')}</ram:LineOne><ram:CityName>${esc(buyerAddr?.city ?? '')}</ram:CityName><ram:CountryID>FR</ram:CountryID></ram:PostalTradeAddress>${inv.company?.tvaNumber ? `
+        <ram:SpecifiedTaxRegistration><ram:ID schemeID="VA">${esc(inv.company.tvaNumber)}</ram:ID></ram:SpecifiedTaxRegistration>` : ''}
       </ram:BuyerTradeParty>
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery/>

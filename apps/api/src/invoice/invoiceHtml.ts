@@ -7,7 +7,7 @@ type Invoice = {
   dueDate: Date | null;
   validUntil?: Date | null;
   notes: string | null;
-  company: { name: string } | null;
+  company: { name: string; siren?: string | null; siret?: string | null; tvaNumber?: string | null } | null;
   establishment: { name?: string | null; addressLine1?: string | null; postalCode?: string | null; city?: string | null } | null;
   factor?: { name: string; iban?: string | null } | null;
   bankAccount?: { iban: string; bic?: string | null } | null;
@@ -110,6 +110,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
       <div class="lbl">Facturé à</div>
       <div><strong>${esc(inv.company?.name ?? '')}</strong></div>
       <div class="muted">${clientAddr.map(esc).join('<br>')}</div>
+      <div class="muted">${[inv.company?.siret && `SIRET ${esc(inv.company.siret)}`, inv.company?.tvaNumber && `TVA ${esc(inv.company.tvaNumber)}`].filter(Boolean).join(' · ')}</div>
     </div>
   </div>
 

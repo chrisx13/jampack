@@ -41,7 +41,7 @@ export async function resolveBilling(tx: any, societeId: string, companyId: stri
 
 export const fullInclude = {
   lines: { orderBy: { position: 'asc' as const } },
-  company: { select: { name: true } },
+  company: { select: { name: true, siren: true, siret: true, tvaNumber: true } },
   establishment: true,
   factor: true,
   bankAccount: true,

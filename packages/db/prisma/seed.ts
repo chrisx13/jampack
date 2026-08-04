@@ -127,9 +127,9 @@ async function main() {
   const stageByName = Object.fromEntries(stages.map((s) => [s.name, s]));
 
   // ── Données CRM par société ──
-  const ensureCompany = async (societeId: string, name: string) => {
+  const ensureCompany = async (societeId: string, name: string, ids?: { siren?: string; siret?: string; tvaNumber?: string }) => {
     const f = await prisma.company.findFirst({ where: { organizationId: org.id, societeId, name } });
-    return f ?? prisma.company.create({ data: { organizationId: org.id, societeId, name } });
+    return f ?? prisma.company.create({ data: { organizationId: org.id, societeId, name, ...ids } });
   };
   const ensureContact = async (societeId: string, firstName: string, lastName: string, email: string, companyId?: string) => {
     const f = await prisma.contact.findFirst({ where: { organizationId: org.id, societeId, email } });
@@ -148,7 +148,7 @@ async function main() {
     return f ?? prisma.establishment.create({ data: { organizationId: org.id, societeId, companyId, name, ...data } });
   };
 
-  const c1 = await ensureCompany(boulangerie.id, 'Fournil Central');
+  const c1 = await ensureCompany(boulangerie.id, 'Fournil Central', { siren: '520123456', siret: '52012345600018', tvaNumber: 'FR31520123456' });
   await ensureEstab(boulangerie.id, c1.id, 'Siège', { siret: '52012345600018', addressLine1: '12 rue de la Ré', postalCode: '69002', city: 'Lyon', isHeadquarters: true, isBilling: true, isDelivery: true });
   await ensureEstab(boulangerie.id, c1.id, 'Entrepôt Villeurbanne', { siret: '52012345600026', addressLine1: '8 av. des Frères Lumière', postalCode: '69100', city: 'Villeurbanne', isDelivery: true });
   const c2 = await ensureCompany(boulangerie.id, 'Cafe des Halles');
@@ -158,7 +158,7 @@ async function main() {
   await ensureOpp(boulangerie.id, 'Contrat viennoiseries 2026', 8400, 'Proposition', c1.id);
   await ensureOpp(boulangerie.id, 'Fourniture pains speciaux', 3200, 'Qualifie', c2.id);
 
-  const c3 = await ensureCompany(studio.id, 'Agence Web Pixel');
+  const c3 = await ensureCompany(studio.id, 'Agence Web Pixel', { siren: '853123456', siret: '85312345600011', tvaNumber: 'FR42853123456' });
   await ensureEstab(studio.id, c3.id, 'Siège', { siret: '85312345600011', addressLine1: '21 rue Crébillon', postalCode: '44000', city: 'Nantes', isHeadquarters: true, isBilling: true, isDelivery: true });
   const c4 = await ensureCompany(studio.id, 'Studio Photo Lumen');
   await ensureContact(studio.id, 'Sophie', 'Renard', 'sophie@pixel.fr', c3.id);
