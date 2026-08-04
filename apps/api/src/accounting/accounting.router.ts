@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_MINIMAL, JOURNAL_TYPES } from '@jampack/domain';
+import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -49,8 +49,8 @@ export const accountingRouter = router({
       return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
         const count = await tx.account.count({ where: scope(ctx.societeId) });
         if (count > 0) return { created: 0 };
-        await tx.account.createMany({ data: PCG_MINIMAL.map((a) => ({ ...a, class: classOf(a.code), organizationId: ctx.user.organizationId, societeId })) });
-        return { created: PCG_MINIMAL.length };
+        await tx.account.createMany({ data: PCG_STANDARD.map((a) => ({ ...a, class: classOf(a.code), organizationId: ctx.user.organizationId, societeId })) });
+        return { created: PCG_STANDARD.length };
       });
     }),
   }),

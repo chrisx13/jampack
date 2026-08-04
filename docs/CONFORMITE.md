@@ -91,8 +91,9 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
   annuel) et **recalcul du timing CA3** (exigibilité à l'encaissement) ⏳ (décision DO-8). → FR-CPT-5, REG-7.
 
 ### 3.8 Plan Comptable Général (PCG — règlement ANC 2014-03)
-- Le plan comptable et les journaux suivent le **PCG**. État : init **PCG minimal** (comptes usuels
-  ventes/achats/TVA/tiers/banque) ✅ ; **plan complet + comptabilité analytique + immobilisations** ⏳.
+- Le plan comptable et les journaux suivent le **PCG**. État : **PCG standard TPE/PME** (≈ 52 comptes,
+  classes 1 à 7 : capitaux, immobilisations + amortissements, tiers, financier, charges, produits) ✅
+  (`PCG_STANDARD`) ; **comptabilité analytique et immobilisations détaillées** ⏳.
 - Principes : partie double (débit = crédit) ✅, **intangibilité** des écritures validées et **piste
   d'audit fiable** (PAF : lien pièce ↔ écriture ↔ règlement) 🔧 (auto-comptabilisation + journal d'audit).
   → FR-CPT-*, REG-8.
@@ -148,7 +149,8 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | TVA — taux FR paramétrables + CA3 | FR-CPT-5, REG-7 | Continu | ✅ |
 | TVA — franchise en base (« E ») + autoliquidation (« AE ») | REG-7 | — | ✅ |
 | TVA — CA12 / TVA sur débits vs encaissements | REG-7 | — | ⏳ (DO-8) |
-| PCG (ANC 2014-03) + piste d'audit fiable | FR-CPT-*, REG-8 | Continu | 🔧 |
+| PCG standard (ANC 2014-03, classes 1-7) | FR-CPT-1, REG-8 | Continu | ✅ |
+| Piste d'audit fiable (lien pièce ↔ écriture ↔ règlement) | REG-8 | Continu | 🔧 |
 | Archivage à valeur probante (NF Z42-013 / eIDAS) | REG-9 | 09/2026 | ⏳ (DO-1) |
 | RGPD / CNIL (registre, droits, durées, sous-traitance) | REG-3 | Continu | 🔧 — voir [Sécurité & RGPD §5](SECURITE-RGPD.md) |
 | Accessibilité RGAA / WCAG 2.1 AA | NFR-UTI, DO-9 | Selon clients (public) | 🔧 (§4) |

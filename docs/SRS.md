@@ -142,7 +142,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 ### 3.7 Comptabilité (Jalon 4)
 | ID | Exigence | Prio | Statut |
 |---|---|---|---|
-| FR-CPT-1 | **Plan comptable** (PCG) et **journaux** par société (init PCG minimal). | M | ✅ |
+| FR-CPT-1 | **Plan comptable** (**PCG standard** TPE/PME, ≈ 52 comptes classes 1-7) et **journaux** par société. | M | ✅ |
 | FR-CPT-2 | **Écritures** manuelles multi-lignes, contrôle d'**équilibre** (débit = crédit). | M | ✅ |
 | FR-CPT-3 | **Balance générale** (totaux/soldes par compte). | M | ✅ |
 | FR-CPT-4 | Écritures **générées automatiquement** depuis les **factures de vente** (411/707/44571). | M | ✅ |

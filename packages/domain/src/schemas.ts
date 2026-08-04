@@ -514,20 +514,71 @@ export const journalEntryCreate = z
 export type JournalEntryCreate = z.infer<typeof journalEntryCreate>;
 
 /** Plan comptable minimal (PCG) proposé par défaut à une société. */
-export const PCG_MINIMAL: { code: string; name: string }[] = [
+/** Plan comptable général (PCG) — jeu standard usuel pour une TPE/PME française (classes 1 à 7). */
+export const PCG_STANDARD: { code: string; name: string }[] = [
+  // Classe 1 — Capitaux
+  { code: '101000', name: 'Capital' },
+  { code: '106000', name: 'Réserves' },
+  { code: '120000', name: 'Résultat de l’exercice (bénéfice)' },
+  { code: '129000', name: 'Résultat de l’exercice (perte)' },
+  { code: '164000', name: 'Emprunts auprès des établissements de crédit' },
+  // Classe 2 — Immobilisations
+  { code: '205000', name: 'Concessions, brevets, logiciels' },
+  { code: '215000', name: 'Installations techniques, matériel et outillage' },
+  { code: '218300', name: 'Matériel informatique' },
+  { code: '218400', name: 'Mobilier' },
+  { code: '280500', name: 'Amortissements des immobilisations incorporelles' },
+  { code: '281800', name: 'Amortissements des autres immobilisations corporelles' },
+  // Classe 4 — Tiers
   { code: '401000', name: 'Fournisseurs' },
+  { code: '404000', name: 'Fournisseurs d’immobilisations' },
+  { code: '408000', name: 'Fournisseurs — factures non parvenues' },
   { code: '411000', name: 'Clients' },
+  { code: '416000', name: 'Clients douteux ou litigieux' },
+  { code: '418000', name: 'Clients — factures à établir' },
+  { code: '421000', name: 'Personnel — rémunérations dues' },
+  { code: '431000', name: 'Sécurité sociale' },
   { code: '445660', name: 'TVA déductible' },
+  { code: '445620', name: 'TVA déductible sur immobilisations' },
   { code: '445710', name: 'TVA collectée' },
   { code: '445510', name: 'TVA à décaisser' },
   { code: '445670', name: 'Crédit de TVA à reporter' },
+  { code: '447000', name: 'Autres impôts, taxes et versements assimilés' },
+  { code: '455000', name: 'Associés — comptes courants' },
+  // Classe 5 — Financier
   { code: '512000', name: 'Banque' },
+  { code: '514000', name: 'Chèques postaux' },
   { code: '530000', name: 'Caisse' },
+  { code: '580000', name: 'Virements internes' },
+  // Classe 6 — Charges
+  { code: '601000', name: 'Achats de matières premières' },
   { code: '607000', name: 'Achats de marchandises' },
+  { code: '606300', name: 'Fournitures d’entretien et petit équipement' },
+  { code: '606400', name: 'Fournitures administratives' },
+  { code: '613000', name: 'Locations' },
+  { code: '615000', name: 'Entretien et réparations' },
+  { code: '616000', name: 'Primes d’assurance' },
+  { code: '622600', name: 'Honoraires' },
+  { code: '623000', name: 'Publicité, publications' },
+  { code: '625000', name: 'Déplacements, missions et réceptions' },
+  { code: '626000', name: 'Frais postaux et de télécommunications' },
   { code: '627000', name: 'Services bancaires' },
-  { code: '707000', name: 'Ventes de marchandises' },
+  { code: '635000', name: 'Impôts et taxes' },
+  { code: '641000', name: 'Rémunérations du personnel' },
+  { code: '645000', name: 'Charges de sécurité sociale et de prévoyance' },
+  { code: '661000', name: 'Charges d’intérêts' },
+  { code: '681000', name: 'Dotations aux amortissements' },
+  // Classe 7 — Produits
+  { code: '701000', name: 'Ventes de produits finis' },
   { code: '706000', name: 'Prestations de services' },
+  { code: '707000', name: 'Ventes de marchandises' },
+  { code: '708000', name: 'Produits des activités annexes' },
+  { code: '758000', name: 'Produits divers de gestion courante' },
+  { code: '764000', name: 'Produits financiers' },
 ];
+
+/** @deprecated conservé pour compatibilité — utiliser {@link PCG_STANDARD}. */
+export const PCG_MINIMAL = PCG_STANDARD;
 
 
 /** Totaux HT / TVA / TTC (arrondis au centime, ligne par ligne). */

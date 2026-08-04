@@ -329,18 +329,37 @@ async function main() {
     });
   }
 
-  // ── Comptabilité : plan comptable minimal + journaux (par société) ──
-  const PCG: [string, string][] = [
-    ['401000', 'Fournisseurs'], ['411000', 'Clients'], ['445660', 'TVA déductible'], ['445710', 'TVA collectée'],
-    ['445510', 'TVA à décaisser'], ['445670', 'Crédit de TVA à reporter'],
-    ['512000', 'Banque'], ['530000', 'Caisse'], ['607000', 'Achats de marchandises'], ['627000', 'Services bancaires'],
-    ['707000', 'Ventes de marchandises'], ['706000', 'Prestations de services'],
+  // ── Comptabilité : plan comptable général (PCG standard) + journaux (par société) ──
+  // Jeu standard TPE/PME (classes 1 à 7). Reste aligné avec PCG_STANDARD de @jampack/domain.
+  const PCG_STANDARD: { code: string; name: string }[] = [
+    { code: '101000', name: 'Capital' }, { code: '106000', name: 'Réserves' },
+    { code: '120000', name: 'Résultat de l’exercice (bénéfice)' }, { code: '129000', name: 'Résultat de l’exercice (perte)' },
+    { code: '164000', name: 'Emprunts auprès des établissements de crédit' },
+    { code: '205000', name: 'Concessions, brevets, logiciels' }, { code: '215000', name: 'Installations techniques, matériel et outillage' },
+    { code: '218300', name: 'Matériel informatique' }, { code: '218400', name: 'Mobilier' },
+    { code: '280500', name: 'Amortissements des immobilisations incorporelles' }, { code: '281800', name: 'Amortissements des autres immobilisations corporelles' },
+    { code: '401000', name: 'Fournisseurs' }, { code: '404000', name: 'Fournisseurs d’immobilisations' }, { code: '408000', name: 'Fournisseurs — factures non parvenues' },
+    { code: '411000', name: 'Clients' }, { code: '416000', name: 'Clients douteux ou litigieux' }, { code: '418000', name: 'Clients — factures à établir' },
+    { code: '421000', name: 'Personnel — rémunérations dues' }, { code: '431000', name: 'Sécurité sociale' },
+    { code: '445660', name: 'TVA déductible' }, { code: '445620', name: 'TVA déductible sur immobilisations' }, { code: '445710', name: 'TVA collectée' },
+    { code: '445510', name: 'TVA à décaisser' }, { code: '445670', name: 'Crédit de TVA à reporter' },
+    { code: '447000', name: 'Autres impôts, taxes et versements assimilés' }, { code: '455000', name: 'Associés — comptes courants' },
+    { code: '512000', name: 'Banque' }, { code: '514000', name: 'Chèques postaux' }, { code: '530000', name: 'Caisse' }, { code: '580000', name: 'Virements internes' },
+    { code: '601000', name: 'Achats de matières premières' }, { code: '607000', name: 'Achats de marchandises' },
+    { code: '606300', name: 'Fournitures d’entretien et petit équipement' }, { code: '606400', name: 'Fournitures administratives' },
+    { code: '613000', name: 'Locations' }, { code: '615000', name: 'Entretien et réparations' }, { code: '616000', name: 'Primes d’assurance' },
+    { code: '622600', name: 'Honoraires' }, { code: '623000', name: 'Publicité, publications' }, { code: '625000', name: 'Déplacements, missions et réceptions' },
+    { code: '626000', name: 'Frais postaux et de télécommunications' }, { code: '627000', name: 'Services bancaires' }, { code: '635000', name: 'Impôts et taxes' },
+    { code: '641000', name: 'Rémunérations du personnel' }, { code: '645000', name: 'Charges de sécurité sociale et de prévoyance' },
+    { code: '661000', name: 'Charges d’intérêts' }, { code: '681000', name: 'Dotations aux amortissements' },
+    { code: '701000', name: 'Ventes de produits finis' }, { code: '706000', name: 'Prestations de services' }, { code: '707000', name: 'Ventes de marchandises' },
+    { code: '708000', name: 'Produits des activités annexes' }, { code: '758000', name: 'Produits divers de gestion courante' }, { code: '764000', name: 'Produits financiers' },
   ];
   const JOURNALS: [string, string, string][] = [
     ['VT', 'Ventes', 'vente'], ['AC', 'Achats', 'achat'], ['BQ', 'Banque', 'banque'], ['OD', 'Opérations diverses', 'od'],
   ];
   for (const s of [boulangerie, studio]) {
-    for (const [code, name] of PCG) {
+    for (const { code, name } of PCG_STANDARD) {
       await prisma.account.upsert({
         where: { societeId_code: { societeId: s.id, code } },
         update: {},
