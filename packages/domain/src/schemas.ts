@@ -295,7 +295,7 @@ export const societeSettingsUpdate = z.object({
   legalForm: optStr, capital: optStr, rcs: optStr, ape: optStr,
   addressLine1: optStr, addressLine2: optStr, postalCode: optStr, city: optStr,
   phone: optStr, email: optStr, website: optStr, logoUrl: optStr,
-  legalMentions: optStr, cgv: optStr, penaltyRate: optStr,
+  legalMentions: optStr, cgv: optStr, penaltyRate: optStr, discountTerms: optStr,
   vatFranchise: z.boolean().optional(),
   vatOnPayments: z.boolean().optional(),
 });
@@ -309,6 +309,14 @@ export const VAT_REVERSE_CHARGE_MENTION = 'Autoliquidation — TVA due par le pr
 
 /** Mention obligatoire sous le régime « TVA sur les encaissements » (prestations de services). */
 export const VAT_ON_PAYMENTS_MENTION = "TVA acquittée d'après les encaissements";
+
+/** Mention d'escompte par défaut lorsque aucune condition n'est offerte (art. L441-10 C. com.). */
+export const DISCOUNT_MENTION_NONE = "Pas d'escompte pour paiement anticipé";
+/** Mention d'escompte à porter sur la facture : conditions saisies, ou mention par défaut « néant ». */
+export function discountMention(terms?: string | null): string {
+  const t = (terms ?? '').trim();
+  return t ? `Escompte pour paiement anticipé : ${t}` : DISCOUNT_MENTION_NONE;
+}
 
 // ── Immobilisations & amortissement ──
 export const fixedAssetCreate = z.object({

@@ -22,7 +22,7 @@ export default function SocieteSettings() {
   const val = (k: string) => (form[k] == null ? '' : String(form[k]));
 
   const submit = () => {
-    const keys = ['name', 'legalForm', 'capital', 'siren', 'siret', 'tvaNumber', 'rcs', 'ape', 'addressLine1', 'addressLine2', 'postalCode', 'city', 'phone', 'email', 'website', 'logoUrl', 'legalMentions', 'cgv', 'penaltyRate'];
+    const keys = ['name', 'legalForm', 'capital', 'siren', 'siret', 'tvaNumber', 'rcs', 'ape', 'addressLine1', 'addressLine2', 'postalCode', 'city', 'phone', 'email', 'website', 'logoUrl', 'legalMentions', 'cgv', 'penaltyRate', 'discountTerms'];
     const payload: Settings = {};
     for (const k of keys) payload[k] = (form[k] as string) ?? '';
     payload.vatFranchise = !!form.vatFranchise;
@@ -84,6 +84,7 @@ export default function SocieteSettings() {
               onChange={(e) => set('vatOnPayments', e.target.checked)}
             />
             <Text k="penaltyRate" label="Taux des pénalités de retard (LME) — défaut : trois fois le taux d'intérêt légal" />
+            <Text k="discountTerms" label="Escompte pour paiement anticipé — vide = « Pas d'escompte » (mention obligatoire art. L441-10)" />
             <Text k="legalMentions" label="Mentions légales complémentaires" as="textarea" />
             <Text k="cgv" label="CGV (référence ou texte)" as="textarea" />
           </Card.Body></Card>

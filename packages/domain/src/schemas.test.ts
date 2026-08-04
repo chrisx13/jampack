@@ -7,6 +7,7 @@ import {
   activityCreate, activityTypeLabel, isActivityOverdue, stockTransfer,
   isPurchaseOrderOverdue, purchaseOrderDaysLate, parseProductsCsv,
   isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs, auditLogCsv,
+  discountMention, DISCOUNT_MENTION_NONE,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -243,6 +244,17 @@ describe('stockTransfer', () => {
   it('rejette une quantité nulle ou négative', () => {
     expect(stockTransfer.safeParse({ productId: 'p1', fromWarehouseId: 'w1', toWarehouseId: 'w2', quantity: 0 }).success).toBe(false);
     expect(stockTransfer.safeParse({ productId: 'p1', fromWarehouseId: 'w1', toWarehouseId: 'w2', quantity: -5 }).success).toBe(false);
+  });
+});
+
+describe('discountMention (escompte L441-10)', () => {
+  it('sans condition → mention par défaut « néant »', () => {
+    expect(discountMention()).toBe(DISCOUNT_MENTION_NONE);
+    expect(discountMention('')).toBe(DISCOUNT_MENTION_NONE);
+    expect(discountMention('   ')).toBe(DISCOUNT_MENTION_NONE);
+  });
+  it('avec condition → mention détaillée', () => {
+    expect(discountMention('2 % sous 10 jours')).toBe('Escompte pour paiement anticipé : 2 % sous 10 jours');
   });
 });
 

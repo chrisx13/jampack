@@ -79,9 +79,10 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 - Délai légal **≤ 60 jours** (ou 45 j fin de mois) ; la facture doit indiquer la **date d'échéance**, le
   **taux des pénalités de retard** et l'**indemnité forfaitaire de recouvrement de 40 €**.
 - État : échéance calculée ✅ ; **mention LME standard** (pénalités de retard + **indemnité forfaitaire
-  40 €** + escompte) **rendue automatiquement sur chaque facture** ✅ (`lmePaymentMention`, `invoiceHtml.ts`).
+  40 €**) **rendue automatiquement sur chaque facture** ✅ (`lmePaymentMention`, `invoiceHtml.ts`).
   Taux des pénalités **configurable par société** (champ `penaltyRate`, défaut « trois fois le taux d'intérêt
-  légal ») ⏳. → FR-TRV-1, REG-6.
+  légal ») ✅. **Mention d'escompte** (conditions ou « Pas d'escompte » par défaut) rendue automatiquement ✅
+  (`discountMention`, champ société `discountTerms`). → FR-VEN-11, FR-TRV-1, REG-6.
 
 ### 3.7 TVA — taux & régimes France
 - **Taux** : 20 % / 10 % / 5,5 % / 2,1 % paramétrables (référentiel société). ✅

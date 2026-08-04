@@ -329,6 +329,16 @@ describe('Comptabilité — déclaration de TVA (CA3)', () => {
   });
 });
 
+describe('Ventes — mention d’escompte (L441-10)', () => {
+  it('les conditions d’escompte se paramètrent et persistent au niveau société', async () => {
+    const before = (await caller.societes.settings()).discountTerms ?? null;
+    await caller.societes.updateSettings({ discountTerms: '2 % sous 10 jours' });
+    expect((await caller.societes.settings()).discountTerms).toBe('2 % sous 10 jours');
+    // Restauration de l'état initial (évite de polluer le jeu de démo).
+    await caller.societes.updateSettings({ discountTerms: before ?? '' });
+  });
+});
+
 describe('Audit — journalisation des mutations', () => {
   it('journalise chaque mutation (qui, quoi, référence)', async () => {
     const wh = await caller.stock.warehouses.create({ name: '[INT] Audit' });
