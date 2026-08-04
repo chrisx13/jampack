@@ -185,6 +185,21 @@ describe('CRM — activités & tâches', () => {
   });
 });
 
+describe('Ventes — bon de livraison', () => {
+  it('attribue un n° BL séquentiel + date, de façon idempotente', async () => {
+    const companyId = await anyCustomer();
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'Colis', quantity: 3, unitPriceHt: 10, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: inv.id });
+    const bl1 = await caller.invoices.issueDelivery({ id: inv.id });
+    expect(bl1.deliveryNumber).toMatch(/^BL-/);
+    expect(bl1.deliveredAt).toBeTruthy();
+    const bl2 = await caller.invoices.issueDelivery({ id: inv.id }); // idempotent
+    expect(bl2.deliveryNumber).toBe(bl1.deliveryNumber);
+    const full = await caller.invoices.get({ id: inv.id });
+    expect(full.deliveryNumber).toBe(bl1.deliveryNumber);
+  });
+});
+
 describe('Ventes — facture d\'acompte', () => {
   it('acompte 30 % ventilé par taux, puis facture de solde déduisant l\'acompte', async () => {
     const companyId = await anyCustomer();

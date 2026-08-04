@@ -34,6 +34,8 @@
 - **Facture d'acompte** : sur un devis émis, bouton **Facture d'acompte** → saisir le pourcentage ; une facture
   d'acompte (brouillon) est créée, ventilée par taux de TVA. À la **conversion** du devis en facture, les acomptes
   déjà facturés (validés) sont **automatiquement déduits** : la facture obtenue est la facture de solde.
+- **Bon de livraison** : sur une facture validée, bouton **Bon de livraison** → télécharge un BL (PDF) numéroté
+  (BL-…), sans prix (désignation, quantités, adresse de livraison, cartouche « Reçu conforme » à signer par le client).
 - **Abonnements** (Ventes ▸ Abonnements) : définir un modèle récurrent (client, lignes, fréquence, prochaine
   échéance). Le bouton **Générer les factures dues** crée en brouillon les factures des abonnements arrivés à
   échéance (les périodes en retard sont rattrapées) et reporte automatiquement la prochaine échéance.

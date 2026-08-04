@@ -768,6 +768,8 @@ model Invoice {
   discountType    String         @default("none") // remise globale (pied) : none | percent | amount
   discountValue   Decimal        @default(0) @db.Decimal(12, 2) // valeur de la remise globale
   isDeposit       Boolean        @default(false) // facture d'acompte (déduite à la facture de solde)
+  deliveryNumber  String?        // n° de bon de livraison (BL-…) émis pour cette facture
+  deliveredAt     DateTime?      // date de livraison portée sur le bon de livraison
   notes           String?
   lines           InvoiceLine[]
   payments        Payment[]

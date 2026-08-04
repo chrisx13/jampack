@@ -61,7 +61,7 @@ export const fullInclude = {
   source: { select: { number: true, issueDate: true } },
 };
 
-async function htmlToPdf(html: string) {
+export async function htmlToPdf(html: string) {
   const browser = await chromium.launch({ ignoreDefaultArgs: ['--headless=old'], args: ['--headless=new', '--no-sandbox'] });
   try {
     const page = await browser.newPage();

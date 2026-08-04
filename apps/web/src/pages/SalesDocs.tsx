@@ -206,6 +206,14 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     uapi.transmissions.invalidate({ id });
     alert(`Facture transmise (PDP « ${r.provider} ») — statut : ${r.status}, réf. ${r.providerRef}.`);
   };
+  const delivery = cfg.key === 'invoices' ? api.deliveryNote.useMutation() : null;
+  const onDelivery = async () => {
+    const r = await delivery!.mutateAsync({ id });
+    const bytes = Uint8Array.from(atob(r.base64), (c) => c.charCodeAt(0));
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+    const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url);
+    uapi.get.invalidate({ id });
+  };
   const duplicate = api.duplicate.useMutation();
   const onDuplicate = async () => {
     const copy = await duplicate.mutateAsync({ id });
@@ -263,6 +271,9 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
                 <i className="bi bi-send me-1" />{lastTx ? `PDP : ${lastTx.status}` : 'Envoyer via PDP'}
               </Button>
             </>
+          )}
+          {cfg.key === 'invoices' && readOnly && status !== 'cancelled' && (
+            <Button variant="light" onClick={onDelivery} disabled={delivery!.isPending} title="Bon de livraison (PDF)"><i className="bi bi-truck me-1" />Bon de livraison</Button>
           )}
           {cfg.key === 'invoices' && readOnly && status !== 'cancelled' && (
             <Button variant="outline-secondary" onClick={onCreditNote} disabled={creditNote!.isPending}><i className="bi bi-arrow-counterclockwise me-1" />Créer un avoir</Button>

@@ -274,7 +274,7 @@ async function main() {
   }
 
   // ── Référentiels : numérotation des pièces (par société) ──
-  const seqs: [string, string][] = [['facture', 'FA-'], ['devis', 'DE-'], ['avoir', 'AV-'], ['commande', 'CM-']];
+  const seqs: [string, string][] = [['facture', 'FA-'], ['devis', 'DE-'], ['avoir', 'AV-'], ['commande', 'CM-'], ['bl', 'BL-']];
   for (const s of [boulangerie, studio]) {
     for (const [docType, prefix] of seqs) {
       await prisma.numberSequence.upsert({
