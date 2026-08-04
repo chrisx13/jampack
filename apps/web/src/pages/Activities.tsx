@@ -12,7 +12,8 @@ export default function Activities() {
   const can = useCan();
   const editable = can('create', 'Opportunity');
   const tasks = trpc.crm.activities.tasks.useQuery();
-  const log = trpc.crm.activities.list.useQuery(undefined);
+  const [filterCompany, setFilterCompany] = useState('');
+  const log = trpc.crm.activities.list.useQuery(filterCompany ? { companyId: filterCompany } : undefined);
   const companies = trpc.crm.companies.list.useQuery();
 
   const [type, setType] = useState('note');
@@ -23,6 +24,7 @@ export default function Activities() {
   const refresh = () => { utils.crm.activities.tasks.invalidate(); utils.crm.activities.list.invalidate(); };
   const create = trpc.crm.activities.create.useMutation({ onSuccess: () => { setContent(''); setDueAt(''); refresh(); } });
   const complete = trpc.crm.activities.complete.useMutation({ onSuccess: refresh });
+  const reopen = trpc.crm.activities.reopen.useMutation({ onSuccess: refresh });
   const remove = trpc.crm.activities.remove.useMutation({ onSuccess: refresh });
 
   const submit = (e: React.FormEvent) => {
@@ -89,7 +91,13 @@ export default function Activities() {
 
         <Col lg={7}>
           <Card>
-            <Card.Header className="bg-transparent fw-semibold">Journal d'activité</Card.Header>
+            <Card.Header className="bg-transparent d-flex align-items-center justify-content-between gap-2">
+              <span className="fw-semibold">Journal d'activité</span>
+              <Form.Select size="sm" style={{ maxWidth: 220 }} value={filterCompany} onChange={(e) => setFilterCompany(e.target.value)} title="Filtrer par client">
+                <option value="">Tous les clients</option>
+                {(companies.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </Form.Select>
+            </Card.Header>
             <Card.Body className="p-0">
               <Table hover responsive className="mb-0 align-middle">
                 <tbody>
@@ -102,6 +110,9 @@ export default function Activities() {
                         <div className="small text-secondary">{a.company?.name ?? (a.contact ? `${a.contact.firstName} ${a.contact.lastName}` : '—')} · {dfmt(a.createdAt)}</div>
                       </td>
                       <td className="text-end pe-3">
+                        {editable && a.type === 'tache' && (a.done
+                          ? <Button variant="link" size="sm" className="text-secondary p-0 me-2" title="Rouvrir la tâche" onClick={() => reopen.mutate({ id: a.id })}><i className="bi bi-arrow-counterclockwise" /></Button>
+                          : <Button variant="link" size="sm" className="text-success p-0 me-2" title="Marquer fait" onClick={() => complete.mutate({ id: a.id })}><i className="bi bi-check-lg" /></Button>)}
                         {editable && <Button variant="link" size="sm" className="text-danger p-0" title="Supprimer" onClick={() => remove.mutate({ id: a.id })}><i className="bi bi-trash" /></Button>}
                       </td>
                     </tr>
