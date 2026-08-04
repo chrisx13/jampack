@@ -27,8 +27,10 @@ que le thème initial. Les tokens décrits ici sont ceux réellement appliqués 
 ### Marque
 | Rôle | Token | Hex |
 |---|---|---|
-| Primaire (Indigo) | `$indigo` / `--bs-primary` | `#4F46E5` |
-| Dégradé de marque | mark / accents | `#6366F1 → #0EA5E9` |
+| **Primaire (violet-ardoise)** | `$primary` / `--bs-primary` / `--brand` | `#3E3A52` |
+| Accent (indigo clair) | `--accent` | `#818CF8` |
+| Indigo | `$indigo` | `#4F46E5` |
+| Dégradé de marque (barres du signe) | mark / doc | `#6366F1 → #0EA5E9` |
 | Succès (Emerald) | `$success` | `#10B981` |
 | Info (Sky) | `$info` | `#0EA5E9` |
 | Alerte (Amber) | `$warning` | `#F59E0B` |

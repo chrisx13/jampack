@@ -25,7 +25,7 @@ $gray-800: #1E293B;
 $gray-900: #0F172A;
 
 // Overrides Bootstrap
-$primary:   $indigo;
+$primary:   #3E3A52; // couleur de marque (violet-ardoise)
 $success:   $emerald;
 $info:      $sky;
 $warning:   $amber;
@@ -75,6 +75,7 @@ $link-decoration: none;
   --text-muted: #{$gray-500};
   --active-bg: #{rgba($primary, .09)};
   --active-text: #{$primary};
+  --accent: #818CF8; // accent indigo clair — surbrillances sur le chrome de marque
 
   --hk-menu-text: #{$gray-600};
   --hk-menu-item-active-bg: var(--active-bg);
@@ -99,6 +100,7 @@ $link-decoration: none;
   --text-muted: #94A3B8;
   --active-bg: #{rgba($primary, .24)};
   --active-text: #A5B4FC;
+  --accent: #818CF8;
 
   --hk-menu-text: #CBD5E1;
   --hk-menu-item-active-bg: var(--active-bg);
@@ -173,6 +175,10 @@ hr { border-color: var(--border); opacity: 1; }
 // Contrôles de la barre du haut fondus dans le chrome (verre clair sur violet).
 .hk-navbar .btn-light { background: rgba(255, 255, 255, .10); color: var(--on-brand); border-color: rgba(255, 255, 255, .18); }
 .hk-navbar .btn-light:hover, .hk-navbar .btn-light:focus { background: rgba(255, 255, 255, .20); color: #fff; }
+// Sur le chrome violet, les éléments « primary » basculent sur l'accent clair pour rester visibles.
+.hk-navbar .text-primary { color: var(--accent) !important; }
+.hk-navbar .bg-primary { background-color: var(--accent) !important; }
+.hk-navbar :focus-visible, .hk-activity :focus-visible { outline-color: var(--accent); }
 
 // ── Barre d'activité (grands domaines) ──
 .hk-activity {
@@ -192,7 +198,7 @@ hr { border-color: var(--border); opacity: 1; }
 .hk-activity .act.active { color: #fff; background: rgba(255, 255, 255, .15); }
 .hk-activity .act.active::before {
   content: ''; position: absolute; left: -.6rem; top: 9px; bottom: 9px; width: 3px;
-  border-radius: 0 3px 3px 0; background: var(--bs-primary);
+  border-radius: 0 3px 3px 0; background: var(--accent);
 }
 
 // ── Panneau secondaire (sous-domaines) ──
