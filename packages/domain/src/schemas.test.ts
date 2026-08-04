@@ -9,7 +9,7 @@ import {
   isQuoteExpired, quoteDaysToExpiry, stockLevelsCsv, purchaseReceipt, balanceCsv, buildAgendaIcs, auditLogCsv,
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
-  isValidIban, isValidBic, formatIban,
+  isValidIban, isValidBic, formatIban, ledgerCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -390,5 +390,18 @@ describe('coordonnées bancaires (IBAN / BIC)', () => {
   it('formate un IBAN par groupes de 4', () => {
     expect(formatIban('FR7630006000011234567890189')).toBe('FR76 3000 6000 0112 3456 7890 189');
     expect(formatIban('')).toBe('');
+  });
+});
+
+describe('export CSV — grand livre', () => {
+  it('sérialise un grand livre (en-tête, date FR, décimale FR, échappement)', () => {
+    const csv = ledgerCsv([
+      { date: new Date('2026-08-04T00:00:00Z'), journal: 'VT', reference: 'FA-0001', label: 'Vente; client A', debit: 120, credit: 0, letter: null, solde: 120 },
+      { date: new Date('2026-08-05T00:00:00Z'), journal: 'BQ', reference: null, label: 'Encaissement', debit: 0, credit: 120, letter: 'AA', solde: 0 },
+    ]);
+    const [head, l1, l2] = csv.split('\n');
+    expect(head).toBe('Date;Journal;Référence;Libellé;Débit;Crédit;Lettrage;Solde');
+    expect(l1).toBe('04/08/2026;VT;FA-0001;"Vente; client A";120,00;0,00;;120,00');
+    expect(l2).toBe('05/08/2026;BQ;;Encaissement;0,00;120,00;AA;0,00');
   });
 });

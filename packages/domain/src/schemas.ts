@@ -688,6 +688,25 @@ export function balanceCsv(rows: BalanceCsvRow[]): string {
 }
 
 /**
+ * Sérialise un grand livre de compte en CSV (séparateur `;`, décimale FR, date JJ/MM/AAAA).
+ * Colonnes : Date ; Journal ; Référence ; Libellé ; Débit ; Crédit ; Lettrage ; Solde.
+ */
+export type LedgerCsvRow = { date: string | Date | null; journal: string; reference?: string | null; label: string; debit: number; credit: number; letter?: string | null; solde: number };
+export function ledgerCsv(rows: LedgerCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
+  const d = (v: string | Date | null) => {
+    if (!v) return '';
+    const x = new Date(v);
+    const p = (k: number) => String(k).padStart(2, '0');
+    return `${p(x.getUTCDate())}/${p(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
+  };
+  const head = 'Date;Journal;Référence;Libellé;Débit;Crédit;Lettrage;Solde';
+  const lines = rows.map((r) => [d(r.date), esc(r.journal), esc(r.reference ?? ''), esc(r.label), fr(r.debit), fr(r.credit), esc(r.letter ?? ''), fr(r.solde)].join(';'));
+  return [head, ...lines].join('\n');
+}
+
+/**
  * Génère un calendrier iCalendar (RFC 5545) d'événements « journée » (VALUE=DATE)
  * importable dans Outlook/Google Agenda. `date` au format ISO ; `stamp` = DTSTAMP fixe (déterminisme).
  */

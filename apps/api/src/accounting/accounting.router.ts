@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv, fixedAssetCreate, fixedAssetUpdate, depreciationSchedule, balanceCsv } from '@jampack/domain';
+import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv, fixedAssetCreate, fixedAssetUpdate, depreciationSchedule, balanceCsv, ledgerCsv } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -192,6 +192,26 @@ export const accountingRouter = router({
         return { date: l.entry.date, journal: l.entry.journal?.code ?? '', reference: l.entry.reference, label: l.label ?? l.entry.label, debit: n(l.debit), credit: n(l.credit), letter: l.letter, solde };
       });
       return { account, rows, totalDebit: r2(rows.reduce((s, r) => s + r.debit, 0)), totalCredit: r2(rows.reduce((s, r) => s + r.credit, 0)), solde };
+    })
+  ),
+
+  /** Export CSV du grand livre d'un compte (Date ; Journal ; Réf. ; Libellé ; Débit ; Crédit ; Lettrage ; Solde). */
+  exportLedger: authed('read', 'Accounting').input(z.object({ accountId: z.string().min(1) })).query(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const account = await tx.account.findFirstOrThrow({ where: { id: input.accountId, ...scope(ctx.societeId) }, select: { code: true, name: true } });
+      const lines = await tx.journalEntryLine.findMany({
+        where: { accountId: input.accountId, entry: { is: scope(ctx.societeId) } },
+        include: { entry: { select: { date: true, label: true, reference: true, journal: { select: { code: true } } } } },
+        orderBy: [{ entry: { date: 'asc' } }, { position: 'asc' }],
+        take: 5000,
+      });
+      const r2 = (v: number) => Math.round(v * 100) / 100;
+      let solde = 0;
+      const rows = lines.map((l) => {
+        solde = r2(solde + n(l.debit) - n(l.credit));
+        return { date: l.entry.date, journal: l.entry.journal?.code ?? '', reference: l.entry.reference, label: l.label ?? l.entry.label, debit: n(l.debit), credit: n(l.credit), letter: l.letter, solde };
+      });
+      return { filename: `grand-livre-${account.code}.csv`, content: ledgerCsv(rows) };
     })
   ),
 
