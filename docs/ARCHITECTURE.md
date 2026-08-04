@@ -28,7 +28,7 @@ Ces choix ne sont pas encore tranchés ; ils sont suivis ici et dans les documen
 | DO-1 | **Voie PDP réglementaire** : s'immatriculer PDP (DGFiP + raccordement PPF, e-reporting) **ou** brancher une **PDP partenaire** sur le connecteur existant | Conformité e-invoicing 2026-2027 | [Conformité §3.1](CONFORMITE.md), `apps/api/src/invoice/pdp.ts` |
 | DO-2 | **API publique REST/OpenAPI** en complément de tRPC (intégrations tierces) | Écosystème/partenaires | ADR-3 |
 | DO-3 | **Hébergeur UE définitif** (Scaleway vs OVHcloud) | RGPD, exploitation | [Runbook](RUNBOOK.md) |
-| DO-4 | **Rapprochement bancaire** : **pointage manuel ✅ livré** ; reste le format d'**import de relevé** (CSV/OFX) | Compta/trésorerie | [Traçabilité §5](TRACABILITE.md), FR-CPT-5d |
+| ~~DO-4~~ | **Rapprochement bancaire** : pointage manuel + **import de relevé CSV** (pointage auto par montant) — **✅ livré** (OFX = extension possible) | Compta/trésorerie | FR-CPT-5d |
 | ~~DO-5~~ | **Stock** : valorisation **FIFO** + **lots/n° série** — **✅ livrés** (FR-STK-6/7) | Stock avancé | [Traçabilité §5](TRACABILITE.md) |
 | ~~DO-6~~ | **Rapprochement 3 voies** achats (commande ↔ réception ↔ facture) — **✅ livré** (`supplierInvoices.match`, FR-ACH-7) | Contrôle achats | SRS FR-ACH-7 |
 | DO-7 | **Mentions spéciales TVA** : exonérations spécifiques restantes. *(Identifiants acheteur SIREN/TVA, franchise 293 B « E », autoliquidation 283-2 « AE » : ✅ livrés.)* | Conformité facture FR | [Conformité §3.5](CONFORMITE.md), REG-5 |

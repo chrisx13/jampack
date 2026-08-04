@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES } from '@jampack/domain';
+import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -154,6 +154,24 @@ export const accountingRouter = router({
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const line = await tx.journalEntryLine.findFirstOrThrow({ where: { id: input.id, entry: { is: scope(ctx.societeId) } }, select: { id: true } });
       return tx.journalEntryLine.update({ where: { id: line.id }, data: { reconciled: input.reconciled } });
+    })
+  ),
+
+  /** Import d'un relevé bancaire (CSV) : pointe automatiquement les lignes 512 dont le montant signé correspond. */
+  importBankStatement: authed('update', 'Accounting').input(z.object({ csv: z.string().min(1) })).mutation(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const stmt = parseBankStatementCsv(input.csv);
+      const lines = await tx.journalEntryLine.findMany({ where: { entry: { is: scope(ctx.societeId) }, account: { code: { startsWith: '512' } }, reconciled: false }, select: { id: true, debit: true, credit: true } });
+      const pool = lines.map((l) => ({ id: l.id, signed: Math.round((n(l.debit) - n(l.credit)) * 100) / 100, used: false }));
+      let matched = 0;
+      const unmatched: { date: string; label: string; amount: number }[] = [];
+      for (const s of stmt) {
+        const hit = pool.find((p) => !p.used && Math.abs(p.signed - s.amount) < 0.01);
+        if (hit) { hit.used = true; matched++; } else unmatched.push(s);
+      }
+      const ids = pool.filter((p) => p.used).map((p) => p.id);
+      if (ids.length) await tx.journalEntryLine.updateMany({ where: { id: { in: ids } }, data: { reconciled: true } });
+      return { parsed: stmt.length, matched, unmatched };
     })
   ),
 

@@ -129,7 +129,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **4 Compta** | **Export FEC** (Fichier des Écritures Comptables, tabulé normé) | ✅ | `accounting.fec` — bouton « Exporter le FEC » (Balance) |
 | **4 Compta** | **Déclaration de TVA (CA3)** | ✅ | `accounting.vatReturn` — collectée (44571) − déductible (44566) |
 | **4 Compta** | **Lettrage** (rapprochement débit/crédit) + **clôture TVA** (OD) | ✅ | `accounting` (`letter`/lettrage, écriture de clôture 44571/44566→44551/44567), page `Lettrage.tsx` |
-| **4 Compta** | **Rapprochement bancaire** : pointage des lignes 512 au relevé | ✅ | `accounting.bankLines`/`reconcile`, `JournalEntryLine.reconciled`, `BankReconciliation.tsx` (import CSV/OFX = suivi) |
+| **4 Compta** | **Rapprochement bancaire** : pointage + **import de relevé CSV** (pointage auto par montant) | ✅ | `accounting.bankLines`/`reconcile`/`importBankStatement`, `parseBankStatementCsv`, `JournalEntryLine.reconciled`, `BankReconciliation.tsx` |
 | **5 Trésorerie** | **Prévisionnel de trésorerie** : encaissements clients vs décaissements fournisseurs, position nette, retards | ✅ | `analytics.tresorerie`, page `Tresorerie.tsx` (domaine Trésorerie) |
 | **5 BI** | Tableaux de bord analytiques avancés (séries temporelles, marges) | 🔧 | KPI consolidés via `analytics.summary` (Dashboard) ; BI approfondie = phase future |
 | transverse | Administration in-app : inviter users, attribuer/révoquer rôles | ✅ | `iam.router` (`invite`/`grantRole`/`revokeRole`), garde-fou dernier admin, page `Members.tsx` |

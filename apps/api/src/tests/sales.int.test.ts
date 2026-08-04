@@ -115,6 +115,20 @@ describe('Ventes — chaîne devis → facture → avoir', () => {
     expect(after.lines.find((l: { id: string }) => l.id === line512.id).reconciled).toBe(true);
   });
 
+  it('import de relevé bancaire : pointage automatique par montant', async () => {
+    const companyId = await anyCustomer();
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'BR', quantity: 1, unitPriceHt: 77, taxRatePct: 0 }] });
+    await caller.invoices.validate({ id: inv.id });
+    const pay = await caller.payments.create({ invoiceId: inv.id, amount: 77, method: 'virement' });
+    await caller.accounting.postPayment({ id: pay.id }); // 512 débit 77 (non pointé)
+    const res = await caller.accounting.importBankStatement({ csv: '2026-08-04;Virement 77;77,00\n2026-08-04;Inconnu;999,99' });
+    expect(res.parsed).toBe(2);
+    expect(res.matched).toBe(1);
+    expect(res.unmatched).toHaveLength(1);
+    const bank = await caller.accounting.bankLines();
+    expect(bank.lines.find((l: { debit: number; reconciled: boolean }) => l.debit === 77)?.reconciled).toBe(true);
+  });
+
   it('export FEC : entête normée + lignes d’écriture', async () => {
     const companyId = await anyCustomer();
     const inv = await caller.invoices.create({ companyId, notes: '[INT]', lines: [{ label: 'W', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });

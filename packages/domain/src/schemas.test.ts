@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate, lmePaymentMention,
+  computeInvoiceTotals, invoiceCreate, invoiceLineInput, invoiceUpdate, paymentCreate, supplierPaymentCreate, lmePaymentMention, parseBankStatementCsv,
   PAYMENT_METHODS, PAYMENT_METHOD_LABELS, SALES_DOCS, STOCK_KINDS, STOCK_KIND_LABELS,
   stockMovementCreate, stockInventory, productCreate, warehouseCreate, journalEntryCreate, accountCreate, journalCreate,
   purchaseOrderCreate, supplierInvoiceCreate, PCG_MINIMAL, JOURNAL_TYPES, JOURNAL_TYPE_LABELS, byId,
@@ -61,6 +61,19 @@ describe('productCreate — seuil de réapprovisionnement', () => {
   });
   it('refuse un reorderPoint négatif', () => {
     expect(productCreate.safeParse({ name: 'A', reorderPoint: -1 }).success).toBe(false);
+  });
+});
+
+describe('parseBankStatementCsv', () => {
+  it('parse un relevé FR (séparateur ;, décimale ,) et ignore l’en-tête', () => {
+    const csv = 'Date;Libellé;Montant\n2026-08-04;Virement client Dupont;120,00\n2026-08-05;Achat fournitures;-45,50\n';
+    const r = parseBankStatementCsv(csv);
+    expect(r).toHaveLength(2);
+    expect(r[0]).toEqual({ date: '2026-08-04', label: 'Virement client Dupont', amount: 120 });
+    expect(r[1].amount).toBeCloseTo(-45.5, 2);
+  });
+  it('accepte le séparateur , et ignore les lignes vides/invalides', () => {
+    expect(parseBankStatementCsv('2026-08-04,Vente,60.00\n\n,,\n')).toEqual([{ date: '2026-08-04', label: 'Vente', amount: 60 }]);
   });
 });
 

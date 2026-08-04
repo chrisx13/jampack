@@ -151,7 +151,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CPT-5 | **Déclaration de TVA (CA3)** : collectée − déductible → à décaisser / crédit. | M | ✅ |
 | FR-CPT-5b | **Lettrage** des comptes de tiers (rapprochement débit/crédit équilibré). | M | ✅ |
 | FR-CPT-5c | **Écriture de clôture de TVA** (solde 44571/44566 → 44551/44567, journal OD). | M | ✅ |
-| FR-CPT-5d | **Rapprochement bancaire** : pointage des lignes du compte 512 au relevé, soldes comptable/pointé/reste. | M | ✅ (import de relevé CSV/OFX ⏳) |
+| FR-CPT-5d | **Rapprochement bancaire** : pointage des lignes du compte 512, soldes comptable/pointé/reste, **import de relevé CSV** (pointage auto par montant). | M | ✅ |
 | FR-CPT-6 | Export **FEC** (Fichier des Écritures Comptables) tabulé normé. | M | ✅ |
 
 ### 3.8 Trésorerie (Jalon 5)

@@ -260,6 +260,29 @@ export const VAT_REVERSE_CHARGE_MENTION = 'Autoliquidation — TVA due par le pr
 /** Mention obligatoire sous le régime « TVA sur les encaissements » (prestations de services). */
 export const VAT_ON_PAYMENTS_MENTION = "TVA acquittée d'après les encaissements";
 
+export type BankStatementLine = { date: string; label: string; amount: number };
+/**
+ * Parse un relevé bancaire CSV (format FR usuel) : une ligne par écriture,
+ * colonnes `date ; libellé ; montant` (séparateur `;` ou `,`, décimale `,`).
+ * Le montant est **signé** du point de vue du titulaire : positif = encaissement, négatif = décaissement.
+ * Les lignes sans montant numérique (en-tête) sont ignorées.
+ */
+export function parseBankStatementCsv(text: string): BankStatementLine[] {
+  const out: BankStatementLine[] = [];
+  for (const raw of (text ?? '').split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    const cols = (line.includes(';') ? line.split(';') : line.split(',')).map((c) => c.trim());
+    if (cols.length < 2) continue;
+    const rawAmount = cols[cols.length - 1].replace(/\s/g, '').replace('€', '').replace(',', '.');
+    if (rawAmount === '') continue; // pas de montant (en-tête ou ligne vide)
+    const amount = Number(rawAmount);
+    if (!Number.isFinite(amount)) continue; // en-tête ou ligne invalide
+    out.push({ date: cols[0], label: cols.slice(1, -1).join(' ') || cols[0], amount: Math.round(amount * 100) / 100 });
+  }
+  return out;
+}
+
 // ── Adresses de la société (plusieurs) ──
 export const societeAddressCreate = z.object({
   label: z.string().min(1),
