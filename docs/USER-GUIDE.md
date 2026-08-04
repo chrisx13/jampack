@@ -61,7 +61,7 @@
 - **FEC** : export du Fichier des Écritures Comptables.
 
 ## 7. Trésorerie
-- **Prévisionnel** : projection des encaissements et décaissements à partir des échéanciers client et fournisseur (position nette, retards).
+- **Prévisionnel** : projection des encaissements et décaissements à partir des échéanciers client et fournisseur (position nette, retards). **Courbe hebdomadaire** sur 8 semaines avec position de trésorerie cumulée (les échéances en retard sont imputées à la semaine en cours).
 - **Balance âgée** : créances clients non soldées ventilées par ancienneté (non échu, 1-30, 31-60, 61-90, +90 jours) — pilotage du recouvrement.
 
 ## 7 bis. Gestion — Agenda

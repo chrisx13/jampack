@@ -166,6 +166,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | ID | Exigence | Prio | Statut |
 |---|---|---|---|
 | FR-TRE-1 | **Prévisionnel de trésorerie** : encaissements clients attendus (reste dû) vs décaissements fournisseurs, position nette, mise en évidence des retards. | S | ✅ |
+| FR-TRE-4 | **Prévisionnel hebdomadaire** : encaissements/décaissements ventilés par semaine sur N semaines, position nette cumulée (courbe). | C | ✅ |
 | FR-TRE-2 | Rapprochement bancaire (relevé ↔ écritures 512). | C | ✅ (voir FR-CPT-5d) |
 | FR-TRE-3 | **Balance âgée** clients **et fournisseurs** : créances/dettes non soldées par tranche d'ancienneté (non échu, 1-30, 31-60, 61-90, +90 j). | S | ✅ |
 

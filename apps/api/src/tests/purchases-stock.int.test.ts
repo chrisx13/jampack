@@ -245,6 +245,23 @@ describe('Trésorerie — prévisionnel encaissements vs décaissements', () => 
     await C.prisma.payment.deleteMany({ where: { invoiceId: ci.id } });
     await C.prisma.invoice.delete({ where: { id: ci.id } });
   });
+
+  it('prévisionnel hebdomadaire : échéance à ~2 semaines imputée à la bonne semaine, cumul cohérent', async () => {
+    const cid = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    const due = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+    const ci = await caller.invoices.create({ companyId: cid, notes: '[INT]', dueDate: due, lines: [{ label: 'Prev', quantity: 1, unitPriceHt: 500, taxRatePct: 20 }] });
+    await caller.invoices.validate({ id: ci.id }); // 600 TTC à encaisser
+
+    const f = await caller.analytics.cashflowForecast({ weeks: 8 });
+    expect(f.rows).toHaveLength(8);
+    // Le cumul de la dernière semaine = somme nette de toutes les semaines.
+    expect(f.rows[7].cumul).toBeCloseTo(f.totalIn - f.totalOut, 2);
+    // Nos 600 € figurent dans les encaissements totaux.
+    expect(f.totalIn).toBeGreaterThanOrEqual(600);
+
+    await C.prisma.payment.deleteMany({ where: { invoiceId: ci.id } });
+    await C.prisma.invoice.delete({ where: { id: ci.id } });
+  });
 });
 
 describe('Agenda consolidé — échéances & tâches à venir', () => {

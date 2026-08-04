@@ -27,6 +27,29 @@ function FlowTable({ rows, kind }: { rows: Flow[]; kind: 'in' | 'out' }) {
   );
 }
 
+function WeeklyForecast() {
+  const q = trpc.analytics.cashflowForecast.useQuery({ weeks: 8 });
+  const rows = q.data?.rows ?? [];
+  if (q.isLoading) return <div className="text-center py-4"><Spinner size="sm" /></div>;
+  if (rows.length === 0) return null;
+  const peak = Math.max(1, ...rows.map((r) => Math.max(r.encaissements, r.decaissements)));
+  const wfmt = (d: Date | string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+  return (
+    <div className="d-flex align-items-end gap-3 px-3 pb-3 pt-2" style={{ overflowX: 'auto' }}>
+      {rows.map((r) => (
+        <div key={String(r.weekStart)} className="text-center" style={{ minWidth: 56 }}>
+          <div className="d-flex justify-content-center align-items-end gap-1" style={{ height: 120 }}>
+            <div title={`Encaissements ${euro.format(r.encaissements)}`} style={{ width: 14, height: `${(r.encaissements / peak) * 100}%`, minHeight: r.encaissements > 0 ? 2 : 0, background: 'var(--bs-success)', borderRadius: '3px 3px 0 0' }} />
+            <div title={`Décaissements ${euro.format(r.decaissements)}`} style={{ width: 14, height: `${(r.decaissements / peak) * 100}%`, minHeight: r.decaissements > 0 ? 2 : 0, background: 'var(--bs-danger)', borderRadius: '3px 3px 0 0' }} />
+          </div>
+          <div className="small text-secondary mt-1">{wfmt(r.weekStart)}</div>
+          <div className={`small fw-semibold ${r.cumul >= 0 ? 'text-success' : 'text-danger'}`}>{euro.format(r.cumul)}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Tresorerie() {
   const q = trpc.analytics.tresorerie.useQuery();
   const d = q.data;
@@ -58,6 +81,14 @@ export default function Tresorerie() {
           </Card.Body></Card>
         </div>
       </div>
+
+      <Card className="mb-4">
+        <Card.Header className="fw-semibold bg-transparent d-flex justify-content-between align-items-center">
+          <span><i className="bi bi-bar-chart-line me-2" />Prévisionnel hebdomadaire (8 semaines)</span>
+          <span className="small text-secondary fw-normal">Position cumulée sous chaque semaine</span>
+        </Card.Header>
+        <Card.Body className="p-0"><WeeklyForecast /></Card.Body>
+      </Card>
 
       <div className="row g-3">
         <div className="col-lg-6">

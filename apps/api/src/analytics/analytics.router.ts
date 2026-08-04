@@ -162,6 +162,38 @@ export const analyticsRouter = router({
   ),
 
   /**
+   * Prévisionnel de trésorerie hebdomadaire : encaissements/décaissements attendus ventilés
+   * par semaine sur N semaines, avec position nette cumulée. Les échéances passées (retards)
+   * sont imputées à la 1re semaine (à encaisser/payer sans délai).
+   */
+  cashflowForecast: protectedProcedure.input(z.object({ weeks: z.number().int().min(1).max(52).optional() }).optional()).query(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const weeks = input?.weeks ?? 8;
+      const now = new Date();
+      const startOfWeek = (d: Date) => { const x = new Date(d); const day = (x.getDay() + 6) % 7; x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - day); return x; }; // lundi
+      const week0 = startOfWeek(now);
+      const buckets = Array.from({ length: weeks }, (_, i) => ({ weekStart: new Date(week0.getTime() + i * 7 * 86400000), in: 0, out: 0 }));
+      const idxOf = (due: Date | null | undefined) => {
+        if (!due) return 0;
+        const diff = Math.floor((startOfWeek(new Date(due)).getTime() - week0.getTime()) / (7 * 86400000));
+        return diff < 0 ? 0 : diff; // retards → semaine 0
+      };
+      const remainingOf = (lines: { quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown }[], payments: { amount: unknown }[]) =>
+        totalsOf(lines).totalTtc - payments.reduce((s, p) => s + n(p.amount), 0);
+
+      const factures = await tx.invoice.findMany({ where: { ...scope(ctx.societeId), docType: 'facture', status: 'validated' }, include: { lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
+      for (const f of factures) { const rem = remainingOf(f.lines, f.payments); if (rem > 0.005) { const i = idxOf(f.dueDate); if (i < weeks) buckets[i].in += rem; } }
+
+      const sis = await tx.supplierInvoice.findMany({ where: { ...scope(ctx.societeId), status: 'validated' }, include: { lines: { select: { quantity: true, unitPriceHt: true, taxRatePct: true } }, payments: { select: { amount: true } } } });
+      for (const s of sis) { const rem = remainingOf(s.lines, s.payments); if (rem > 0.005) { const i = idxOf(s.dueDate); if (i < weeks) buckets[i].out += rem; } }
+
+      let cumul = 0;
+      const rows = buckets.map((b) => { const net = b.in - b.out; cumul += net; return { weekStart: b.weekStart, encaissements: r2(b.in), decaissements: r2(b.out), net: r2(net), cumul: r2(cumul) }; });
+      return { rows, totalIn: r2(rows.reduce((s, r) => s + r.encaissements, 0)), totalOut: r2(rows.reduce((s, r) => s + r.decaissements, 0)), netCumul: r2(cumul) };
+    })
+  ),
+
+  /**
    * Agenda consolidé : échéances et tâches à venir (ou en retard) sur une fenêtre glissante.
    * Regroupe tâches CRM, échéances de factures clients/fournisseurs et livraisons attendues.
    */
