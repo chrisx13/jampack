@@ -145,7 +145,7 @@ export default function Clients() {
       {showSearch && (
         <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
           <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-          <Form.Control size="sm" className="ps-4" placeholder="Rechercher un client (nom ou SIREN)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Form.Control aria-label="Rechercher un client" size="sm" className="ps-4" placeholder="Rechercher un client (nom ou SIREN)…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       )}
 

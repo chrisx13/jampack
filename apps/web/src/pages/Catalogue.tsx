@@ -26,7 +26,7 @@ function CategoriesModal({ show, onHide }: { show: boolean; onHide: () => void }
       <Modal.Header closeButton><Modal.Title>Catégories d'articles</Modal.Title></Modal.Header>
       <Modal.Body>
         <InputGroup className="mb-3">
-          <Form.Control placeholder="Nouvelle catégorie" value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <Form.Control aria-label="Nom de la nouvelle catégorie" placeholder="Nouvelle catégorie" value={newName} onChange={(e) => setNewName(e.target.value)} />
           <Button disabled={!newName.trim() || create.isPending} onClick={() => { create.mutate({ name: newName.trim() }); setNewName(''); }}>
             <i className="bi bi-plus-lg" />
           </Button>
@@ -90,14 +90,14 @@ function PricingModal({ product, onHide }: { product: { id: string; name: string
           </tbody>
         </Table>
         <div className="row g-2 align-items-end">
-          <div className="col-md-5"><Form.Label className="small">Client</Form.Label>
+          <Form.Group className="col-md-5" controlId="pr-company"><Form.Label className="small">Client</Form.Label>
             <Form.Select size="sm" value={f.companyId} onChange={(e) => setF({ ...f, companyId: e.target.value })}>
               <option value="">Tous les clients</option>
               {(companies.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Form.Select>
-          </div>
-          <div className="col-md-3"><Form.Label className="small">Qté mini</Form.Label><Form.Control size="sm" type="number" min={0} value={f.minQuantity} onChange={(e) => setF({ ...f, minQuantity: e.target.value })} /></div>
-          <div className="col-md-3"><Form.Label className="small">PU HT</Form.Label><Form.Control size="sm" type="number" min={0} step="0.01" value={f.unitPriceHt} onChange={(e) => setF({ ...f, unitPriceHt: e.target.value })} /></div>
+          </Form.Group>
+          <Form.Group className="col-md-3" controlId="pr-qty"><Form.Label className="small">Qté mini</Form.Label><Form.Control size="sm" type="number" min={0} value={f.minQuantity} onChange={(e) => setF({ ...f, minQuantity: e.target.value })} /></Form.Group>
+          <Form.Group className="col-md-3" controlId="pr-price"><Form.Label className="small">PU HT</Form.Label><Form.Control size="sm" type="number" min={0} step="0.01" value={f.unitPriceHt} onChange={(e) => setF({ ...f, unitPriceHt: e.target.value })} /></Form.Group>
           <div className="col-md-1"><Button size="sm" disabled={!(Number(f.unitPriceHt) >= 0) || f.unitPriceHt === '' || create.isPending} onClick={() => { create.mutate({ productId: product.id, companyId: f.companyId || null, minQuantity: Number(f.minQuantity) || 1, unitPriceHt: Number(f.unitPriceHt) }); setF({ companyId: '', minQuantity: '1', unitPriceHt: '' }); }}><i className="bi bi-plus-lg" /></Button></div>
         </div>
       </Modal.Body>
@@ -173,10 +173,10 @@ export default function Catalogue() {
           {(list.data?.length ?? 0) > 5 && (
             <div className="position-relative">
               <i className="bi bi-search position-absolute text-secondary" style={{ left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '.85rem' }} />
-              <Form.Control size="sm" className="ps-4" style={{ width: 200 }} placeholder="Rechercher…" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Form.Control aria-label="Rechercher un article" size="sm" className="ps-4" style={{ width: 200 }} placeholder="Rechercher…" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
           )}
-          <Form.Select size="sm" style={{ width: 200 }} value={filterCat} onChange={(e) => setFilterCat(e.target.value)}>
+          <Form.Select aria-label="Filtrer par catégorie" size="sm" style={{ width: 200 }} value={filterCat} onChange={(e) => setFilterCat(e.target.value)}>
             <option value="">Toutes les catégories</option>
             {activeCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </Form.Select>

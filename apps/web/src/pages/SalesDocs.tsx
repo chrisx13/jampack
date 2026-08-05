@@ -583,9 +583,9 @@ export default function SalesDocs({ cfg }: { cfg: SalesCfg }) {
         <div className="d-flex flex-wrap gap-2 mb-3" style={{ maxWidth: 560 }}>
           <div className="position-relative flex-grow-1">
             <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-            <Form.Control size="sm" className="ps-4" placeholder="Rechercher un numéro ou un client…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Form.Control aria-label="Rechercher une pièce" size="sm" className="ps-4" placeholder="Rechercher un numéro ou un client…" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <Form.Select size="sm" style={{ width: 180 }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <Form.Select aria-label="Filtrer par statut" size="sm" style={{ width: 180 }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">Tous les statuts</option>
             {Object.entries(cfg.statuses).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </Form.Select>

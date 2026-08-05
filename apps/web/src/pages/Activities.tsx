@@ -48,14 +48,14 @@ export default function Activities() {
                 <h6 className="fw-semibold mb-3">Nouvelle activité</h6>
                 <Form onSubmit={submit}>
                   <Row className="g-2 mb-2">
-                    <Col xs={6}><Form.Select size="sm" value={type} onChange={(e) => setType(e.target.value)}>{['note', 'appel', 'email', 'rdv', 'tache'].map((t) => <option key={t} value={t}>{activityTypeLabel(t)}</option>)}</Form.Select></Col>
-                    <Col xs={6}><Form.Control size="sm" type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} title="Échéance (tâche)" /></Col>
+                    <Col xs={6}><Form.Select aria-label="Type d'activité" size="sm" value={type} onChange={(e) => setType(e.target.value)}>{['note', 'appel', 'email', 'rdv', 'tache'].map((t) => <option key={t} value={t}>{activityTypeLabel(t)}</option>)}</Form.Select></Col>
+                    <Col xs={6}><Form.Control aria-label="Échéance (tâche)" size="sm" type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} title="Échéance (tâche)" /></Col>
                   </Row>
-                  <Form.Select size="sm" className="mb-2" value={companyId} onChange={(e) => setCompanyId(e.target.value)} required>
+                  <Form.Select aria-label="Client concerné" size="sm" className="mb-2" value={companyId} onChange={(e) => setCompanyId(e.target.value)} required>
                     <option value="">— Client —</option>
                     {(companies.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </Form.Select>
-                  <Form.Control as="textarea" size="sm" rows={2} className="mb-2" placeholder="Contenu…" value={content} onChange={(e) => setContent(e.target.value)} required />
+                  <Form.Control aria-label="Contenu de l'activité" as="textarea" size="sm" rows={2} className="mb-2" placeholder="Contenu…" value={content} onChange={(e) => setContent(e.target.value)} required />
                   <Button type="submit" size="sm" variant="primary" disabled={create.isPending || !content.trim() || !companyId}>Enregistrer</Button>
                 </Form>
               </Card.Body>
@@ -93,7 +93,7 @@ export default function Activities() {
           <Card>
             <Card.Header className="bg-transparent d-flex align-items-center justify-content-between gap-2">
               <span className="fw-semibold">Journal d'activité</span>
-              <Form.Select size="sm" style={{ maxWidth: 220 }} value={filterCompany} onChange={(e) => setFilterCompany(e.target.value)} title="Filtrer par client">
+              <Form.Select aria-label="Filtrer le journal par client" size="sm" style={{ maxWidth: 220 }} value={filterCompany} onChange={(e) => setFilterCompany(e.target.value)} title="Filtrer par client">
                 <option value="">Tous les clients</option>
                 {(companies.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Form.Select>
