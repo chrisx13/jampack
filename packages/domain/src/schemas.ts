@@ -96,6 +96,28 @@ export function formatDuration(minutes: number): string {
 }
 
 /**
+ * Construit les mouvements d'un **relevé de compte client** avec solde progressif :
+ * factures au débit (+), avoirs et règlements au crédit (−), classés par date. Renvoie les
+ * mouvements (avec solde cumulé) et le **solde dû** final.
+ */
+export type StatementDoc = { type: 'facture' | 'avoir'; ref: string; date: string | Date | null; ttc: number; payments: { amount: number; date: string | Date | null }[] };
+export type StatementEntry = { date: string | Date | null; ref: string; type: string; debit: number; credit: number; solde: number };
+export function statementEntries(docs: StatementDoc[]): { entries: StatementEntry[]; solde: number } {
+  const r2 = (v: number) => Math.round(v * 100) / 100;
+  const raw: Omit<StatementEntry, 'solde'>[] = [];
+  for (const doc of docs) {
+    if (doc.type === 'facture') raw.push({ date: doc.date, ref: doc.ref, type: 'Facture', debit: r2(doc.ttc), credit: 0 });
+    else raw.push({ date: doc.date, ref: doc.ref, type: 'Avoir', debit: 0, credit: r2(doc.ttc) });
+    for (const p of doc.payments) raw.push({ date: p.date, ref: doc.ref, type: 'Règlement', debit: 0, credit: r2(p.amount) });
+  }
+  const t = (v: string | Date | null) => (v ? new Date(v).getTime() : 0);
+  raw.sort((a, b) => t(a.date) - t(b.date));
+  let solde = 0;
+  const entries: StatementEntry[] = raw.map((e) => { solde = r2(solde + e.debit - e.credit); return { ...e, solde }; });
+  return { entries, solde };
+}
+
+/**
  * Sérialise des temps saisis en CSV (séparateur `;`, décimale FR, date JJ/MM/AAAA).
  * Colonnes : Date ; Client ; Description ; Durée (h) ; Taux/h ; Montant HT ; Facturable ; Statut.
  */

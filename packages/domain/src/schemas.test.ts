@@ -10,7 +10,7 @@ import {
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
   isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
-  timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv, timeEntriesCsv,
+  timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv, timeEntriesCsv, statementEntries,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -491,6 +491,22 @@ describe('export CSV — notes de frais', () => {
     const [head, l1] = csv.split('\n');
     expect(head).toBe('Date;Catégorie;Description;Salarié;HT;TVA;TTC;Statut');
     expect(l1).toBe('05/08/2026;Repas;"Déjeuner; client";Marie;50,00;5,00;55,00;validated');
+  });
+});
+
+describe('relevé de compte — statementEntries', () => {
+  it('mouvements chronologiques + solde progressif + solde dû', () => {
+    const { entries, solde } = statementEntries([
+      { type: 'facture', ref: 'FA-1', date: '2026-08-01', ttc: 120, payments: [{ amount: 50, date: '2026-08-10' }] },
+      { type: 'avoir', ref: 'AV-1', date: '2026-08-05', ttc: 20, payments: [] },
+    ]);
+    // Ordre : FA-1 (01), AV-1 (05), Règlement (10).
+    expect(entries.map((e) => [e.type, e.debit, e.credit, e.solde])).toEqual([
+      ['Facture', 120, 0, 120],
+      ['Avoir', 0, 20, 100],
+      ['Règlement', 0, 50, 50],
+    ]);
+    expect(solde).toBe(50);
   });
 });
 

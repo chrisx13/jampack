@@ -1,12 +1,12 @@
 // Relevé de compte client — rendu HTML A4 : factures (+), avoirs (−) et règlements (−)
 // classés par date, avec solde progressif et solde dû final.
 
-type Entry = { date: Date | null; ref: string; type: string; debit: number; credit: number; solde: number };
+type Entry = { date: string | Date | null; ref: string; type: string; debit: number; credit: number; solde: number };
 type Societe = Record<string, unknown> & { name: string };
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c] as string));
-const d = (v: Date | null) => (v ? new Date(v).toLocaleDateString('fr-FR') : '—');
+const d = (v: string | Date | null) => (v ? new Date(v).toLocaleDateString('fr-FR') : '—');
 const s = (soc: Societe, k: string) => (soc[k] ? String(soc[k]) : '');
 
 export function renderStatementHtml(client: string, soc: Societe, entries: Entry[], solde: number): string {

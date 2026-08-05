@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { paymentCreate, byId, dunningMessage } from '@jampack/domain';
+import { paymentCreate, byId, dunningMessage, statementEntries, type StatementDoc } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 import { requireSociete, scope, n, salesTotals, htmlToPdf } from './salesRouter';
 import { renderStatementHtml } from './statementHtml';
@@ -27,17 +27,12 @@ export const paymentRouter = router({
         where: { ...scope(ctx.societeId), companyId: input.companyId, docType: { in: ['facture', 'avoir'] }, status: { in: ['validated', 'paid'] } },
         include: { lines: true, payments: { select: { amount: true, date: true } } },
       });
-      type E = { date: Date | null; ref: string; type: string; debit: number; credit: number; solde: number };
-      const raw: Omit<E, 'solde'>[] = [];
-      for (const doc of docs) {
-        const ttc = salesTotals(doc).totalTtc;
-        if (doc.docType === 'facture') raw.push({ date: doc.issueDate, ref: doc.number ?? '—', type: 'Facture', debit: ttc, credit: 0 });
-        else raw.push({ date: doc.issueDate, ref: doc.number ?? '—', type: 'Avoir', debit: 0, credit: ttc });
-        for (const p of doc.payments) raw.push({ date: p.date, ref: doc.number ?? '—', type: 'Règlement', debit: 0, credit: n(p.amount) });
-      }
-      raw.sort((a, b) => (a.date ? new Date(a.date).getTime() : 0) - (b.date ? new Date(b.date).getTime() : 0));
-      let solde = 0;
-      const entries: E[] = raw.map((e) => { solde = Math.round((solde + e.debit - e.credit) * 100) / 100; return { ...e, solde }; });
+      const stmtDocs: StatementDoc[] = docs.map((doc) => ({
+        type: doc.docType === 'facture' ? 'facture' : 'avoir',
+        ref: doc.number ?? '—', date: doc.issueDate, ttc: salesTotals(doc).totalTtc,
+        payments: doc.payments.map((p) => ({ amount: n(p.amount), date: p.date })),
+      }));
+      const { entries, solde } = statementEntries(stmtDocs);
       const soc = await tx.societe.findUniqueOrThrow({ where: { id: societeId } });
       const html = renderStatementHtml(company.name, soc as never, entries, solde);
       return { filename: `releve-${company.name.replace(/\s+/g, '-').toLowerCase()}.pdf`, base64: await htmlToPdf(html) };
