@@ -133,7 +133,7 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | 9 Structuration | 🔧 | **Landmarks `nav`/`main`/`aside` nommés** ✅ (`AppShell`) ; hiérarchie des titres h1→h6 à vérifier par page. |
 | 10 Présentation | 🔧 | Zoom 200 %, responsive ≥ 360 px ✅ ; **focus clavier visible** (`:focus-visible`) ✅. |
 | 11 Formulaires | 🔧 | **Étiquettes associées** (`Form.Group controlId`) sur les modales **Clients, Catalogue (fiche + grille tarifaire), Contacts**, Notes de frais, Abonnements, Suivi du temps + champ signataire public ✅ ; champs sans label visible (recherche, filtres, formulaire d'activité) dotés d'**`aria-label`** ✅ ; messages d'erreur (`Form.Control.Feedback`) sur SIREN/SIRET/IBAN ✅ ; reste : quelques champs résiduels + explicitation systématique des erreurs. |
-| 12 Navigation | 🔧 | **Lien d'évitement** ✅, **`aria-current`** sur domaine/vue actifs ✅, **liens de sous-domaine activables au clavier** ✅ ; ordre de tabulation des onglets à compléter. |
+| 12 Navigation | 🔧 | **Lien d'évitement** ✅, **`aria-current`** sur domaine/vue actifs ✅, **liens de sous-domaine activables au clavier** ✅ ; **lignes de liste cliquables rendues opérables au clavier** (bouton focalisable dans la 1re colonne : pièces de vente, abonnements) ✅ ; ordre de tabulation des onglets à compléter. |
 | 13 Consultation | ✅/🔧 | Pas de limite de temps bloquante ; PDF de facture : tag/accessibilité à vérifier. |
 
 **Page publique de signature du devis (`/devis/:token`)** — surface **grand public**, donc RGAA prioritaire.

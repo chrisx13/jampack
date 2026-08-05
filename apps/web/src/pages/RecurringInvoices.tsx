@@ -118,7 +118,9 @@ export default function RecurringInvoices() {
             {list.isLoading && <tr><td colSpan={6} className="text-center py-4"><Spinner size="sm" /></td></tr>}
             {rows.map((r) => (
               <tr key={r.id} style={{ cursor: 'pointer' }} onClick={() => setEdit(r.id)}>
-                <td className="ps-3 fw-medium">{r.label}</td>
+                <td className="ps-3 fw-medium">
+                  <button type="button" className="btn btn-link p-0 text-decoration-none text-body fw-medium" onClick={(e) => { e.stopPropagation(); setEdit(r.id); }}>{r.label}<span className="visually-hidden"> — modifier l'abonnement</span></button>
+                </td>
                 <td>{r.company?.name ?? '—'}</td>
                 <td>{recurrenceLabel(r.frequency)}{r.interval > 1 ? ` ×${r.interval}` : ''}</td>
                 <td className="text-secondary">{dfmt(r.nextRunAt)}</td>

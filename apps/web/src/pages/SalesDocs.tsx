@@ -603,7 +603,13 @@ export default function SalesDocs({ cfg }: { cfg: SalesCfg }) {
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {rows.map((r: any) => (
                 <tr key={r.id} style={{ cursor: 'pointer' }} onClick={() => setEditing(r.id)}>
-                  <td className="ps-3 fw-medium">{r.number ?? <span className="text-secondary fst-italic">brouillon</span>}</td>
+                  <td className="ps-3 fw-medium">
+                    {/* Contrôle focalisable au clavier pour ouvrir la pièce (RGAA 12 — la ligne reste cliquable à la souris). */}
+                    <button type="button" className="btn btn-link p-0 text-decoration-none text-body fw-medium" onClick={(e) => { e.stopPropagation(); setEditing(r.id); }}>
+                      {r.number ?? <span className="text-secondary fst-italic">brouillon</span>}
+                      <span className="visually-hidden"> — ouvrir</span>
+                    </button>
+                  </td>
                   <td>{r.company?.name ?? '—'}</td>
                   <td className="text-secondary">{dfmt(r.issueDate)}</td>
                   {cfg.dateLabel && <td className="text-secondary">{dfmt(cfg.dateField ? r[cfg.dateField] : null)}</td>}
