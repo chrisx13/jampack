@@ -623,7 +623,13 @@ export default function SalesDocs({ cfg }: { cfg: SalesCfg }) {
                   </td>
                 </tr>
               ))}
-              {list.isSuccess && all.length === 0 && <tr><td colSpan={7} className="text-center text-secondary py-4">Aucun élément pour cette société</td></tr>}
+              {list.isSuccess && all.length === 0 && (
+                <tr><td colSpan={7} className="text-center text-secondary py-5">
+                  <div className="mb-2"><i className="bi bi-inbox fs-3 opacity-50" aria-hidden="true" /></div>
+                  <div className="mb-3">Aucun{cfg.plural.endsWith('s') ? '' : 'e'} {cfg.plural.toLowerCase()} pour l'instant.</div>
+                  {can('create', cfg.subject) && <Button size="sm" onClick={() => setEditing('new')}><i className="bi bi-plus-lg me-1" aria-hidden="true" />{cfg.newLabel}</Button>}
+                </td></tr>
+              )}
               {list.isSuccess && all.length > 0 && rows.length === 0 && <tr><td colSpan={7} className="text-center text-secondary py-4">Aucun résultat pour ce filtre</td></tr>}
             </tbody>
           </Table>
