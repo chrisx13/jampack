@@ -179,6 +179,8 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-CPT-7 | **Immobilisations** amortissables + **plan d'amortissement linéaire** (prorata temporis) + **comptabilisation de la dotation** (681 → 281). | S | ✅ |
 | FR-CPT-8 | **États de synthèse** : compte de résultat (produits cl. 7 − charges cl. 6) et bilan simplifié (actif/passif par classe PCG, résultat au passif), dérivés de la balance. | S | ✅ |
 | FR-CPT-9 | **Export CSV de la balance générale** (compte ; libellé ; débit ; crédit ; solde) — échange avec l'expert-comptable. | C | ✅ |
+| FR-CPT-10 | **Interop expert-comptable** : export **écritures CSV** (+ FEC) importable par les logiciels comptables ; API en ligne modélisées découplées ([CONNECTEURS-EXPERT-COMPTABLE](CONNECTEURS-EXPERT-COMPTABLE.md)). | S | ✅ |
+| FR-CPT-11 | **Liasse fiscale — préparation** : agrégats bilan + compte de résultat simplifié (type 2033) calculés depuis la compta, export, **avertissements** (option payante Teledec, expert-comptable recommandé). Télétransmission EDI-TDFC **hors périmètre** (agrément DGFiP). ([LIASSE-FISCALE](LIASSE-FISCALE.md)) | C | ✅ |
 
 ### 3.8 Trésorerie (Jalon 5)
 | ID | Exigence | Prio | Statut |

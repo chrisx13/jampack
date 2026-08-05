@@ -28,6 +28,7 @@ import JournalEntries from './pages/JournalEntries';
 import TrialBalance from './pages/TrialBalance';
 import Ledger from './pages/Ledger';
 import VatReturn from './pages/VatReturn';
+import LiasseFiscale from './pages/LiasseFiscale';
 import FinancialStatements from './pages/FinancialStatements';
 import Lettrage from './pages/Lettrage';
 import BankReconciliation from './pages/BankReconciliation';
@@ -127,6 +128,7 @@ export const DOMAINS: Domain[] = [
       { id: 'fixed-assets', label: 'Immobilisations', icon: 'bi-buildings-fill', element: <FixedAssets />, can: ['read', 'Accounting'] },
       { id: 'financial-statements', label: 'États financiers', icon: 'bi-clipboard2-data', element: <FinancialStatements />, can: ['read', 'Accounting'] },
       { id: 'vat-return', label: 'Déclaration TVA', icon: 'bi-percent', element: <VatReturn />, can: ['read', 'Accounting'] },
+      { id: 'liasse', label: 'Liasse fiscale', icon: 'bi-file-earmark-medical', element: <LiasseFiscale />, can: ['read', 'Accounting'] },
     ],
   },
   {
