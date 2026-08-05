@@ -26,6 +26,14 @@ function Stat({ icon, tone, label, value }: { icon: string; tone: string; label:
 const KIND_ICON: Record<string, string> = {
   tache: 'bi-check2-square', facture_client: 'bi-arrow-down-circle', facture_fournisseur: 'bi-arrow-up-circle', livraison: 'bi-truck',
 };
+// Vue à ouvrir selon le type d'échéance (tableau de bord → écran concerné).
+const KIND_VIEW: Record<string, string> = {
+  tache: 'activities', facture_client: 'echeancier', facture_fournisseur: 'supplier-echeancier', livraison: 'purchase-orders',
+};
+const openViewFor = (kind: string) => {
+  const id = KIND_VIEW[kind];
+  if (id) window.dispatchEvent(new CustomEvent('jampack:open-view', { detail: id }));
+};
 
 export default function Dashboard() {
   const utils = trpc.useUtils();
@@ -81,10 +89,10 @@ export default function Dashboard() {
                 <tbody>
                   {agenda.isLoading && <tr><td className="text-center py-4"><Spinner size="sm" /></td></tr>}
                   {(agenda.data?.events ?? []).slice(0, 8).map((e) => (
-                    <tr key={e.id}>
-                      <td className="ps-3" style={{ width: 36 }}><i className={`bi ${KIND_ICON[e.kind] ?? 'bi-dot'} text-secondary`} /></td>
+                    <tr key={e.id} style={{ cursor: 'pointer' }} onClick={() => openViewFor(e.kind)}>
+                      <td className="ps-3" style={{ width: 36 }}><i className={`bi ${KIND_ICON[e.kind] ?? 'bi-dot'} text-secondary`} aria-hidden="true" /></td>
                       <td>
-                        <div className="fw-medium text-truncate">{e.label}</div>
+                        <button type="button" className="btn btn-link p-0 text-decoration-none text-body fw-medium text-truncate d-block" style={{ maxWidth: '100%' }} onClick={(ev) => { ev.stopPropagation(); openViewFor(e.kind); }}>{e.label}<span className="visually-hidden"> — ouvrir</span></button>
                         <div className="small text-secondary">{e.party}</div>
                       </td>
                       <td className="text-end pe-3 text-nowrap">

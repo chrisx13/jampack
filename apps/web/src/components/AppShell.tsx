@@ -100,6 +100,20 @@ export default function AppShell() {
     if (subnavMode === 'overlay') setSubnavOpen(false); // « à la volée » : referme après sélection
   };
 
+  // Ouverture d'une vue depuis une autre page (ex. tableau de bord → échéancier) via un événement global.
+  useEffect(() => {
+    const handler = (ev: globalThis.Event) => {
+      const id = (ev as CustomEvent<string>).detail;
+      const dom = domains.find((d) => d.views.some((v) => v.id === id));
+      if (!dom) return;
+      setActiveDomainId(dom.id);
+      setOpenIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+      setActiveId(id);
+    };
+    window.addEventListener('jampack:open-view', handler as EventListener);
+    return () => window.removeEventListener('jampack:open-view', handler as EventListener);
+  }, [domains]);
+
   const closeTab = (id: string, e: MouseEvent) => {
     e.stopPropagation();
     if (id === DASHBOARD_VIEW.id) return; // onglet épinglé, non fermable
