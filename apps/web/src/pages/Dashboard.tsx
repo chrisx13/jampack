@@ -41,6 +41,7 @@ export default function Dashboard() {
   const contacts = trpc.crm.contacts.list.useQuery();
   const opportunities = trpc.crm.opportunities.list.useQuery();
   const summary = trpc.analytics.summary.useQuery();
+  const lowStock = trpc.stock.lowStock.useQuery();
   const agenda = trpc.analytics.agenda.useQuery({ days: 14 });
 
   const [name, setName] = useState('');
@@ -120,7 +121,7 @@ export default function Dashboard() {
                   if (name.trim()) create.mutate({ name: name.trim() });
                 }}
               >
-                <Form.Group className="mb-3">
+                <Form.Group className="mb-3" controlId="dash-new-client">
                   <Form.Label>Nom</Form.Label>
                   <Form.Control value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Fournil Central" />
                   <Form.Text className="text-secondary">Rattaché à la société active.</Form.Text>
@@ -132,6 +133,29 @@ export default function Dashboard() {
               </Form>
             </Card.Body>
           </Card>
+
+          {(lowStock.data?.length ?? 0) > 0 && (
+            <Card className="mt-3 border-warning-subtle">
+              <Card.Header className="d-flex align-items-center justify-content-between bg-transparent">
+                <span className="fw-semibold"><i className="bi bi-exclamation-triangle text-warning me-2" aria-hidden="true" />Stock sous seuil</span>
+                <span className="badge bg-warning-subtle text-warning fw-normal">{lowStock.data!.length}</span>
+              </Card.Header>
+              <Card.Body className="p-0">
+                <Table hover responsive className="mb-0 align-middle small">
+                  <tbody>
+                    {lowStock.data!.slice(0, 5).map((p) => (
+                      <tr key={p.productId} style={{ cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('jampack:open-view', { detail: 'stock-levels' }))}>
+                        <td className="ps-3">
+                          <button type="button" className="btn btn-link p-0 text-decoration-none text-body fw-medium" onClick={(ev) => { ev.stopPropagation(); window.dispatchEvent(new CustomEvent('jampack:open-view', { detail: 'stock-levels' })); }}>{p.productName}<span className="visually-hidden"> — voir le stock</span></button>
+                        </td>
+                        <td className="text-end pe-3 text-nowrap text-secondary">{p.quantity} / {p.reorderPoint} {p.unit}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Card.Body>
+            </Card>
+          )}
         </Col>
       </Row>
     </>
