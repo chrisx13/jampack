@@ -36,7 +36,9 @@ cartographie par thématique dans [CONFORMITE.md §4](CONFORMITE.md)).
 
 ## 5. Contenus non accessibles (connus)
 - **Kanban du pipeline** (glisser-déposer) : alternative clavier à fournir.
-- **Contrastes** : ratios du thème clair/sombre non encore mesurés systématiquement.
+- **Contrastes** (à mesurer avec un outil dédié, sans modifier la charte sans validation) :
+  - texte secondaire `#64748B` sur fond clair `#F8FAFC` : ratio estimé ~4,5:1 — **limite** du seuil AA texte normal, à confirmer ;
+  - accent `#818CF8` sur le chrome de marque `#3E3A52` : ratio estimé ~3,3:1 — **conforme UI/large (3:1) mais insuffisant pour du texte normal** ; réserver aux éléments non textuels / grand texte.
 - **PDF générés** (factures, devis, BL) : balisage/accessibilité PDF non vérifié.
 - **Modales CRM** (contacts, opportunités) et champs résiduels : association `<label>` à compléter.
 - **Audit formel des 106 critères RGAA** : non réalisé.
