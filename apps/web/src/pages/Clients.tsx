@@ -187,9 +187,9 @@ export default function Clients() {
       <Modal show={edit !== null} onHide={() => setEdit(null)} centered>
         <Modal.Header closeButton><Modal.Title>{edit && 'id' in edit ? 'Modifier le client' : 'Nouveau client'}</Modal.Title></Modal.Header>
         <Modal.Body>
-          <Form.Group className="mb-3"><Form.Label>Nom</Form.Label><Form.Control autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Form.Group>
+          <Form.Group className="mb-3" controlId="cli-name"><Form.Label>Nom</Form.Label><Form.Control autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Form.Group>
           <div className="row g-2 mb-3">
-            <div className="col-md-4">
+            <Form.Group className="col-md-4" controlId="cli-siren">
               <Form.Label>SIREN</Form.Label>
               <Form.Control
                 value={form.siren}
@@ -200,8 +200,8 @@ export default function Clients() {
                 placeholder="9 chiffres"
               />
               <Form.Control.Feedback type="invalid">Clé de contrôle invalide.</Form.Control.Feedback>
-            </div>
-            <div className="col-md-4">
+            </Form.Group>
+            <Form.Group className="col-md-4" controlId="cli-siret">
               <Form.Label>SIRET</Form.Label>
               <Form.Control
                 value={form.siret}
@@ -210,19 +210,19 @@ export default function Clients() {
                 placeholder="14 chiffres"
               />
               <Form.Control.Feedback type="invalid">SIRET invalide ou incohérent avec le SIREN.</Form.Control.Feedback>
-            </div>
-            <div className="col-md-4"><Form.Label>N° TVA</Form.Label><Form.Control value={form.tvaNumber} onChange={(e) => setForm({ ...form, tvaNumber: e.target.value })} placeholder="FR… (auto depuis le SIREN)" /></div>
+            </Form.Group>
+            <Form.Group className="col-md-4" controlId="cli-tva"><Form.Label>N° TVA</Form.Label><Form.Control value={form.tvaNumber} onChange={(e) => setForm({ ...form, tvaNumber: e.target.value })} placeholder="FR… (auto depuis le SIREN)" /></Form.Group>
           </div>
           <Form.Check type="switch" id="doNotProspect" className="mb-2" label="Ne pas prospecter (droit d'opposition RGPD)" checked={form.doNotProspect} onChange={(e) => setForm({ ...form, doNotProspect: e.target.checked })} />
           <Form.Check type="switch" id="processingRestricted" className="mb-3" label="Traitement limité (RGPD art. 18) — aucune nouvelle pièce" checked={form.processingRestricted} onChange={(e) => setForm({ ...form, processingRestricted: e.target.checked })} />
-          <Form.Group className="mb-3">
+          <Form.Group className="mb-3" controlId="cli-term">
             <Form.Label>Condition de paiement (défaut pour ce client)</Form.Label>
             <Form.Select value={form.paymentTermId} onChange={(e) => setForm({ ...form, paymentTermId: e.target.value })}>
               <option value="">— Défaut société —</option>
               {(paymentTerms.data ?? []).filter((t) => t.isActive).map((t) => <option key={t.id} value={t.id}>{t.label} ({t.days} j)</option>)}
             </Form.Select>
           </Form.Group>
-          <Form.Group className="mb-2">
+          <Form.Group className="mb-2" controlId="cli-factor">
             <Form.Label>Affactureur (subrogation)</Form.Label>
             <Form.Select value={form.factorId} onChange={(e) => setForm({ ...form, factorId: e.target.value, factorMandatory: e.target.value ? form.factorMandatory : false })}>
               <option value="">— Aucun —</option>

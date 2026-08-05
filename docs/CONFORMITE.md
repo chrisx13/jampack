@@ -132,7 +132,7 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | 5 Tableaux | 🔧 | **En-têtes de colonnes `scope="col"`** sur les listes principales ✅ (pièces de vente, Clients, Catalogue, Notes de frais, Abonnements, Suivi du temps, Relances, Grand livre) ; `<caption>` sur la page publique. Reste : caption/summary systématiques. |
 | 9 Structuration | 🔧 | **Landmarks `nav`/`main`/`aside` nommés** ✅ (`AppShell`) ; hiérarchie des titres h1→h6 à vérifier par page. |
 | 10 Présentation | 🔧 | Zoom 200 %, responsive ≥ 360 px ✅ ; **focus clavier visible** (`:focus-visible`) ✅. |
-| 11 Formulaires | 🔧 | **Étiquettes `<label>` associées** (`Form.Group controlId`) sur les modales Notes de frais, Abonnements, Suivi du temps, + champ signataire de la page publique ✅ ; reste : associer les modales Clients/Catalogue/CRM et expliciter les messages d'erreur. |
+| 11 Formulaires | 🔧 | **Étiquettes `<label>` associées** (`Form.Group controlId`) sur les modales **Clients, Catalogue**, Notes de frais, Abonnements, Suivi du temps + champ signataire de la page publique ✅ ; messages d'erreur de saisie (`Form.Control.Feedback`) sur SIREN/SIRET/IBAN ✅ ; reste : CRM (contacts/opportunités), champs restants. |
 | 12 Navigation | 🔧 | **Lien d'évitement** ✅, **`aria-current`** sur domaine/vue actifs ✅, **liens de sous-domaine activables au clavier** ✅ ; ordre de tabulation des onglets à compléter. |
 | 13 Consultation | ✅/🔧 | Pas de limite de temps bloquante ; PDF de facture : tag/accessibilité à vérifier. |
 

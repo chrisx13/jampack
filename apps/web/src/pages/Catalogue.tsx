@@ -223,26 +223,26 @@ export default function Catalogue() {
         <Modal.Header closeButton><Modal.Title>{edit?.id ? "Modifier l'article" : 'Nouvel article'}</Modal.Title></Modal.Header>
         <Modal.Body>
           <div className="row g-2">
-            <div className="col-md-8"><Form.Label>Nom</Form.Label><Form.Control autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-            <div className="col-md-4"><Form.Label>Référence</Form.Label><Form.Control value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></div>
-            <div className="col-md-6"><Form.Label>Catégorie</Form.Label>
+            <Form.Group className="col-md-8" controlId="prod-name"><Form.Label>Nom</Form.Label><Form.Control autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-4" controlId="prod-ref"><Form.Label>Référence</Form.Label><Form.Control value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-6" controlId="prod-cat"><Form.Label>Catégorie</Form.Label>
               <Form.Select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
                 <option value="">— Aucune —</option>
                 {activeCats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Form.Select>
-            </div>
-            <div className="col-md-3"><Form.Label>Type</Form.Label>
+            </Form.Group>
+            <Form.Group className="col-md-3" controlId="prod-kind"><Form.Label>Type</Form.Label>
               <Form.Select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}><option value="bien">Bien</option><option value="service">Service</option></Form.Select>
-            </div>
-            <div className="col-md-3"><Form.Label>Unité</Form.Label><Form.Control value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} /></div>
-            <div className="col-md-4"><Form.Label>Prix HT (€)</Form.Label><Form.Control type="number" step="0.01" value={form.priceHt} onChange={(e) => setForm({ ...form, priceHt: e.target.value })} /></div>
-            <div className="col-md-4"><Form.Label>Seuil de réappro.</Form.Label><Form.Control type="number" step="0.001" placeholder="—" value={form.reorderPoint} onChange={(e) => setForm({ ...form, reorderPoint: e.target.value })} disabled={form.kind === 'service'} /></div>
-            <div className="col-md-4"><Form.Label>TVA</Form.Label>
+            </Form.Group>
+            <Form.Group className="col-md-3" controlId="prod-unit"><Form.Label>Unité</Form.Label><Form.Control value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-4" controlId="prod-price"><Form.Label>Prix HT (€)</Form.Label><Form.Control type="number" step="0.01" value={form.priceHt} onChange={(e) => setForm({ ...form, priceHt: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-4" controlId="prod-reorder"><Form.Label>Seuil de réappro.</Form.Label><Form.Control type="number" step="0.001" placeholder="—" value={form.reorderPoint} onChange={(e) => setForm({ ...form, reorderPoint: e.target.value })} disabled={form.kind === 'service'} /></Form.Group>
+            <Form.Group className="col-md-4" controlId="prod-tva"><Form.Label>TVA</Form.Label>
               <Form.Select value={form.taxRateId} onChange={(e) => setForm({ ...form, taxRateId: e.target.value })}>
                 <option value="">— Aucune —</option>
                 {taxRates.data?.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </Form.Select>
-            </div>
+            </Form.Group>
           </div>
           {(create.error || update.error) && <div className="text-danger small mt-2">{(create.error || update.error)?.message}</div>}
         </Modal.Body>
