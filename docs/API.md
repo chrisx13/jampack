@@ -24,6 +24,10 @@ Commun (`makeSalesRouter`) : `list · get · create · update · validate · can
 Factures récurrentes (abonnements). `list · create · update · remove · generateDue`.
 `generateDue` crée en brouillon les factures des modèles actifs dont l'échéance est atteinte (rattrapage des périodes) et avance `nextRunAt`. Génération à la demande — sans cron externe.
 
+### `timeEntries`
+Suivi du temps (facturation au temps). `list · create · update · remove · invoiceForCompany`.
+`invoiceForCompany` génère une facture brouillon depuis les temps ouverts + facturables d'un client (une ligne par temps : durée × taux) et marque ces temps « facturés ».
+
 ### `payments`
 `listForInvoice · create · remove · echeancier · reminders · recordReminder · reminderLetter` (recalcule le statut *payée* ; relances = factures échues non soldées, incrément de niveau, lettre de relance texte)
 

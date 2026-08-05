@@ -54,6 +54,7 @@ model Organization {
   recurringInvoices RecurringInvoice[]
   expenses          Expense[]
   priceRules        PriceRule[]
+  timeEntries       TimeEntry[]
 }
 
 // Journal d'audit : trace des mutations (qui, quoi, quand) — traçabilité sécurité/RGPD.
@@ -129,6 +130,7 @@ model Societe {
   recurringInvoices RecurringInvoice[]
   expenses          Expense[]
   priceRules        PriceRule[]
+  timeEntries       TimeEntry[]
   @@unique([organizationId, name])
   @@index([organizationId])
 }
@@ -162,6 +164,31 @@ model User {
   viewNotes         ViewNote[]
   viewNoteRevisions ViewNoteRevision[]
   expenses          Expense[]         @relation("ExpenseIncurredBy")
+}
+
+// ── Suivi du temps : temps passé rattaché à un client (facturation au temps). ──
+model TimeEntry {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  societe        Societe      @relation(fields: [societeId], references: [id])
+  societeId      String
+  company        Company      @relation(fields: [companyId], references: [id])
+  companyId      String
+  date           DateTime
+  description    String
+  minutes        Int
+  opportunityId  String?
+  incurredById   String?      // qui a saisi le temps
+  hourlyRateHt   Decimal      @db.Decimal(12, 2)
+  billable       Boolean      @default(true)
+  status         String       @default("open") // open | invoiced
+  invoiceId      String?      // facture générée (facturation au temps)
+  createdById    String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  @@index([organizationId, societeId])
+  @@index([companyId])
 }
 
 // ── Grille tarifaire : prix par quantité (palier) et/ou par client, pour un article. ──
@@ -351,6 +378,7 @@ model Company {
   @@index([societeId])
   @@index([factorId])
   priceRules     PriceRule[]
+  timeEntries    TimeEntry[]
 }
 
 model Contact {

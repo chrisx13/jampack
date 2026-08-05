@@ -46,6 +46,8 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
   **`FixedAsset`** (immobilisation : `amountHt`, `acquisitionDate`, `durationYears`, `method` — plan d'amortissement calculé).
 
 ### Transverse
+- **`TimeEntry`** (suivi du temps : `minutes`, `hourlyRateHt`, `billable`, `status`, `invoiceId`, rattaché à un client, sous RLS org+société) — facturation au temps.
+- **`PriceRule`** (grille tarifaire : `productId`, `companyId?`, `minQuantity`, `unitPriceHt`, sous RLS org+société) — résolution du PU HT à la saisie.
 - **`Expense`** (note de frais : `category`, `amountHt`, `taxRatePct`, `incurredBy`, `status`, `journalEntry`, sous RLS org+société) — comptabilisée 6xx/44566 ↔ 421.
 - **`RecurringInvoice`** (abonnement : `label`, `frequency`, `interval`, `nextRunAt`, `lines` JSON, remise, sous RLS org+société) — génère des `Invoice` brouillon à échéance.
 - **`ViewNote`** (pense-bête de vue : `viewKey`, `content`, `color`, `x`/`y`, `createdBy`, sous RLS org+société) ·

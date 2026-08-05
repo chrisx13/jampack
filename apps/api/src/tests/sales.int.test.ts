@@ -185,6 +185,29 @@ describe('CRM — activités & tâches', () => {
   });
 });
 
+describe('Ventes — suivi du temps', () => {
+  it('saisie de temps → facture brouillon (une ligne par temps), temps marqués facturés', async () => {
+    const companyId = await anyCustomer();
+    const t1 = await caller.timeEntries.create({ date: new Date().toISOString().slice(0, 10), description: 'Dev [INT]', minutes: 90, companyId, hourlyRateHt: 80, billable: true });
+    const t2 = await caller.timeEntries.create({ date: new Date().toISOString().slice(0, 10), description: 'Support [INT]', minutes: 30, companyId, hourlyRateHt: 60, billable: true });
+    const res = await caller.timeEntries.invoiceForCompany({ id: companyId });
+    expect(res.count).toBe(2);
+    // Facture : 1,5h×80 + 0,5h×60 = 120 + 30 = 150 HT.
+    const row = (await caller.invoices.list()).find((r: { id: string }) => r.id === res.id);
+    expect(row.totalHt).toBeCloseTo(150, 2);
+    // Les temps sont désormais « facturés » et liés à la facture.
+    const list = await caller.timeEntries.list();
+    for (const id of [t1.id, t2.id]) {
+      const e = list.find((x: { id: string }) => x.id === id);
+      expect(e.status).toBe('invoiced');
+      expect(e.invoiceId).toBe(res.id);
+    }
+    // Nettoyage.
+    await C.prisma.timeEntry.deleteMany({ where: { id: { in: [t1.id, t2.id] } } });
+    await C.prisma.invoice.delete({ where: { id: res.id } });
+  });
+});
+
 describe('Ventes — grille tarifaire', () => {
   it('crée des règles de prix (palier générique + tarif client) et les liste', async () => {
     const product = await caller.catalog.products.create({ name: '[INT] Article grille', priceHt: 10, unit: 'u' });

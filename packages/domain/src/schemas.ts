@@ -73,6 +73,28 @@ export function frTvaNumber(siren?: string | null): string | null {
   return `FR${String(key).padStart(2, '0')}${s}`;
 }
 
+// ── Suivi du temps (facturation au temps) ──
+export const timeEntryCreate = z.object({
+  date: z.string(),
+  description: z.string().min(1).max(200),
+  minutes: z.number().int().min(1),
+  companyId: z.string().min(1),
+  opportunityId: z.string().nullable().optional(),
+  hourlyRateHt: z.number().min(0),
+  billable: z.boolean().default(true),
+});
+export const timeEntryUpdate = timeEntryCreate.partial().extend({ id: z.string().min(1) });
+
+/** Montant HT d'un temps saisi : (minutes / 60) × taux horaire, arrondi au centime. */
+export function timeEntryAmountHt(minutes: number, hourlyRateHt: number): number {
+  return Math.round((minutes / 60) * hourlyRateHt * 100) / 100;
+}
+/** Durée « 1h30 » à partir de minutes. */
+export function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60), m = minutes % 60;
+  return h > 0 ? (m > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`) : `${m}min`;
+}
+
 // ── Grille tarifaire (prix par quantité / par client) ──
 export const priceRuleCreate = z.object({
   productId: z.string().min(1),

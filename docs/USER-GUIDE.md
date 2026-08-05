@@ -42,6 +42,9 @@
 - **Abonnements** (Ventes ▸ Abonnements) : définir un modèle récurrent (client, lignes, fréquence, prochaine
   échéance). Le bouton **Générer les factures dues** crée en brouillon les factures des abonnements arrivés à
   échéance (les périodes en retard sont rattrapées) et reporte automatiquement la prochaine échéance.
+- **Suivi du temps** (Ventes ▸ Suivi du temps) : saisir le temps passé par client (durée, taux horaire). Le
+  bandeau « À facturer » propose, par client, de générer une facture (brouillon) regroupant ses temps ouverts
+  facturables (une ligne par temps) ; les temps sont alors marqués **facturés**.
 - **Devis** : le PDF porte la **date de validité**, les **CGV** et un cartouche **« Bon pour accord »** (date + signature) pour l'acceptation par le client.
 - **Escompte** (Administration ▸ Société) : renseigner vos conditions d'escompte pour paiement anticipé ; laissé vide,
   la facture porte automatiquement la mention légale « Pas d'escompte pour paiement anticipé » (art. L441-10).

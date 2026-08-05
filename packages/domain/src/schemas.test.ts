@@ -10,6 +10,7 @@ import {
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
   isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
+  timeEntryAmountHt, formatDuration,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -50,6 +51,18 @@ describe('computeInvoiceTotals', () => {
   it('remise ignorée si type none ou valeur nulle', () => {
     expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'none', discountValue: 10 }).totalHt).toBe(100);
     expect(computeInvoiceTotals([{ quantity: 1, unitPriceHt: 100, taxRatePct: 20 }], { discountType: 'percent', discountValue: 0 }).totalHt).toBe(100);
+  });
+});
+
+describe('suivi du temps', () => {
+  it('montant HT = heures × taux', () => {
+    expect(timeEntryAmountHt(90, 80)).toBe(120);   // 1,5 h × 80
+    expect(timeEntryAmountHt(30, 60)).toBe(30);
+  });
+  it('durée lisible', () => {
+    expect(formatDuration(90)).toBe('1h30');
+    expect(formatDuration(120)).toBe('2h');
+    expect(formatDuration(45)).toBe('45min');
   });
 });
 
