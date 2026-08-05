@@ -8,13 +8,13 @@
 | # | Constat | Gravité | Correctif recommandé |
 |---|---|---|---|
 | S1 | Route publique non authentifiée `/devis/:token` sans limitation de débit | Élevée | **✅ baseline en place** : `limit_req` nginx (`publicQuote.*` = 10 r/min, burst 5). À compléter en prod : verrouillage après N échecs. Jeton déjà non devinable (24 octets). |
-| S2 | **CORS permissif** : `enableCors({ origin: true })` (reflète toute origine) | Moyenne | Restreindre à l'origine du front (variable `WEB_ORIGIN`) |
+| S2 | CORS | Moyenne | **✅ traité** : CORS restreint à `WEB_ORIGIN` (liste d'origines) si la variable est définie ; réflexion seulement en dev. `x-powered-by` désactivé, en-têtes de sécurité posés aussi côté API. |
 | S3 | En-têtes de sécurité | Moyenne | **✅ baseline en place** : `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` (nginx). À compléter : **CSP** stricte + **HSTS** (avec TLS). |
 | S4 | **Secrets par défaut faibles** : `POSTGRES_PASSWORD=jampack`, `jampack_app` même mot de passe, admin Keycloak `admin/admin` | Élevée | Secrets forts injectés (gestionnaire de secrets / `.env` hors dépôt) ; rotation |
 | S5 | **Repli DEV d'authentification** (`AUTH_DEV_STUB`) — stub « manage all » sans jeton | Critique **si activé** | ✅ déjà `AUTH_DEV_STUB="false"` dans `docker-compose.yml` ; **vérifier** qu'il l'est sur chaque environnement réel |
 | S6 | **OIDC en HTTP** (`OIDC_ISSUER=http://localhost:8080`) | Élevée | Keycloak derrière **HTTPS**, issuer/JWKS en `https://`, realm durci (MFA admin, politiques de mot de passe) |
 | S7 | **Pas de TLS applicatif** (nginx sert en HTTP dans la stack de démo) | Élevée | Terminaison **TLS** (reverse proxy / certificats), redirection 80→443, HSTS |
-| S8 | **Sauvegardes non outillées** dans la stack | Élevée | `pg_dump` planifié + rétention + test de restauration (voir [RUNBOOK-PRODUCTION](RUNBOOK-PRODUCTION.md)) |
+| S8 | Sauvegardes | Élevée | **✅ outillé** : `scripts/db-backup.sh` (dump compressé + rotation) et `scripts/db-restore.sh`. À **planifier** (cron), **stocker hors serveur** et **tester** régulièrement. |
 | S9 | **Journalisation/supervision** minimales | Moyenne | Logs structurés, métriques, alerte sur erreurs 5xx et pics sur `/devis/*` |
 | S10 | **PDF via Chromium (Playwright)** rend du HTML échappé | Faible | ✅ échappement en place (`esc`) ; garder `--no-sandbox` isolé, pas d'entrée utilisateur non échappée |
 

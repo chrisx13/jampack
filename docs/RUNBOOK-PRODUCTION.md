@@ -20,16 +20,16 @@ Réf. sécurité : [SECURITE-REVUE-PROD](SECURITE-REVUE-PROD.md).
 
 ## 3. Réseau / TLS
 - [ ] Terminaison **TLS** (reverse proxy) ; redirection 80→443 ; **HSTS**.
-- [ ] CORS API restreint à l'origine du front (pas `origin: true`).
-- [ ] En-têtes de sécurité (Helmet / CSP / X-Frame-Options / Referrer-Policy) via nginx.
+- [ ] CORS API restreint : définir **`WEB_ORIGIN`** (origine(s) du front) sur le service API (sinon réflexion = dev).
+- [ ] En-têtes de sécurité : posés par nginx **et** l'API (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, CSP) ; ajouter **HSTS** avec le TLS.
 - [ ] **Rate-limiting** sur `/trpc/publicQuote.*` (route publique) — ex. nginx `limit_req_zone`.
 
 ## 4. Base de données
 - [ ] Migrations appliquées : `prisma migrate deploy` (au boot via l'entrypoint).
 - [ ] **RLS appliqué** : `rls.sql` exécuté (entrypoint) ; vérifier via `rls-isolation.int.test.ts` sur une copie.
 - [ ] `GRANT` à `jampack_app` sur toutes les tables (entrypoint).
-- [ ] **Sauvegardes** : `pg_dump` planifié (cron), rétention (ex. 7 quotidiennes + 4 hebdo), **stockage hors serveur**.
-- [ ] **Restauration testée** au moins une fois (RTO/RPO documentés).
+- [ ] **Sauvegardes** : planifier `scripts/db-backup.sh` (cron), rétention `KEEP_DAILY` (défaut 7), **stockage hors serveur** (règle 3-2-1).
+- [ ] **Restauration testée** via `scripts/db-restore.sh` au moins une fois (RTO/RPO documentés).
 
 ## 5. Observabilité
 - [ ] Logs structurés centralisés ; niveau d'erreur remonté.
