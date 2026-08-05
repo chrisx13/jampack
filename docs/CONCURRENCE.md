@@ -84,7 +84,7 @@ façon **découplée** (champ/lien/import) plutôt qu'intégrées à un prestata
 | Notes / annotations partagées | ~ | ✔ (notes de vue historisées) | avantage JAMPACK |
 | Personnalisation documents (charte) | ✔ | ✔ (kit de marque) | — |
 | Accessibilité RGAA | rare | ~ (1er lot) | à poursuivre |
-| **Application mobile** | ✔ | ✖ | hors périmètre court terme |
+| **Application mobile** | ✔ | ~ **PWA** installable (route `/m`) : saisie de frais + tâches en déplacement | natif (stores) = piste séparée |
 
 ## 3. Backlog priorisé (implémentable sans intervention externe)
 **P1 — cœur facturation, attendu de tous les concurrents FR :**

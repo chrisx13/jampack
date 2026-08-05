@@ -68,6 +68,11 @@
   **comptabilisée** (charge 6xx + TVA déductible au débit, compte 421 « dû au salarié » au crédit),
   puis marquée **remboursée**. Les comptes PCG nécessaires sont créés automatiquement s'ils manquent.
 
+### Application mobile (déplacements)
+- Ouvrir **`/m`** sur le téléphone puis **« Ajouter à l'écran d'accueil »** : l'app s'installe et s'ouvre en
+  plein écran. Deux écrans minimalistes : **saisir une note de frais** (catégorie, montant, description →
+  1 bouton) et **traiter ses tâches** (bouton « fait »). Voir [MOBILE](MOBILE.md).
+
 ## 4. Achats
 - **Commandes fournisseurs** : choisir un fournisseur (tiers marqué fournisseur) et un **entrepôt de
   réception** → **Valider & envoyer** (numéro CM-) → **Tout réceptionner** (entre la marchandise en stock).

@@ -36,6 +36,7 @@ Documents versionnés avec le code, tenus à jour à chaque incrément.
 | 23 | [Runbook production](RUNBOOK-PRODUCTION.md) | Checklist de déploiement | — |
 | 24 | [Dossier de conformité fiscale](DOSSIER-CONFORMITE-FISCALE.md) | À faire valider par un expert-comptable | — |
 | 25 | [Runbook pilote](RUNBOOK-PILOTE.md) | Plan de pilote TPE/PME + grille de feedback | — |
+| 26 | [Application mobile (PWA)](MOBILE.md) | Interface mobile déplacements (frais/tâches) | — |
 | — | [Traçabilité code ↔ specs](TRACABILITE.md) | État d'avancement code vs spécifications | — |
 
 ## Normes et référentiels couverts

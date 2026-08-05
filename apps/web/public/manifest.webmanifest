@@ -1,0 +1,16 @@
+{
+  "name": "JAMPACK — Frais & tâches",
+  "short_name": "JAMPACK",
+  "description": "Saisie de notes de frais et suivi des tâches en déplacement.",
+  "start_url": "/m",
+  "scope": "/m",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8FAFC",
+  "theme_color": "#3E3A52",
+  "lang": "fr",
+  "icons": [
+    { "src": "/brand/jampack-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

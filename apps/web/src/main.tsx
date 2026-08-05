@@ -9,6 +9,7 @@ import { activeSociete } from './activeSociete';
 import { authEnabled, oidcConfig, accessToken } from './auth';
 import App from './App';
 import PublicQuote from './pages/PublicQuote';
+import MobileApp from './MobileApp';
 
 // Thème JAMPACK (Bootstrap 5 + Inter + icônes)
 import '@fontsource/inter/400.css';
@@ -79,6 +80,9 @@ function AuthGate({ children }: { children: ReactNode }) {
 
 // Route PUBLIQUE (sans authentification) : page de signature en ligne d'un devis, /devis/<token>.
 const publicMatch = window.location.pathname.match(/^\/devis\/([a-f0-9]{16,})$/i);
+// Application MOBILE minimaliste (authentifiée) : /m — pour les utilisateurs en déplacement.
+const isMobile = window.location.pathname.startsWith('/m');
+const Root = isMobile ? <MobileApp /> : <App />;
 
 const tree = publicMatch ? (
   <Providers>
@@ -87,15 +91,16 @@ const tree = publicMatch ? (
 ) : authEnabled ? (
   <AuthProvider {...oidcConfig}>
     <AuthGate>
-      <Providers>
-        <App />
-      </Providers>
+      <Providers>{Root}</Providers>
     </AuthGate>
   </AuthProvider>
 ) : (
-  <Providers>
-    <App />
-  </Providers>
+  <Providers>{Root}</Providers>
 );
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode>{tree}</React.StrictMode>);
+
+// Service worker (PWA) : enregistré hors développement uniquement (évite les soucis de cache avec Vite/HMR).
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+}
