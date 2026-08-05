@@ -32,6 +32,10 @@ Documents versionnés avec le code, tenus à jour à chaque incrément.
 | 19 | [Interop expert-comptable](CONNECTEURS-EXPERT-COMPTABLE.md) | Échange fichiers (FEC/CSV) + API découplées | — |
 | 20 | [Liasse fiscale](LIASSE-FISCALE.md) | Préparation + analyse faisabilité (Teledec/EDI-TDFC) | — |
 | 21 | [Déclaration d'accessibilité](DECLARATION-ACCESSIBILITE.md) | RGAA — état de conformité | RGAA 4.1 |
+| 22 | [Revue de sécurité prod](SECURITE-REVUE-PROD.md) | Constats + correctifs avant données réelles | — |
+| 23 | [Runbook production](RUNBOOK-PRODUCTION.md) | Checklist de déploiement | — |
+| 24 | [Dossier de conformité fiscale](DOSSIER-CONFORMITE-FISCALE.md) | À faire valider par un expert-comptable | — |
+| 25 | [Runbook pilote](RUNBOOK-PILOTE.md) | Plan de pilote TPE/PME + grille de feedback | — |
 | — | [Traçabilité code ↔ specs](TRACABILITE.md) | État d'avancement code vs spécifications | — |
 
 ## Normes et référentiels couverts
