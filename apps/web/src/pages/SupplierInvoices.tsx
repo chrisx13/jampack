@@ -328,8 +328,14 @@ export default function SupplierInvoices() {
   const list = trpc.supplierInvoices.list.useQuery();
   const can = useCan();
   const [editing, setEditing] = useState<string | 'new' | null>(null);
+  const [search, setSearch] = useState('');
 
   if (editing) return <Editor id={editing} onClose={() => setEditing(null)} />;
+
+  const all = (list.data ?? []) as { id: string; reference?: string | null; status: string; issueDate?: unknown; dueDate?: unknown; totalTtc: number; supplier?: { name?: string } }[];
+  const q = search.trim().toLowerCase();
+  const rows = q ? all.filter((r) => (r.reference ?? '').toLowerCase().includes(q) || (r.supplier?.name ?? '').toLowerCase().includes(q)) : all;
+  const showSearch = all.length > 5;
 
   return (
     <>
@@ -338,26 +344,42 @@ export default function SupplierInvoices() {
         {can('create', 'SupplierInvoice') && <Button onClick={() => setEditing('new')}><i className="bi bi-plus-lg me-1" />Nouvelle facture</Button>}
       </div>
 
+      {showSearch && (
+        <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
+          <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+          <input className="form-control form-control-sm ps-4" aria-label="Rechercher une facture fournisseur" placeholder="Rechercher (référence ou fournisseur)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      )}
+
       <Card>
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Référence</th><th>Fournisseur</th><th>Date</th><th>Échéance</th><th className="text-end">Total TTC</th><th>Statut</th><th className="pe-3" /></tr>
+              <tr><th scope="col" className="ps-3">Référence</th><th scope="col">Fournisseur</th><th scope="col">Date</th><th scope="col">Échéance</th><th scope="col" className="text-end">Total TTC</th><th scope="col">Statut</th><th scope="col" className="pe-3"><span className="visually-hidden">Ouvrir</span></th></tr>
             </thead>
             <tbody>
               {list.isLoading && <tr><td colSpan={7} className="text-center py-4"><Spinner size="sm" /></td></tr>}
-              {list.data?.map((r) => (
+              {rows.map((r) => (
                 <tr key={r.id} style={{ cursor: 'pointer' }} onClick={() => setEditing(r.id)}>
-                  <td className="ps-3 fw-medium">{r.reference ?? <span className="text-secondary fst-italic">brouillon</span>}</td>
+                  <td className="ps-3 fw-medium">
+                    <button type="button" className="btn btn-link p-0 text-decoration-none text-body fw-medium" onClick={(e) => { e.stopPropagation(); setEditing(r.id); }}>{r.reference ?? <span className="text-secondary fst-italic">brouillon</span>}<span className="visually-hidden"> — ouvrir</span></button>
+                  </td>
                   <td>{r.supplier?.name ?? '—'}</td>
                   <td className="text-secondary">{dfmt(r.issueDate)}</td>
                   <td className="text-secondary">{dfmt(r.dueDate)}</td>
                   <td className="text-end fw-medium">{euro.format(r.totalTtc)}</td>
                   <td><StatusBadge s={r.status} /></td>
-                  <td className="text-end pe-3"><i className="bi bi-chevron-right text-secondary" /></td>
+                  <td className="text-end pe-3"><i className="bi bi-chevron-right text-secondary" aria-hidden="true" /></td>
                 </tr>
               ))}
-              {list.data?.length === 0 && <tr><td colSpan={7} className="text-center text-secondary py-4">Aucune facture fournisseur</td></tr>}
+              {list.isSuccess && all.length === 0 && (
+                <tr><td colSpan={7} className="text-center text-secondary py-5">
+                  <div className="mb-2"><i className="bi bi-receipt-cutoff fs-3 opacity-50" aria-hidden="true" /></div>
+                  <div className="mb-3">Aucune facture fournisseur pour l'instant.</div>
+                  {can('create', 'SupplierInvoice') && <Button size="sm" onClick={() => setEditing('new')}><i className="bi bi-plus-lg me-1" aria-hidden="true" />Nouvelle facture</Button>}
+                </td></tr>
+              )}
+              {all.length > 0 && rows.length === 0 && <tr><td colSpan={7} className="text-center text-secondary py-4">Aucun résultat pour ce filtre</td></tr>}
             </tbody>
           </Table>
         </Card.Body>
