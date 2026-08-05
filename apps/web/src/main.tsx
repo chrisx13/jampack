@@ -8,6 +8,7 @@ import { trpc } from './trpc';
 import { activeSociete } from './activeSociete';
 import { authEnabled, oidcConfig, accessToken } from './auth';
 import App from './App';
+import PublicQuote from './pages/PublicQuote';
 
 // Thème JAMPACK (Bootstrap 5 + Inter + icônes)
 import '@fontsource/inter/400.css';
@@ -76,7 +77,14 @@ function AuthGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-const tree = authEnabled ? (
+// Route PUBLIQUE (sans authentification) : page de signature en ligne d'un devis, /devis/<token>.
+const publicMatch = window.location.pathname.match(/^\/devis\/([a-f0-9]{16,})$/i);
+
+const tree = publicMatch ? (
+  <Providers>
+    <PublicQuote token={publicMatch[1]} />
+  </Providers>
+) : authEnabled ? (
   <AuthProvider {...oidcConfig}>
     <AuthGate>
       <Providers>

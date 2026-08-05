@@ -46,6 +46,9 @@
   bandeau « À facturer » propose, par client, de générer une facture (brouillon) regroupant ses temps ouverts
   facturables (une ligne par temps) ; les temps sont alors marqués **facturés**.
 - **Devis** : le PDF porte la **date de validité**, les **CGV** et un cartouche **« Bon pour accord »** (date + signature) pour l'acceptation par le client.
+- **Signature en ligne** : sur un devis émis, bouton **Lien de signature** → le lien est copié ; envoyé au client, il ouvre
+  une **page publique** (sans compte) où il consulte le devis et l'**accepte** en saisissant son nom. L'acceptation
+  passe le devis en « accepté » et conserve **nom + date + adresse IP** comme preuve.
 - **Escompte** (Administration ▸ Société) : renseigner vos conditions d'escompte pour paiement anticipé ; laissé vide,
   la facture porte automatiquement la mention légale « Pas d'escompte pour paiement anticipé » (art. L441-10).
 - **Factures** : créer → **Valider** (numéro FA-, échéance) → **PDF**. Depuis une facture validée :

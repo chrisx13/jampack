@@ -846,6 +846,10 @@ model Invoice {
   isDeposit       Boolean        @default(false) // facture d'acompte (déduite à la facture de solde)
   deliveryNumber  String?        // n° de bon de livraison (BL-…) émis pour cette facture
   deliveredAt     DateTime?      // date de livraison portée sur le bon de livraison
+  publicToken     String?        @unique // jeton de la page publique de signature du devis
+  acceptedAt      DateTime?      // horodatage d'acceptation en ligne (devis)
+  acceptedByName  String?        // nom du signataire (acceptation en ligne)
+  acceptedIp      String?        // adresse IP du signataire (preuve)
   notes           String?
   lines           InvoiceLine[]
   payments        Payment[]

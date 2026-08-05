@@ -26,6 +26,10 @@
 - Rôle applicatif `jampack_app` non-propriétaire → le RLS s'applique réellement.
 - Les **notes de vue** (`ViewNote` org+société, `ViewNoteRevision` org) sont soumises aux mêmes policies :
   un pense-bête n'est visible que dans son compte et sa société.
+- **Signature en ligne du devis** : une policy permissive `public_quote_token` (+ `public_quote_societe`/
+  `public_quote_company` en lecture) autorise l'accès **à la seule pièce** dont le jeton correspond à
+  `app.public_quote_token` — sans contexte tenant. Le jeton (24 octets aléatoires) est non devinable ;
+  l'acceptation conserve **nom, horodatage et IP** comme preuve (`withPublicToken`, `publicQuote.router`).
 - Référence : `packages/db/prisma/rls.sql`, `packages/db/src/index.ts`.
 
 ## 4. Protection des données en transit et au repos

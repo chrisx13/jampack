@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { randomBytes } from 'node:crypto';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
 import { SALES_DOCS, byId, quoteDaysToExpiry, depositLines, effectiveDiscountFactor } from '@jampack/domain';
@@ -108,10 +109,23 @@ const createDepositInvoice = authed('create', 'Invoice').input(z.object({ id: z.
   });
 });
 
+/** Génère (ou renvoie) le lien public de signature en ligne d'un devis. */
+const publicLink = authed('read', 'Quote').input(byId).mutation(({ ctx, input }) => {
+  requireSociete(ctx.societeId);
+  return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+    const q = await tx.invoice.findUniqueOrThrow({ where: { id: input.id }, select: { docType: true, publicToken: true } });
+    if (q.docType !== 'devis') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Lien de signature réservé aux devis.' });
+    let token = q.publicToken;
+    if (!token) { token = randomBytes(24).toString('hex'); await tx.invoice.update({ where: { id: input.id }, data: { publicToken: token } }); }
+    return { token, path: `/devis/${token}` };
+  });
+});
+
 export const quoteRouter = makeSalesRouter(SALES_DOCS.devis, {
   accept: setStatus('sent', 'accepted'),
   refuse: setStatus('sent', 'refused'),
   convertToInvoice,
   createDepositInvoice,
+  publicLink,
   expiring,
 });

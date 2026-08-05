@@ -43,6 +43,8 @@ export async function createContext({ req }: CreateExpressContextOptions) {
   const societeHeader = (req.headers['x-societe-id'] as string) || undefined;
   const auth = (req.headers['authorization'] as string) || '';
   const bearer = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : undefined;
+  // IP du client (preuve d'acceptation en ligne du devis).
+  const ip = ((req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || null) as string | null;
 
   // ── 1) Authentification réelle par jeton OIDC (Keycloak) ──
   if (bearer && oidcEnabled()) {
@@ -60,7 +62,7 @@ export async function createContext({ req }: CreateExpressContextOptions) {
     }));
 
     const orgIds = uniq([...memberships.map((m) => m.organizationId), ...societeRoles.map((r) => r.organizationId)]);
-    if (orgIds.length === 0) return { user: null, societeId: null }; // aucun compte → refusé
+    if (orgIds.length === 0) return { user: null, societeId: null, ip }; // aucun compte → refusé
 
     const organizationId = orgHeader && orgIds.includes(orgHeader) ? orgHeader : orgIds[0];
     const orgRoles = societeRoles.filter((r) => r.organizationId === organizationId);
@@ -74,6 +76,7 @@ export async function createContext({ req }: CreateExpressContextOptions) {
     return {
       user: { id: dbUser.id, organizationId, permissions, accessibleSocietes: accessible } satisfies AuthedUser,
       societeId,
+      ip,
     };
   }
 
@@ -83,16 +86,17 @@ export async function createContext({ req }: CreateExpressContextOptions) {
       ? await prisma.organization.findFirst({ orderBy: { createdAt: 'asc' } })
       : await prisma.organization.findUnique({ where: { id: orgHeader! } });
     const u = await prisma.user.findFirst({ orderBy: { createdAt: 'asc' } });
-    if (!org || !u) return { user: null, societeId: null };
+    if (!org || !u) return { user: null, societeId: null, ip };
     const first = await withTenant(org.id, (tx) => tx.societe.findFirst({ orderBy: { createdAt: 'asc' } }));
     const societeId = societeHeader === ALL ? null : societeHeader && !DEV_STUB.has(societeHeader) ? societeHeader : first?.id ?? null;
     return {
       user: { id: u.id, organizationId: org.id, permissions: [{ action: 'manage', subject: 'all' }], accessibleSocietes: null } satisfies AuthedUser,
       societeId,
+      ip,
     };
   }
 
-  return { user: null as AuthedUser | null, societeId: null as string | null };
+  return { user: null as AuthedUser | null, societeId: null as string | null, ip };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

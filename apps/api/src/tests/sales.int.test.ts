@@ -238,6 +238,37 @@ describe('Ventes — bon de livraison', () => {
   });
 });
 
+describe('Ventes — signature en ligne du devis', () => {
+  it('lien public → lecture par jeton → acceptation (statut + signataire)', async () => {
+    const companyId = await anyCustomer();
+    const devis = await caller.quotes.create({ companyId, notes: '[INT]', lines: [{ label: 'Presta', quantity: 1, unitPriceHt: 500, taxRatePct: 20 }] });
+    await caller.quotes.validate({ id: devis.id }); // statut « sent »
+    const link = await caller.quotes.publicLink({ id: devis.id });
+    expect(link.token).toHaveLength(48);
+    expect(link.path).toBe(`/devis/${link.token}`);
+
+    // Lecture publique par jeton (RLS : seule cette pièce est visible).
+    const pub = await caller.publicQuote.get({ token: link.token });
+    expect(pub.number).toBe(devis.number ?? pub.number);
+    expect(pub.totalTtc).toBeCloseTo(600, 2);
+    expect(pub.societe?.name).toBeTruthy();
+
+    // Un jeton inconnu ne renvoie rien.
+    await expect(caller.publicQuote.get({ token: 'x'.repeat(48) })).rejects.toThrow();
+
+    // Acceptation en ligne.
+    const res = await caller.publicQuote.accept({ token: link.token, signerName: 'Jean Client' });
+    expect(res.ok).toBe(true);
+    const after = await caller.quotes.get({ id: devis.id });
+    expect(after.status).toBe('accepted');
+    expect(after.acceptedByName).toBe('Jean Client');
+    expect(after.acceptedAt).toBeTruthy();
+
+    // Double acceptation refusée.
+    await expect(caller.publicQuote.accept({ token: link.token, signerName: 'Bis' })).rejects.toThrow();
+  });
+});
+
 describe('Ventes — facture d\'acompte', () => {
   it('acompte 30 % ventilé par taux, puis facture de solde déduisant l\'acompte', async () => {
     const companyId = await anyCustomer();

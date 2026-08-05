@@ -6,6 +6,7 @@ import { catalogRouter } from '../catalog/catalog.router';
 import { settingsRouter } from '../settings/settings.router';
 import { invoiceRouter } from '../invoice/invoice.router';
 import { quoteRouter } from '../invoice/quote.router';
+import { publicQuoteRouter } from '../invoice/publicQuote.router';
 import { creditNoteRouter } from '../invoice/creditNote.router';
 import { paymentRouter } from '../invoice/payment.router';
 import { recurringRouter } from '../invoice/recurring.router';
@@ -28,6 +29,7 @@ export const appRouter = router({
   catalog: catalogRouter,
   settings: settingsRouter,
   quotes: quoteRouter,
+  publicQuote: publicQuoteRouter,
   invoices: invoiceRouter,
   creditNotes: creditNoteRouter,
   payments: paymentRouter,

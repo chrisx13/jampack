@@ -199,6 +199,13 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     utils.invoices.list.invalidate();
     alert(`Facture d’acompte (${pct} %) créée en brouillon — voir l’onglet Factures. Elle sera déduite à la conversion en facture de solde.`);
   };
+  const publicLink = cfg.key === 'quotes' ? (trpc as unknown as { quotes: { publicLink: { useMutation: () => { mutateAsync: (v: { id: string }) => Promise<{ path: string }>; isPending: boolean } } } }).quotes.publicLink.useMutation() : null;
+  const onPublicLink = async () => {
+    const r = await publicLink!.mutateAsync({ id });
+    const url = window.location.origin + r.path;
+    try { await navigator.clipboard.writeText(url); alert(`Lien de signature copié :\n${url}\n\nEnvoyez-le au client pour qu'il accepte le devis en ligne.`); }
+    catch { window.prompt('Lien de signature du devis (copiez-le) :', url); }
+  };
   const onAccept = async () => { await accept!.mutateAsync({ id }); uapi.list.invalidate(); uapi.get.invalidate({ id }); };
   const onRefuse = async () => { await refuse!.mutateAsync({ id }); uapi.list.invalidate(); uapi.get.invalidate({ id }); };
   const onCreditNote = async () => {
@@ -269,6 +276,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
           )}
           {cfg.key === 'quotes' && (status === 'sent' || status === 'accepted') && (
             <>
+              <Button variant="light" onClick={onPublicLink} disabled={publicLink!.isPending} title="Lien de signature en ligne"><i className="bi bi-link-45deg me-1" />Lien de signature</Button>
               <Button variant="outline-primary" onClick={onDeposit} disabled={deposit!.isPending}><i className="bi bi-cash-coin me-1" />Facture d'acompte</Button>
               <Button variant="primary" onClick={onConvert} disabled={convert!.isPending}><i className="bi bi-arrow-right-circle me-1" />Convertir en facture</Button>
             </>

@@ -17,7 +17,8 @@ transaction RLS (`withTenant`).
 
 ### `quotes` / `invoices` / `creditNotes` (pièces de vente)
 Commun (`makeSalesRouter`) : `list · get · create · update · validate · cancel · duplicate · pdf` (duplicate = copie en brouillon)
-- `quotes` : + `accept · refuse · convertToInvoice · expiring` (expiring = devis émis par date de validité, avec jours avant expiration)
+- `quotes` : + `accept · refuse · convertToInvoice · createDepositInvoice · expiring · publicLink` (publicLink = lien public de signature du devis)
+- `publicQuote` (**public, sans authentification**) : `get · accept` — consultation et acceptation d'un devis via son jeton ; accès restreint par la policy RLS `public_quote_token` (une seule pièce visible)
 - `invoices` : + `createCreditNote · facturx · sendToPdp · transmissions`
 
 ### `recurring`

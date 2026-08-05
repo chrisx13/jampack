@@ -37,6 +37,18 @@ export function withTenant<T>(
 }
 
 /**
+ * Contexte PUBLIC par jeton de devis : positionne `app.public_quote_token` pour que la policy RLS
+ * `public_quote_token` autorise l'accès à LA SEULE pièce dont le token correspond (sans contexte tenant).
+ * Utilisé par les procédures publiques (page de signature en ligne du devis).
+ */
+export function withPublicToken<T>(token: string, fn: (tx: PrismaClient) => Promise<T>): Promise<T> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT set_config('app.public_quote_token', ${token}, true)`;
+    return fn(tx as unknown as PrismaClient);
+  });
+}
+
+/**
  * Alloue le prochain numéro de pièce (facture, devis…) de façon ATOMIQUE.
  * L'UPDATE ... incrément + RETURNING garantit qu'aucun numéro n'est attribué deux fois,
  * même en cas de créations concurrentes. À appeler dans une transaction (withTenant).

@@ -98,3 +98,20 @@ CREATE POLICY membership_self ON "Membership"
 DROP POLICY IF EXISTS societerole_self ON "SocieteRole";
 CREATE POLICY societerole_self ON "SocieteRole"
   USING ("userId" = current_setting('app.current_user', true));
+
+-- Accès PUBLIC par jeton (signature en ligne du devis) : lecture/écriture de la SEULE pièce dont le
+-- token correspond à app.public_quote_token. Permissive (OR avec org_isolation) ; la policy société
+-- restrictive passe car app.current_societe est absent en contexte public.
+DROP POLICY IF EXISTS public_quote_token ON "Invoice";
+CREATE POLICY public_quote_token ON "Invoice"
+  USING ("publicToken" IS NOT NULL AND "publicToken" = current_setting('app.public_quote_token', true))
+  WITH CHECK ("publicToken" IS NOT NULL AND "publicToken" = current_setting('app.public_quote_token', true));
+
+-- La page publique doit lire la société émettrice et le client du devis ciblé (lecture seule).
+DROP POLICY IF EXISTS public_quote_societe ON "Societe";
+CREATE POLICY public_quote_societe ON "Societe" FOR SELECT
+  USING (EXISTS (SELECT 1 FROM "Invoice" i WHERE i."societeId" = "Societe".id AND i."publicToken" IS NOT NULL AND i."publicToken" = current_setting('app.public_quote_token', true)));
+
+DROP POLICY IF EXISTS public_quote_company ON "Company";
+CREATE POLICY public_quote_company ON "Company" FOR SELECT
+  USING (EXISTS (SELECT 1 FROM "Invoice" i WHERE i."companyId" = "Company".id AND i."publicToken" IS NOT NULL AND i."publicToken" = current_setting('app.public_quote_token', true)));

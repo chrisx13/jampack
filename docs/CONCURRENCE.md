@@ -116,6 +116,6 @@ façon **découplée** (champ/lien/import) plutôt qu'intégrées à un prestata
 | 5 | Notes de frais | P2 | ✅ | FR-ACH-11 |
 | 6 | Grille tarifaire (quantité/client) | P2 | ✅ | FR-REF-5 |
 | 7 | Suivi du temps | P2 | ✅ | FR-VEN-19 |
-| 8 | Signature en ligne du devis | P2 | ⏳ | FR-VEN-20 |
+| 8 | Signature en ligne du devis | P2 | ✅ | FR-VEN-20 |
 
 > Ce document est mis à jour au fil des implémentations (colonne « État »).
