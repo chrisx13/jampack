@@ -81,12 +81,12 @@ export default function Contacts() {
         <Modal.Header closeButton><Modal.Title>{edit && 'id' in edit ? 'Modifier le contact' : 'Nouveau contact'}</Modal.Title></Modal.Header>
         <Modal.Body>
           <div className="row g-2">
-            <div className="col"><Form.Label>Prénom</Form.Label><Form.Control autoFocus value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} /></div>
-            <div className="col"><Form.Label>Nom</Form.Label><Form.Control value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} /></div>
+            <Form.Group className="col" controlId="ct-first"><Form.Label>Prénom</Form.Label><Form.Control autoFocus value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} /></Form.Group>
+            <Form.Group className="col" controlId="ct-last"><Form.Label>Nom</Form.Label><Form.Control value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} /></Form.Group>
           </div>
-          <Form.Group className="mt-2"><Form.Label>Email</Form.Label><Form.Control type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Form.Group>
-          <Form.Group className="mt-2"><Form.Label>Téléphone</Form.Label><Form.Control value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Form.Group>
-          <Form.Group className="mt-2">
+          <Form.Group className="mt-2" controlId="ct-email"><Form.Label>Email</Form.Label><Form.Control type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Form.Group>
+          <Form.Group className="mt-2" controlId="ct-phone"><Form.Label>Téléphone</Form.Label><Form.Control value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Form.Group>
+          <Form.Group className="mt-2" controlId="ct-company">
             <Form.Label>Client</Form.Label>
             <Form.Select value={form.companyId} onChange={(e) => setForm({ ...form, companyId: e.target.value })}>
               <option value="">— Aucun —</option>
