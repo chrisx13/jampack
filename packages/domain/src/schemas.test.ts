@@ -10,7 +10,7 @@ import {
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
   isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
-  timeEntryAmountHt, formatDuration, expensesCsv,
+  timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -491,6 +491,18 @@ describe('export CSV — notes de frais', () => {
     const [head, l1] = csv.split('\n');
     expect(head).toBe('Date;Catégorie;Description;Salarié;HT;TVA;TTC;Statut');
     expect(l1).toBe('05/08/2026;Repas;"Déjeuner; client";Marie;50,00;5,00;55,00;validated');
+  });
+});
+
+describe('export CSV — écritures (interop expert-comptable)', () => {
+  it('sérialise les écritures (en-tête, date/décimale FR)', () => {
+    const csv = journalEntriesCsv([
+      { journal: 'VT', date: new Date('2026-08-05T00:00:00Z'), piece: 'FA-0001', account: '411000', label: 'Client', debit: 120, credit: 0 },
+      { journal: 'VT', date: new Date('2026-08-05T00:00:00Z'), piece: 'FA-0001', account: '707000', label: 'Ventes', debit: 0, credit: 100 },
+    ]);
+    const [head, l1] = csv.split('\n');
+    expect(head).toBe('Journal;Date;N° pièce;Compte;Libellé;Débit;Crédit');
+    expect(l1).toBe('VT;05/08/2026;FA-0001;411000;Client;120,00;0,00');
   });
 });
 

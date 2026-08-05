@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv, fixedAssetCreate, fixedAssetUpdate, depreciationSchedule, balanceCsv, ledgerCsv } from '@jampack/domain';
+import { accountCreate, accountUpdate, journalCreate, journalEntryCreate, computeInvoiceTotals, byId, PCG_STANDARD, JOURNAL_TYPES, parseBankStatementCsv, fixedAssetCreate, fixedAssetUpdate, depreciationSchedule, balanceCsv, ledgerCsv, journalEntriesCsv } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 import { salesTotals } from '../invoice/salesRouter';
 
@@ -157,6 +157,22 @@ export const accountingRouter = router({
       withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
         tx.journalEntry.findUniqueOrThrow({ where: { id: input.id }, include: { journal: true, lines: { include: { account: { select: { code: true, name: true } } }, orderBy: { position: 'asc' } } } })
       )
+    ),
+    /** Export CSV des écritures (interop expert-comptable) : une ligne par ligne d'écriture. */
+    exportCsv: authed('read', 'Accounting').query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const entries = await tx.journalEntry.findMany({
+          where: scope(ctx.societeId),
+          include: { journal: { select: { code: true } }, lines: { include: { account: { select: { code: true } } }, orderBy: { position: 'asc' } } },
+          orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
+          take: 10000,
+        });
+        const rows = entries.flatMap((e) => e.lines.map((l) => ({
+          journal: e.journal?.code ?? '', date: e.date, piece: e.reference ?? '', account: l.account?.code ?? '',
+          label: l.label ?? e.label, debit: n(l.debit), credit: n(l.credit),
+        })));
+        return { filename: 'ecritures.csv', content: journalEntriesCsv(rows) };
+      })
     ),
     create: authed('create', 'Accounting').input(journalEntryCreate).mutation(({ ctx, input }) => {
       const societeId = req(ctx.societeId);

@@ -847,6 +847,26 @@ export function expensesCsv(rows: ExpenseCsvRow[]): string {
 }
 
 /**
+ * Sérialise les écritures comptables en CSV (séparateur `;`, décimale FR, date JJ/MM/AAAA), une ligne par
+ * ligne d'écriture. Layout importable par les logiciels d'expert-comptable (voir CONNECTEURS-EXPERT-COMPTABLE).
+ * Colonnes : Journal ; Date ; N° pièce ; Compte ; Libellé ; Débit ; Crédit.
+ */
+export type EntryCsvRow = { journal: string; date: string | Date | null; piece: string; account: string; label: string; debit: number; credit: number };
+export function journalEntriesCsv(rows: EntryCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
+  const d = (v: string | Date | null) => {
+    if (!v) return '';
+    const x = new Date(v);
+    const p = (k: number) => String(k).padStart(2, '0');
+    return `${p(x.getUTCDate())}/${p(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
+  };
+  const head = 'Journal;Date;N° pièce;Compte;Libellé;Débit;Crédit';
+  const lines = rows.map((r) => [esc(r.journal), d(r.date), esc(r.piece), esc(r.account), esc(r.label), fr(r.debit), fr(r.credit)].join(';'));
+  return [head, ...lines].join('\n');
+}
+
+/**
  * Génère un calendrier iCalendar (RFC 5545) d'événements « journée » (VALUE=DATE)
  * importable dans Outlook/Google Agenda. `date` au format ISO ; `stamp` = DTSTAMP fixe (déterminisme).
  */

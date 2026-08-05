@@ -102,17 +102,27 @@ function Editor({ onClose }: { onClose: () => void }) {
 }
 
 export default function JournalEntries() {
+  const utils = trpc.useUtils();
   const list = trpc.accounting.entries.list.useQuery(undefined);
   const can = useCan();
   const [editing, setEditing] = useState(false);
 
   if (editing) return <Editor onClose={() => setEditing(false)} />;
 
+  const exportCsv = async () => {
+    const r = await utils.accounting.entries.exportCsv.fetch();
+    const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
-        <div><h4 className="mb-1 fw-semibold">Écritures</h4><p className="text-secondary mb-0">Journal des écritures comptables</p></div>
-        {can('create', 'Accounting') && <Button onClick={() => setEditing(true)}><i className="bi bi-plus-lg me-1" />Nouvelle écriture</Button>}
+        <div><h4 className="mb-1 fw-semibold">Écritures</h4><p className="text-secondary mb-0">Journal des écritures comptables — export importable par les logiciels d'expert-comptable</p></div>
+        <div className="d-flex gap-2">
+          {(list.data?.length ?? 0) > 0 && <Button variant="light" title="Export CSV des écritures (interop expert-comptable)" onClick={exportCsv}><i className="bi bi-filetype-csv me-1" />CSV écritures</Button>}
+          {can('create', 'Accounting') && <Button onClick={() => setEditing(true)}><i className="bi bi-plus-lg me-1" />Nouvelle écriture</Button>}
+        </div>
       </div>
 
       <Card><Card.Body className="p-0">
