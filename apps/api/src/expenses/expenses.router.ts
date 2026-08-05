@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { expenseCreate, expenseUpdate, byId, expenseCategoryAccount, expenseCategoryLabel } from '@jampack/domain';
+import { expenseCreate, expenseUpdate, byId, expenseCategoryAccount, expenseCategoryLabel, expensesCsv } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -34,6 +34,22 @@ export const expensesRouter = router({
         orderBy: [{ date: 'desc' }],
       });
       return rows.map((e) => ({ ...e, ...ttcOf(e), categoryLabel: expenseCategoryLabel(e.category), posted: !!e.journalEntryId }));
+    })
+  ),
+
+  /** Export CSV des notes de frais (Date ; Catégorie ; Description ; Salarié ; HT ; TVA ; TTC ; Statut). */
+  exportCsv: authed('read', 'Accounting').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const rows = await tx.expense.findMany({
+        where: scope(ctx.societeId),
+        include: { incurredBy: { select: { name: true, email: true } } },
+        orderBy: [{ date: 'desc' }],
+      });
+      const content = expensesCsv(rows.map((e) => {
+        const t = ttcOf(e);
+        return { date: e.date, category: expenseCategoryLabel(e.category), description: e.description, who: e.incurredBy?.name ?? e.incurredBy?.email ?? '', ht: t.ht, tva: t.tva, ttc: t.ttc, status: e.status };
+      }));
+      return { filename: 'notes-de-frais.csv', content };
     })
   ),
 

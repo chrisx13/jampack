@@ -10,7 +10,7 @@ import {
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
   isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
-  timeEntryAmountHt, formatDuration,
+  timeEntryAmountHt, formatDuration, expensesCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -480,6 +480,17 @@ describe('coordonnées bancaires (IBAN / BIC)', () => {
   it('formate un IBAN par groupes de 4', () => {
     expect(formatIban('FR7630006000011234567890189')).toBe('FR76 3000 6000 0112 3456 7890 189');
     expect(formatIban('')).toBe('');
+  });
+});
+
+describe('export CSV — notes de frais', () => {
+  it('sérialise (en-tête, date/décimale FR, échappement)', () => {
+    const csv = expensesCsv([
+      { date: new Date('2026-08-05T00:00:00Z'), category: 'Repas', description: 'Déjeuner; client', who: 'Marie', ht: 50, tva: 5, ttc: 55, status: 'validated' },
+    ]);
+    const [head, l1] = csv.split('\n');
+    expect(head).toBe('Date;Catégorie;Description;Salarié;HT;TVA;TTC;Statut');
+    expect(l1).toBe('05/08/2026;Repas;"Déjeuner; client";Marie;50,00;5,00;55,00;validated');
   });
 });
 

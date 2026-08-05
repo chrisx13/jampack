@@ -39,7 +39,10 @@ export default function Expenses() {
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div><h4 className="mb-1 fw-semibold">Notes de frais</h4><p className="text-secondary mb-0">Dépenses salariés — validation puis comptabilisation (6xx / TVA / 421)</p></div>
-        {editable && <Button onClick={() => { setF({ date: new Date().toISOString().slice(0, 10), category: 'deplacement', description: '', amountHt: '', taxRatePct: '20' }); setOpen(true); }}><i className="bi bi-plus-lg me-1" />Nouvelle note</Button>}
+        <div className="d-flex gap-2">
+          {rows.length > 0 && <Button variant="light" title="Exporter en CSV" onClick={async () => { const r = await utils.expenses.exportCsv.fetch(); const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url); }}><i className="bi bi-filetype-csv me-1" />CSV</Button>}
+          {editable && <Button onClick={() => { setF({ date: new Date().toISOString().slice(0, 10), category: 'deplacement', description: '', amountHt: '', taxRatePct: '20' }); setOpen(true); }}><i className="bi bi-plus-lg me-1" />Nouvelle note</Button>}
+        </div>
       </div>
 
       <Card><Card.Body className="p-0">

@@ -828,6 +828,25 @@ export function ledgerCsv(rows: LedgerCsvRow[]): string {
 }
 
 /**
+ * Sérialise des notes de frais en CSV (séparateur `;`, décimale FR, date JJ/MM/AAAA).
+ * Colonnes : Date ; Catégorie ; Description ; Salarié ; HT ; TVA ; TTC ; Statut.
+ */
+export type ExpenseCsvRow = { date: string | Date | null; category: string; description: string; who: string; ht: number; tva: number; ttc: number; status: string };
+export function expensesCsv(rows: ExpenseCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
+  const d = (v: string | Date | null) => {
+    if (!v) return '';
+    const x = new Date(v);
+    const p = (k: number) => String(k).padStart(2, '0');
+    return `${p(x.getUTCDate())}/${p(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
+  };
+  const head = 'Date;Catégorie;Description;Salarié;HT;TVA;TTC;Statut';
+  const lines = rows.map((r) => [d(r.date), esc(r.category), esc(r.description), esc(r.who), fr(r.ht), fr(r.tva), fr(r.ttc), esc(r.status)].join(';'));
+  return [head, ...lines].join('\n');
+}
+
+/**
  * Génère un calendrier iCalendar (RFC 5545) d'événements « journée » (VALUE=DATE)
  * importable dans Outlook/Google Agenda. `date` au format ISO ; `stamp` = DTSTAMP fixe (déterminisme).
  */
