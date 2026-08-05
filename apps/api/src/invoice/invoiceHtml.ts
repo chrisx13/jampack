@@ -10,6 +10,7 @@ type Invoice = {
   validUntil?: Date | null;
   vatReverseCharge?: boolean | null;
   customerReference?: string | null;
+  paymentUrl?: string | null;
   discountType?: string | null;
   discountValue?: unknown;
   source?: { number: string | null; issueDate: Date | null } | null;
@@ -149,6 +150,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
   <div class="pay">
     ${inv.paymentTerm ? `<div><strong>Conditions de paiement :</strong> ${esc(inv.paymentTerm.label)}</div>` : ''}
     ${inv.bankAccount ? `<div class="muted">IBAN ${esc(formatIban(inv.bankAccount.iban))}${inv.bankAccount.bic ? ` · BIC ${esc(inv.bankAccount.bic)}` : ''}</div>` : ''}
+    ${docType === 'facture' && inv.paymentUrl ? `<div style="margin-top:6px"><strong>Régler en ligne :</strong> <a href="${esc(inv.paymentUrl)}">${esc(inv.paymentUrl)}</a></div>` : ''}
     ${inv.notes ? `<div class="muted" style="margin-top:6px">${esc(inv.notes)}</div>` : ''}
     ${soc.vatFranchise ? `<div class="muted" style="margin-top:6px"><strong>${esc(VAT_FRANCHISE_MENTION)}</strong></div>` : ''}
     ${inv.vatReverseCharge ? `<div class="muted" style="margin-top:6px"><strong>${esc(VAT_REVERSE_CHARGE_MENTION)}</strong></div>` : ''}

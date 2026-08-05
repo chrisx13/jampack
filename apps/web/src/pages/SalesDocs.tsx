@@ -73,6 +73,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const [factorId, setFactorId] = useState('');
   const [vatReverseCharge, setVatReverseCharge] = useState(false);
   const [customerReference, setCustomerReference] = useState('');
+  const [paymentUrl, setPaymentUrl] = useState('');
   const [discountType, setDiscountType] = useState<'none' | 'percent' | 'amount'>('none');
   const [discountValue, setDiscountValue] = useState('');
 
@@ -85,6 +86,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     setNotes(doc.notes ?? '');
     setVatReverseCharge(!!doc.vatReverseCharge);
     setCustomerReference(doc.customerReference ?? '');
+    setPaymentUrl(doc.paymentUrl ?? '');
     setDiscountType((doc.discountType as 'none' | 'percent' | 'amount') ?? 'none');
     setDiscountValue(doc.discountValue != null && num(doc.discountValue) > 0 ? String(num(doc.discountValue)) : '');
     setStatus(doc.status);
@@ -169,7 +171,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     factorId: factorForced ? (company?.factorId ?? null) : (factorId || null),
     bankAccountId: bankAccountId || null,
     paymentTermId: paymentTermId || null,
-    ...(cfg.key === 'invoices' ? { vatReverseCharge } : {}),
+    ...(cfg.key === 'invoices' ? { vatReverseCharge, paymentUrl: paymentUrl.trim() || null } : {}),
     discountType,
     discountValue: discountType === 'none' ? 0 : (num(discountValue) || 0),
     lines: lines.map((l, i) => ({ productId: l.productId, label: l.label || 'Ligne', quantity: l.quantity, unitPriceHt: l.unitPriceHt, taxRatePct: l.taxRatePct, position: i })),
@@ -356,6 +358,13 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
                 </Form.Select>
                 {factorForced && <div className="text-secondary small mt-1"><i className="bi bi-lock me-1" />Imposé par le client</div>}
               </div>
+              {cfg.key === 'invoices' && (
+                <div className="col-md-12">
+                  <Form.Label>Lien de paiement en ligne <span className="text-secondary fw-normal">(optionnel)</span></Form.Label>
+                  <Form.Control type="url" placeholder="https://… (lien fourni par votre prestataire de paiement)" value={paymentUrl} onChange={(e) => setPaymentUrl(e.target.value)} disabled={readOnly} />
+                  <div className="text-secondary small mt-1">Affiché comme lien « Régler en ligne » sur le PDF. JAMPACK ne traite aucun paiement.</div>
+                </div>
+              )}
             </div>
           )}
         </Card.Body>

@@ -131,6 +131,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-VEN-18 | **Bon de livraison** : depuis une facture, n° BL séquentiel + date de livraison (idempotent), PDF sans prix (désignation, quantités, adresse de livraison, cartouche « Reçu conforme »). | C | ✅ |
 | FR-VEN-19 | **Suivi du temps** : saisie de temps par client (durée, taux horaire, facturable) ; **facturation au temps** (facture brouillon, une ligne par temps ; temps marqués facturés). | S | ✅ |
 | FR-VEN-20 | **Signature en ligne du devis** : lien public à jeton (page sans authentification) ; le client consulte et **accepte** le devis (« Bon pour accord ») ; horodatage + IP + nom conservés comme preuve. | S | ✅ |
+| FR-VEN-21 | **Lien de paiement en ligne** : champ URL sur la facture (fourni par le prestataire du vendeur), affiché comme lien « Régler en ligne » sur le PDF. **Aucun traitement de paiement par JAMPACK.** | C | ✅ |
 | FR-VEN-8 | **E-invoicing Factur-X / PDP** : génération **Factur-X (XML CII, EN 16931)**, connecteur **PDP** (interface + adaptateur interne), journal des transmissions (`PdpTransmission`, sous RLS). Émission/réception effective via PDP **immatriculée** ou **partenaire**. | M | 🔧 (génération + connecteur ✅ ; immatriculation DGFiP / PPF / e-reporting ⛔ hors périmètre logiciel) |
 
 ### 3.5 Achats

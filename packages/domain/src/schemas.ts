@@ -652,6 +652,7 @@ export const invoiceCreate = z.object({
   customerReference: z.string().max(80).nullable().optional(),
   discountType: z.enum(['none', 'percent', 'amount']).optional(),
   discountValue: z.number().min(0).optional(),
+  paymentUrl: z.string().url().max(500).nullable().optional().or(z.literal('')),
   lines: z.array(invoiceLineInput).default([]),
 });
 export type InvoiceCreate = z.infer<typeof invoiceCreate>;
@@ -671,6 +672,7 @@ export const invoiceUpdate = z.object({
   customerReference: z.string().max(80).nullable().optional(),
   discountType: z.enum(['none', 'percent', 'amount']).optional(),
   discountValue: z.number().min(0).optional(),
+  paymentUrl: z.string().url().max(500).nullable().optional().or(z.literal('')),
   lines: z.array(invoiceLineInput).optional(),
 });
 export type InvoiceUpdate = z.infer<typeof invoiceUpdate>;

@@ -100,7 +100,7 @@ façon **découplée** (champ/lien/import) plutôt qu'intégrées à un prestata
 8. **Signature électronique du devis** (acceptation en ligne via lien-jeton, sans prestataire).
 
 **P3 — dépendances externes ou niche (modélisation découplée) :**
-9. Lien de paiement en ligne (champ URL sur facture, sans traitement du paiement).
+9. ✅ Lien de paiement en ligne (champ URL sur facture, affiché sur le PDF ; **aucun traitement de paiement** — le lien provient du prestataire du vendeur). — FR-VEN-21
 10. Synchro bancaire (connecteur d'agrégateur — standby, hors périmètre logiciel).
 11. Variantes d'article, n° de série, demande de prix fournisseur.
 

@@ -293,6 +293,16 @@ describe('Ventes — facture d\'acompte', () => {
   });
 });
 
+describe('Ventes — lien de paiement en ligne', () => {
+  it('enregistre un lien de paiement (URL) sur la facture', async () => {
+    const companyId = await anyCustomer();
+    const inv = await caller.invoices.create({ companyId, notes: '[INT]', paymentUrl: 'https://pay.example.com/abc', lines: [{ label: 'X', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    expect(inv.paymentUrl).toBe('https://pay.example.com/abc');
+    const cleared = await caller.invoices.update({ id: inv.id, paymentUrl: null });
+    expect(cleared.paymentUrl).toBeNull();
+  });
+});
+
 describe('Ventes — remise globale (pied de pièce)', () => {
   it('remise 10 % : totaux nets cohérents jusqu\'au paiement et à la compta', async () => {
     const companyId = await anyCustomer();
