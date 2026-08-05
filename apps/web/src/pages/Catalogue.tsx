@@ -213,7 +213,13 @@ export default function Catalogue() {
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={8} className="text-center text-secondary py-4">Aucun article {filterCat ? 'dans cette catégorie' : 'pour cette société'}</td></tr>}
+              {rows.length === 0 && (
+                <tr><td colSpan={8} className="text-center text-secondary py-5">
+                  <div className="mb-2"><i className="bi bi-box-seam fs-3 opacity-50" aria-hidden="true" /></div>
+                  <div className="mb-3">Aucun article {filterCat ? 'dans cette catégorie' : 'pour l\'instant'}.</div>
+                  {!filterCat && can('create', 'Product') && <Button size="sm" onClick={() => open()}><i className="bi bi-plus-lg me-1" aria-hidden="true" />Nouvel article</Button>}
+                </td></tr>
+              )}
             </tbody>
           </Table>
         </Card.Body>

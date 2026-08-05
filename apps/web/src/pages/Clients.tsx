@@ -185,7 +185,13 @@ export default function Clients() {
                   </td>
                 </tr>
               ))}
-              {all.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun client pour cette société</td></tr>}
+              {all.length === 0 && (
+                <tr><td colSpan={5} className="text-center text-secondary py-5">
+                  <div className="mb-2"><i className="bi bi-people fs-3 opacity-50" aria-hidden="true" /></div>
+                  <div className="mb-3">Aucun client pour l'instant.</div>
+                  {can('create', 'Company') && <Button size="sm" onClick={() => open()}><i className="bi bi-plus-lg me-1" aria-hidden="true" />Nouveau client</Button>}
+                </td></tr>
+              )}
               {all.length > 0 && rows.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun client ne correspond à « {search} »</td></tr>}
             </tbody>
           </Table>
