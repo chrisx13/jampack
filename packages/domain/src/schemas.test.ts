@@ -10,7 +10,7 @@ import {
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
   isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
-  timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv, timeEntriesCsv, statementEntries,
+  timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv, timeEntriesCsv, statementEntries, stockMovementsCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -480,6 +480,19 @@ describe('coordonnées bancaires (IBAN / BIC)', () => {
   it('formate un IBAN par groupes de 4', () => {
     expect(formatIban('FR7630006000011234567890189')).toBe('FR76 3000 6000 0112 3456 7890 189');
     expect(formatIban('')).toBe('');
+  });
+});
+
+describe('export CSV — mouvements de stock', () => {
+  it('sérialise (type libellé, quantité signée + unité)', () => {
+    const csv = stockMovementsCsv([
+      { date: new Date('2026-08-05T00:00:00Z'), kind: 'entree', product: 'Farine', warehouse: 'Dépôt', quantity: 100, unitCost: 1.2, unit: 'kg', lot: 'L1', expiry: new Date('2027-01-01T00:00:00Z') },
+      { date: new Date('2026-08-06T00:00:00Z'), kind: 'sortie', product: 'Farine', warehouse: 'Dépôt', quantity: -30, unitCost: null, unit: 'kg', lot: null, expiry: null },
+    ]);
+    const [head, l1, l2] = csv.split('\n');
+    expect(head).toBe('Date;Type;Article;Entrepôt;Quantité;Coût unitaire;Lot;Péremption');
+    expect(l1).toBe('05/08/2026;Entrée;Farine;Dépôt;100,00 kg;1,20;L1;01/01/2027');
+    expect(l2).toBe('06/08/2026;Sortie;Farine;Dépôt;-30,00 kg;;;');
   });
 });
 

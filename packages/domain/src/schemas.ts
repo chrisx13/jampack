@@ -869,6 +869,26 @@ export function ledgerCsv(rows: LedgerCsvRow[]): string {
 }
 
 /**
+ * Sérialise le journal des mouvements de stock en CSV (séparateur `;`, décimale FR, date JJ/MM/AAAA).
+ * Colonnes : Date ; Type ; Article ; Entrepôt ; Quantité ; Coût unitaire ; Lot ; Péremption.
+ */
+export type StockMoveCsvRow = { date: string | Date | null; kind: string; product: string; warehouse: string; quantity: number; unitCost: number | null; unit: string; lot: string | null; expiry: string | Date | null };
+export function stockMovementsCsv(rows: StockMoveCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
+  const d = (v: string | Date | null) => {
+    if (!v) return '';
+    const x = new Date(v);
+    const p = (k: number) => String(k).padStart(2, '0');
+    return `${p(x.getUTCDate())}/${p(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
+  };
+  const kindLabel = (k: string) => (STOCK_KIND_LABELS as Record<string, string>)[k] ?? k;
+  const head = 'Date;Type;Article;Entrepôt;Quantité;Coût unitaire;Lot;Péremption';
+  const lines = rows.map((r) => [d(r.date), kindLabel(r.kind), esc(r.product), esc(r.warehouse), `${fr(r.quantity)} ${r.unit}`.trim(), r.unitCost != null ? fr(r.unitCost) : '', esc(r.lot ?? ''), d(r.expiry)].join(';'));
+  return [head, ...lines].join('\n');
+}
+
+/**
  * Sérialise des notes de frais en CSV (séparateur `;`, décimale FR, date JJ/MM/AAAA).
  * Colonnes : Date ; Catégorie ; Description ; Salarié ; HT ; TVA ; TTC ; Statut.
  */

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { warehouseCreate, warehouseUpdate, stockMovementCreate, stockTransfer, stockInventory, stockLevelsCsv, byId } from '@jampack/domain';
+import { warehouseCreate, warehouseUpdate, stockMovementCreate, stockTransfer, stockInventory, stockLevelsCsv, stockMovementsCsv, byId } from '@jampack/domain';
 import { router, protectedProcedure, authed } from '../trpc/trpc';
 
 const scope = (s: string | null) => (s ? { societeId: s } : {});
@@ -51,6 +51,24 @@ export const stockRouter = router({
         })
       )
     ),
+    /** Export CSV du journal des mouvements de stock. */
+    exportCsv: authed('read', 'StockMovement').query(({ ctx }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const rows = await tx.stockMovement.findMany({
+          where: scope(ctx.societeId),
+          include: { product: { select: { name: true, unit: true } }, warehouse: { select: { name: true } } },
+          orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+          take: 10000,
+        });
+        const content = stockMovementsCsv(rows.map((m) => ({
+          date: m.date, kind: m.kind, product: m.product?.name ?? '', warehouse: m.warehouse?.name ?? '',
+          quantity: N(m.quantity), unitCost: m.unitCost != null ? N(m.unitCost) : null, unit: m.product?.unit ?? '',
+          lot: m.lotNumber, expiry: m.expiryDate,
+        })));
+        return { filename: 'mouvements-stock.csv', content };
+      })
+    ),
+
     create: authed('create', 'StockMovement').input(stockMovementCreate).mutation(({ ctx, input }) => {
       const societeId = req(ctx.societeId);
       const { quantity, kind, date, expiryDate, ...rest } = input;

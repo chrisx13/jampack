@@ -52,7 +52,10 @@ export default function StockMovements() {
 
   return (
     <>
-      <div className="mb-4"><h4 className="mb-1 fw-semibold">Mouvements de stock</h4><p className="text-secondary mb-0">Entrées, sorties et ajustements</p></div>
+      <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div><h4 className="mb-1 fw-semibold">Mouvements de stock</h4><p className="text-secondary mb-0">Entrées, sorties et ajustements</p></div>
+        {(movements.data?.length ?? 0) > 0 && <Button variant="light" title="Exporter le journal des mouvements (CSV)" onClick={async () => { const r = await utils.stock.movements.exportCsv.fetch(); const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url); }}><i className="bi bi-filetype-csv me-1" aria-hidden="true" />CSV</Button>}
+      </div>
 
       {can('create', 'StockMovement') && (
         <Card className="mb-3">
