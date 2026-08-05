@@ -36,7 +36,10 @@ export default function TimeTracking() {
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div><h4 className="mb-1 fw-semibold">Suivi du temps</h4><p className="text-secondary mb-0">Temps passé par client — facturation au temps</p></div>
-        {editable && <Button onClick={() => { setF({ date: new Date().toISOString().slice(0, 10), description: '', hours: '1', minutes: '0', companyId: '', hourlyRateHt: '' }); setOpen(true); }}><i className="bi bi-plus-lg me-1" />Saisir un temps</Button>}
+        <div className="d-flex gap-2">
+          {rows.length > 0 && <Button variant="light" title="Exporter en CSV" onClick={async () => { const r = await utils.timeEntries.exportCsv.fetch(); const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url); }}><i className="bi bi-filetype-csv me-1" />CSV</Button>}
+          {editable && <Button onClick={() => { setF({ date: new Date().toISOString().slice(0, 10), description: '', hours: '1', minutes: '0', companyId: '', hourlyRateHt: '' }); setOpen(true); }}><i className="bi bi-plus-lg me-1" />Saisir un temps</Button>}
+        </div>
       </div>
 
       {billableByCompany.size > 0 && editable && (

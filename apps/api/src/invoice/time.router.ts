@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { timeEntryCreate, timeEntryUpdate, byId, timeEntryAmountHt } from '@jampack/domain';
+import { timeEntryCreate, timeEntryUpdate, byId, timeEntryAmountHt, timeEntriesCsv } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
 import { requireSociete, scope, n } from './salesRouter';
 
@@ -19,6 +19,15 @@ export const timeRouter = router({
         orderBy: [{ date: 'desc' }],
       });
       return rows.map((e) => ({ ...e, amountHt: timeEntryAmountHt(e.minutes, n(e.hourlyRateHt)) }));
+    })
+  ),
+
+  /** Export CSV du suivi du temps (Date ; Client ; Description ; Durée ; Taux ; Montant ; Facturable ; Statut). */
+  exportCsv: authed('read', 'Invoice').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const rows = await tx.timeEntry.findMany({ where: scope(ctx.societeId), include: { company: { select: { name: true } } }, orderBy: [{ date: 'desc' }] });
+      const content = timeEntriesCsv(rows.map((e) => ({ date: e.date, client: e.company?.name ?? '', description: e.description, minutes: e.minutes, hourlyRateHt: n(e.hourlyRateHt), billable: e.billable, status: e.status })));
+      return { filename: 'suivi-du-temps.csv', content };
     })
   ),
 

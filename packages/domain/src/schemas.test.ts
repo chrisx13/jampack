@@ -10,7 +10,7 @@ import {
   discountMention, DISCOUNT_MENTION_NONE,
   isValidSiren, isValidSiret, frTvaNumber,
   isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
-  timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv,
+  timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv, timeEntriesCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -491,6 +491,17 @@ describe('export CSV — notes de frais', () => {
     const [head, l1] = csv.split('\n');
     expect(head).toBe('Date;Catégorie;Description;Salarié;HT;TVA;TTC;Statut');
     expect(l1).toBe('05/08/2026;Repas;"Déjeuner; client";Marie;50,00;5,00;55,00;validated');
+  });
+});
+
+describe('export CSV — suivi du temps', () => {
+  it('sérialise (durée en heures, montant = heures×taux)', () => {
+    const csv = timeEntriesCsv([
+      { date: new Date('2026-08-05T00:00:00Z'), client: 'ACME', description: 'Dev', minutes: 90, hourlyRateHt: 80, billable: true, status: 'open' },
+    ]);
+    const [head, l1] = csv.split('\n');
+    expect(head).toBe('Date;Client;Description;Durée (h);Taux/h;Montant HT;Facturable;Statut');
+    expect(l1).toBe('05/08/2026;ACME;Dev;1,50;80,00;120,00;oui;open');
   });
 });
 

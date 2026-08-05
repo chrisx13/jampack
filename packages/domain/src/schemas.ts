@@ -95,6 +95,25 @@ export function formatDuration(minutes: number): string {
   return h > 0 ? (m > 0 ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`) : `${m}min`;
 }
 
+/**
+ * Sérialise des temps saisis en CSV (séparateur `;`, décimale FR, date JJ/MM/AAAA).
+ * Colonnes : Date ; Client ; Description ; Durée (h) ; Taux/h ; Montant HT ; Facturable ; Statut.
+ */
+export type TimeCsvRow = { date: string | Date | null; client: string; description: string; minutes: number; hourlyRateHt: number; billable: boolean; status: string };
+export function timeEntriesCsv(rows: TimeCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
+  const d = (v: string | Date | null) => {
+    if (!v) return '';
+    const x = new Date(v);
+    const p = (k: number) => String(k).padStart(2, '0');
+    return `${p(x.getUTCDate())}/${p(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
+  };
+  const head = 'Date;Client;Description;Durée (h);Taux/h;Montant HT;Facturable;Statut';
+  const lines = rows.map((r) => [d(r.date), esc(r.client), esc(r.description), fr(r.minutes / 60), fr(r.hourlyRateHt), fr(timeEntryAmountHt(r.minutes, r.hourlyRateHt)), r.billable ? 'oui' : 'non', esc(r.status)].join(';'));
+  return [head, ...lines].join('\n');
+}
+
 // ── Grille tarifaire (prix par quantité / par client) ──
 export const priceRuleCreate = z.object({
   productId: z.string().min(1),
