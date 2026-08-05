@@ -60,7 +60,7 @@ export default function Members() {
 
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3">Utilisateur</th><th>Rôles par société</th></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Utilisateur</th><th scope="col">Rôles par société</th></tr></thead>
           <tbody>
             {members.isLoading && <tr><td colSpan={2} className="text-center py-4"><Spinner size="sm" /></td></tr>}
             {members.data?.map((m) => (

@@ -35,7 +35,7 @@ export default function Societes() {
 
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3">Nom</th><th>Ville</th><th>SIRET</th><th className="pe-3">SIREN</th></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Nom</th><th scope="col">Ville</th><th scope="col">SIRET</th><th scope="col" className="pe-3">SIREN</th></tr></thead>
           <tbody>
             {list.isLoading && <tr><td colSpan={4} className="text-center py-4"><Spinner size="sm" /></td></tr>}
             {list.data?.map((s) => (

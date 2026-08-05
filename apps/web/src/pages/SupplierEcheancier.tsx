@@ -20,7 +20,7 @@ export default function SupplierEcheancier() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Référence</th><th>Fournisseur</th><th>Échéance</th><th className="text-end">Total TTC</th><th className="text-end">Reste dû</th><th className="pe-3" /></tr>
+              <tr><th scope="col" className="ps-3">Référence</th><th scope="col">Fournisseur</th><th scope="col">Échéance</th><th scope="col" className="text-end">Total TTC</th><th scope="col" className="text-end">Reste dû</th><th scope="col" className="pe-3" /></tr>
             </thead>
             <tbody>
               {list.isLoading && <tr><td colSpan={6} className="text-center py-4"><Spinner size="sm" /></td></tr>}

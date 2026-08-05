@@ -184,7 +184,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
         <Card.Body className="p-0">
           <Table className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Désignation</th><th className="text-end" style={{ width: 100 }}>Qté</th><th className="text-end" style={{ width: 130 }}>PU HT</th><th className="text-end" style={{ width: 110 }}>TVA</th><th className="text-end" style={{ width: 130 }}>Total HT</th><th style={{ width: 50 }} /></tr>
+              <tr><th scope="col" className="ps-3">Désignation</th><th scope="col" className="text-end" style={{ width: 100 }}>Qté</th><th scope="col" className="text-end" style={{ width: 130 }}>PU HT</th><th scope="col" className="text-end" style={{ width: 110 }}>TVA</th><th scope="col" className="text-end" style={{ width: 130 }}>Total HT</th><th scope="col" style={{ width: 50 }} /></tr>
             </thead>
             <tbody>
               {lines.map((l, i) => (

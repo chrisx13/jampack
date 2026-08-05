@@ -181,7 +181,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
         <Card.Body className="p-0">
           <Table className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3" style={{ width: 200 }}>Article</th><th>Désignation</th><th className="text-end" style={{ width: 100 }}>Qté</th><th className="text-end" style={{ width: 130 }}>PU HT</th><th className="text-end" style={{ width: 130 }}>Total HT</th><th style={{ width: 50 }} /></tr>
+              <tr><th scope="col" className="ps-3" style={{ width: 200 }}>Article</th><th scope="col">Désignation</th><th scope="col" className="text-end" style={{ width: 100 }}>Qté</th><th scope="col" className="text-end" style={{ width: 130 }}>PU HT</th><th scope="col" className="text-end" style={{ width: 130 }}>Total HT</th><th scope="col" style={{ width: 50 }} /></tr>
             </thead>
             <tbody>
               {lines.map((l, i) => (
@@ -212,7 +212,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
           <Card.Body className="p-0">
             <Table className="mb-0 align-middle">
               <thead className="text-secondary small">
-                <tr><th className="ps-3">Article</th><th className="text-end">Commandé</th><th className="text-end">Déjà reçu</th><th className="text-end">Reste dû</th><th className="text-end pe-3" style={{ width: 140 }}>Reçu maintenant</th></tr>
+                <tr><th scope="col" className="ps-3">Article</th><th scope="col" className="text-end">Commandé</th><th scope="col" className="text-end">Déjà reçu</th><th scope="col" className="text-end">Reste dû</th><th scope="col" className="text-end pe-3" style={{ width: 140 }}>Reçu maintenant</th></tr>
               </thead>
               <tbody>
                 {poLines.map((l) => {

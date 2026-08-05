@@ -28,7 +28,7 @@ export default function StockLots() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Lot / série</th><th>Article</th><th>Entrepôt</th><th className="text-end">Quantité</th><th>Péremption</th><th className="pe-3" /></tr>
+              <tr><th scope="col" className="ps-3">Lot / série</th><th scope="col">Article</th><th scope="col">Entrepôt</th><th scope="col" className="text-end">Quantité</th><th scope="col">Péremption</th><th scope="col" className="pe-3" /></tr>
             </thead>
             <tbody>
               {lots.isLoading && <tr><td colSpan={6} className="text-center py-4"><Spinner size="sm" /></td></tr>}

@@ -69,7 +69,7 @@ export default function BankReconciliation() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3" style={{ width: 60 }}>Pointé</th><th>Date</th><th>Libellé</th><th>Réf.</th><th className="text-end">Débit</th><th className="text-end pe-3">Crédit</th></tr>
+              <tr><th scope="col" className="ps-3" style={{ width: 60 }}>Pointé</th><th scope="col">Date</th><th scope="col">Libellé</th><th scope="col">Réf.</th><th scope="col" className="text-end">Débit</th><th scope="col" className="text-end pe-3">Crédit</th></tr>
             </thead>
             <tbody>
               {rows.map((l) => (

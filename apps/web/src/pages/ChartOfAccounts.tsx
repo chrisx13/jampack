@@ -43,7 +43,7 @@ export default function ChartOfAccounts() {
         <div className="col-lg-7">
           <Card><Card.Body className="p-0">
             <Table hover responsive className="mb-0 align-middle">
-              <thead className="text-secondary small"><tr><th className="ps-3">Compte</th><th>Libellé</th><th className="pe-3">Classe</th></tr></thead>
+              <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Compte</th><th scope="col">Libellé</th><th scope="col" className="pe-3">Classe</th></tr></thead>
               <tbody>
                 {accounts.isLoading && <tr><td colSpan={3} className="text-center py-4"><Spinner size="sm" /></td></tr>}
                 {accounts.data?.map((a) => (
@@ -56,7 +56,7 @@ export default function ChartOfAccounts() {
         </div>
         <div className="col-lg-5">
           <Card><Card.Body className="p-0">
-            <Table className="mb-0 align-middle"><thead className="text-secondary small"><tr><th className="ps-3">Journal</th><th>Libellé</th><th className="pe-3">Type</th></tr></thead>
+            <Table className="mb-0 align-middle"><thead className="text-secondary small"><tr><th scope="col" className="ps-3">Journal</th><th scope="col">Libellé</th><th scope="col" className="pe-3">Type</th></tr></thead>
               <tbody>
                 {journals.data?.map((j) => (<tr key={j.id}><td className="ps-3 fw-medium">{j.code}</td><td>{j.name}</td><td className="pe-3 text-secondary">{j.type}</td></tr>))}
                 {journals.isSuccess && journals.data.length === 0 && <tr><td colSpan={3} className="text-center text-secondary py-3">Aucun journal</td></tr>}

@@ -20,7 +20,7 @@ export default function Echeancier() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Numéro</th><th>Client</th><th>Échéance</th><th className="text-end">Total TTC</th><th className="text-end">Réglé</th><th className="text-end">Reste dû</th><th /></tr>
+              <tr><th scope="col" className="ps-3">Numéro</th><th scope="col">Client</th><th scope="col">Échéance</th><th scope="col" className="text-end">Total TTC</th><th scope="col" className="text-end">Réglé</th><th scope="col" className="text-end">Reste dû</th><th scope="col" /></tr>
             </thead>
             <tbody>
               {list.isLoading && <tr><td colSpan={7} className="text-center py-4"><Spinner size="sm" /></td></tr>}

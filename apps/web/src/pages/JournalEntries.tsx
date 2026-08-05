@@ -64,7 +64,7 @@ function Editor({ onClose }: { onClose: () => void }) {
 
       <Card className="mb-3"><Card.Body className="p-0">
         <Table className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3" style={{ width: 260 }}>Compte</th><th>Libellé</th><th className="text-end" style={{ width: 140 }}>Débit</th><th className="text-end" style={{ width: 140 }}>Crédit</th><th style={{ width: 50 }} /></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col" className="ps-3" style={{ width: 260 }}>Compte</th><th scope="col">Libellé</th><th scope="col" className="text-end" style={{ width: 140 }}>Débit</th><th scope="col" className="text-end" style={{ width: 140 }}>Crédit</th><th scope="col" style={{ width: 50 }} /></tr></thead>
           <tbody>
             {lines.map((l, i) => (
               <tr key={i}>
@@ -127,7 +127,7 @@ export default function JournalEntries() {
 
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3">Date</th><th>Journal</th><th>Pièce</th><th>Libellé</th><th className="text-end pe-3">Montant</th></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Date</th><th scope="col">Journal</th><th scope="col">Pièce</th><th scope="col">Libellé</th><th scope="col" className="text-end pe-3">Montant</th></tr></thead>
           <tbody>
             {list.isLoading && <tr><td colSpan={5} className="text-center py-4"><Spinner size="sm" /></td></tr>}
             {list.data?.map((e) => (

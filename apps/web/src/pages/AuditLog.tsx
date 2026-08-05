@@ -21,7 +21,7 @@ export default function AuditLog() {
       </div>
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3">Date</th><th>Utilisateur</th><th>Action</th><th className="pe-3">Référence</th></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Date</th><th scope="col">Utilisateur</th><th scope="col">Action</th><th scope="col" className="pe-3">Référence</th></tr></thead>
           <tbody>
             {list.isLoading && <tr><td colSpan={4} className="text-center py-4"><Spinner size="sm" /></td></tr>}
             {list.data?.map((l) => (

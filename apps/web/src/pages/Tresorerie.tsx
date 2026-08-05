@@ -10,7 +10,7 @@ function FlowTable({ rows, kind }: { rows: Flow[]; kind: 'in' | 'out' }) {
   return (
     <Table hover responsive size="sm" className="mb-0 align-middle">
       <thead className="text-secondary small">
-        <tr><th className="ps-3">Pièce</th><th>{kind === 'in' ? 'Client' : 'Fournisseur'}</th><th>Échéance</th><th className="text-end pe-3">Montant</th></tr>
+        <tr><th scope="col" className="ps-3">Pièce</th><th scope="col">{kind === 'in' ? 'Client' : 'Fournisseur'}</th><th scope="col">Échéance</th><th scope="col" className="text-end pe-3">Montant</th></tr>
       </thead>
       <tbody>
         {rows.map((r) => (

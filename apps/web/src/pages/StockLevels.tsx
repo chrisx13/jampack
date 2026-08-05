@@ -56,7 +56,7 @@ export default function StockLevels() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Article</th><th>Référence</th><th>Entrepôt</th><th className="text-end">Quantité</th><th className="pe-3" /></tr>
+              <tr><th scope="col" className="ps-3">Article</th><th scope="col">Référence</th><th scope="col">Entrepôt</th><th scope="col" className="text-end">Quantité</th><th scope="col" className="pe-3" /></tr>
             </thead>
             <tbody>
               {levels.isLoading && <tr><td colSpan={5} className="text-center py-4"><Spinner size="sm" /></td></tr>}

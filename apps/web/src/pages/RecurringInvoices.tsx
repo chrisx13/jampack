@@ -58,7 +58,7 @@ function Editor({ id, onClose }: { id: string | 'new'; onClose: () => void }) {
         </div>
 
         <Table size="sm" className="align-middle mb-2">
-          <thead className="text-secondary small"><tr><th>Désignation</th><th style={{ width: 80 }}>Qté</th><th style={{ width: 110 }}>PU HT</th><th style={{ width: 90 }}>TVA %</th><th style={{ width: 40 }} /></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col">Désignation</th><th scope="col" style={{ width: 80 }}>Qté</th><th scope="col" style={{ width: 110 }}>PU HT</th><th scope="col" style={{ width: 90 }}>TVA %</th><th scope="col" style={{ width: 40 }} /></tr></thead>
           <tbody>
             {lines.map((l, i) => (
               <tr key={i}>

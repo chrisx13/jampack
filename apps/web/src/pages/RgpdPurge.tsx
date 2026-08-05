@@ -26,7 +26,7 @@ export default function RgpdPurge() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Tiers</th><th>Dernière activité</th><th>Motif</th><th className="text-end pe-3" /></tr>
+              <tr><th scope="col" className="ps-3">Tiers</th><th scope="col">Dernière activité</th><th scope="col">Motif</th><th scope="col" className="text-end pe-3" /></tr>
             </thead>
             <tbody>
               {q.isLoading && <tr><td colSpan={4} className="text-center py-4"><Spinner size="sm" /></td></tr>}

@@ -54,7 +54,7 @@ export default function Lettrage() {
 
           <Card><Card.Body className="p-0">
             <Table hover responsive className="mb-0 align-middle">
-              <thead className="text-secondary small"><tr><th style={{ width: 40 }} /><th className="ps-1">Date</th><th>Pièce</th><th>Libellé</th><th className="text-end">Débit</th><th className="text-end">Crédit</th><th className="pe-3">Lettrage</th></tr></thead>
+              <thead className="text-secondary small"><tr><th scope="col" style={{ width: 40 }} /><th scope="col" className="ps-1">Date</th><th scope="col">Pièce</th><th scope="col">Libellé</th><th scope="col" className="text-end">Débit</th><th scope="col" className="text-end">Crédit</th><th scope="col" className="pe-3">Lettrage</th></tr></thead>
               <tbody>
                 {lines.isLoading && <tr><td colSpan={7} className="text-center py-4"><Spinner size="sm" /></td></tr>}
                 {lines.data?.map((l) => (

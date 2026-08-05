@@ -25,7 +25,7 @@ export default function Settings() {
             <Card.Header className="fw-semibold">TVA</Card.Header>
             <Card.Body className="p-0">
               <Table className="mb-0 align-middle">
-                <thead className="text-secondary small"><tr><th className="ps-3">Libellé</th><th className="text-end">Taux</th><th className="text-end pe-3">Défaut</th></tr></thead>
+                <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Libellé</th><th scope="col" className="text-end">Taux</th><th scope="col" className="text-end pe-3">Défaut</th></tr></thead>
                 <tbody>
                   {taxRates.data?.map((t) => (
                     <tr key={t.id}>
@@ -54,7 +54,7 @@ export default function Settings() {
             <Card.Header className="fw-semibold">Numérotation des pièces</Card.Header>
             <Card.Body className="p-0">
               <Table className="mb-0 align-middle">
-                <thead className="text-secondary small"><tr><th className="ps-3">Document</th><th>Préfixe</th><th className="text-end pe-3">Prochain numéro</th></tr></thead>
+                <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Document</th><th scope="col">Préfixe</th><th scope="col" className="text-end pe-3">Prochain numéro</th></tr></thead>
                 <tbody>
                   {sequences.data?.map((s) => (
                     <tr key={s.id}>

@@ -24,7 +24,7 @@ function ScheduleModal({ id, onClose }: { id: string; onClose: () => void }) {
           <>
             <p className="mb-2"><strong>{d.asset.name}</strong> — {euro.format(d.asset.amountHt)} sur {d.asset.durationYears} ans (linéaire)</p>
             <Table size="sm" className="align-middle">
-              <thead className="text-secondary small"><tr><th>Exercice</th><th className="text-end">Annuité</th><th className="text-end">Cumul</th><th className="text-end">VNC</th><th className="text-end" /></tr></thead>
+              <thead className="text-secondary small"><tr><th scope="col">Exercice</th><th scope="col" className="text-end">Annuité</th><th scope="col" className="text-end">Cumul</th><th scope="col" className="text-end">VNC</th><th scope="col" className="text-end" /></tr></thead>
               <tbody>
                 {d.rows.map((r) => (
                   <tr key={r.year}>
@@ -86,7 +86,7 @@ export default function FixedAssets() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Désignation</th><th>Compte</th><th>Acquisition</th><th className="text-end">Montant HT</th><th className="text-center">Durée</th><th className="text-end pe-3" /></tr>
+              <tr><th scope="col" className="ps-3">Désignation</th><th scope="col">Compte</th><th scope="col">Acquisition</th><th scope="col" className="text-end">Montant HT</th><th scope="col" className="text-center">Durée</th><th scope="col" className="text-end pe-3" /></tr>
             </thead>
             <tbody>
               {list.isLoading && <tr><td colSpan={6} className="text-center py-4"><Spinner size="sm" /></td></tr>}

@@ -39,7 +39,7 @@ export default function TrialBalance() {
       </div>
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3">Compte</th><th>Libellé</th><th className="text-end">Débit</th><th className="text-end">Crédit</th><th className="text-end pe-3">Solde</th></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Compte</th><th scope="col">Libellé</th><th scope="col" className="text-end">Débit</th><th scope="col" className="text-end">Crédit</th><th scope="col" className="text-end pe-3">Solde</th></tr></thead>
           <tbody>
             {bal.isLoading && <tr><td colSpan={5} className="text-center py-4"><Spinner size="sm" /></td></tr>}
             {rows.map((r) => (

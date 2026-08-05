@@ -27,7 +27,7 @@ export default function QuotesExpiring() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Devis</th><th>Client</th><th>Validité</th><th className="text-center">Statut</th><th className="text-end pe-3">Montant TTC</th></tr>
+              <tr><th scope="col" className="ps-3">Devis</th><th scope="col">Client</th><th scope="col">Validité</th><th scope="col" className="text-center">Statut</th><th scope="col" className="text-end pe-3">Montant TTC</th></tr>
             </thead>
             <tbody>
               {q.isLoading && <tr><td colSpan={5} className="text-center py-4"><Spinner size="sm" /></td></tr>}

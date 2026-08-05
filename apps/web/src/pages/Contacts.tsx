@@ -50,7 +50,7 @@ export default function Contacts() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Nom</th><th>Client</th><th>Société</th><th>Email</th><th>Téléphone</th><th className="text-end pe-3">Actions</th></tr>
+              <tr><th scope="col" className="ps-3">Nom</th><th scope="col">Client</th><th scope="col">Société</th><th scope="col">Email</th><th scope="col">Téléphone</th><th scope="col" className="text-end pe-3">Actions</th></tr>
             </thead>
             <tbody>
               {list.data?.map((c) => (
