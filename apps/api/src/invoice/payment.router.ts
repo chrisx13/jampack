@@ -3,7 +3,8 @@ import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
 import { paymentCreate, byId, dunningMessage } from '@jampack/domain';
 import { router, authed } from '../trpc/trpc';
-import { requireSociete, scope, n, salesTotals } from './salesRouter';
+import { requireSociete, scope, n, salesTotals, htmlToPdf } from './salesRouter';
+import { renderStatementHtml } from './statementHtml';
 
 /** Recalcule le statut d'une facture selon le cumul de ses règlements (payée / validée). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,6 +18,32 @@ async function recompute(tx: any, invoiceId: string) {
 }
 
 export const paymentRouter = router({
+  /** Relevé de compte client (PDF) : factures (+), avoirs (−) et règlements (−), solde progressif. */
+  statement: authed('read', 'Payment').input(z.object({ companyId: z.string().min(1) })).mutation(({ ctx, input }) => {
+    const societeId = requireSociete(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const company = await tx.company.findUniqueOrThrow({ where: { id: input.companyId }, select: { name: true } });
+      const docs = await tx.invoice.findMany({
+        where: { ...scope(ctx.societeId), companyId: input.companyId, docType: { in: ['facture', 'avoir'] }, status: { in: ['validated', 'paid'] } },
+        include: { lines: true, payments: { select: { amount: true, date: true } } },
+      });
+      type E = { date: Date | null; ref: string; type: string; debit: number; credit: number; solde: number };
+      const raw: Omit<E, 'solde'>[] = [];
+      for (const doc of docs) {
+        const ttc = salesTotals(doc).totalTtc;
+        if (doc.docType === 'facture') raw.push({ date: doc.issueDate, ref: doc.number ?? '—', type: 'Facture', debit: ttc, credit: 0 });
+        else raw.push({ date: doc.issueDate, ref: doc.number ?? '—', type: 'Avoir', debit: 0, credit: ttc });
+        for (const p of doc.payments) raw.push({ date: p.date, ref: doc.number ?? '—', type: 'Règlement', debit: 0, credit: n(p.amount) });
+      }
+      raw.sort((a, b) => (a.date ? new Date(a.date).getTime() : 0) - (b.date ? new Date(b.date).getTime() : 0));
+      let solde = 0;
+      const entries: E[] = raw.map((e) => { solde = Math.round((solde + e.debit - e.credit) * 100) / 100; return { ...e, solde }; });
+      const soc = await tx.societe.findUniqueOrThrow({ where: { id: societeId } });
+      const html = renderStatementHtml(company.name, soc as never, entries, solde);
+      return { filename: `releve-${company.name.replace(/\s+/g, '-').toLowerCase()}.pdf`, base64: await htmlToPdf(html) };
+    });
+  }),
+
   listForInvoice: authed('read', 'Payment').input(z.object({ invoiceId: z.string().min(1) })).query(({ ctx, input }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
       tx.payment.findMany({ where: { ...scope(ctx.societeId), invoiceId: input.invoiceId }, orderBy: { date: 'desc' } })

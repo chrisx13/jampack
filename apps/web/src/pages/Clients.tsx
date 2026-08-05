@@ -122,6 +122,13 @@ export default function Clients() {
     if (edit && 'id' in edit && edit.id) update.mutate({ id: edit.id, name: form.name.trim(), ...ids, doNotProspect: form.doNotProspect, processingRestricted: form.processingRestricted, factorId: form.factorId || null, paymentTermId: form.paymentTermId || null, ...billing });
     else create.mutate({ name: form.name.trim(), siren: form.siren || undefined, siret: form.siret || undefined, tvaNumber: form.tvaNumber || undefined, doNotProspect: form.doNotProspect, processingRestricted: form.processingRestricted, factorId: form.factorId || undefined, paymentTermId: form.paymentTermId || undefined, ...billing });
   };
+  const statementMut = trpc.payments.statement.useMutation();
+  const statement = async (c: Company) => {
+    const r = await statementMut.mutateAsync({ companyId: c.id });
+    const bytes = Uint8Array.from(atob(r.base64), (ch) => ch.charCodeAt(0));
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+    const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url);
+  };
   const exportRgpd = async (c: Company) => {
     const data = await utils.crm.companies.exportData.fetch({ id: c.id });
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
@@ -170,6 +177,7 @@ export default function Clients() {
                   </td>
                   <td className="text-secondary">{c.societe?.name ?? '—'}</td>
                   <td className="text-end pe-3">
+                    <Button variant="light" size="sm" className="me-1" title="Relevé de compte (PDF)" onClick={() => statement(c as Company)}><i className="bi bi-file-earmark-ruled" /></Button>
                     <Button variant="light" size="sm" className="me-1" title="Export RGPD (données personnelles)" onClick={() => exportRgpd(c as Company)}><i className="bi bi-download" /></Button>
                     {can('update', 'Company') && <Button variant="light" size="sm" className="me-1" onClick={() => open(c as Company)}><i className="bi bi-pencil" /></Button>}
                     {can('delete', 'Company') && <Button variant="light" size="sm" className="me-1 text-warning" title="Anonymiser (RGPD — conserve les pièces comptables)" onClick={() => setAnon(c as Company)}><i className="bi bi-person-x" /></Button>}
