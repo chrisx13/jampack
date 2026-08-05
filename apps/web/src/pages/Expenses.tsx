@@ -44,7 +44,7 @@ export default function Expenses() {
 
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3">Date</th><th>Catégorie</th><th>Description</th><th>Salarié</th><th className="text-end">HT</th><th className="text-end">TTC</th><th>Statut</th><th className="text-end pe-3">Actions</th></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Date</th><th scope="col">Catégorie</th><th scope="col">Description</th><th scope="col">Salarié</th><th scope="col" className="text-end">HT</th><th scope="col" className="text-end">TTC</th><th scope="col">Statut</th><th scope="col" className="text-end pe-3">Actions</th></tr></thead>
           <tbody>
             {list.isLoading && <tr><td colSpan={8} className="text-center py-4"><Spinner size="sm" /></td></tr>}
             {rows.map((e) => (

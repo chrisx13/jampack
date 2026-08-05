@@ -153,7 +153,7 @@ export default function Clients() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Nom</th><th>SIREN</th><th>Établissements</th><th>Société</th><th className="text-end pe-3">Actions</th></tr>
+              <tr><th scope="col" className="ps-3">Nom</th><th scope="col">SIREN</th><th scope="col">Établissements</th><th scope="col">Société</th><th scope="col" className="text-end pe-3">Actions</th></tr>
             </thead>
             <tbody>
               {rows.map((c) => (

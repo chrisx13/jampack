@@ -28,7 +28,7 @@ export default function Reminders() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Facture</th><th>Client</th><th>Échéance</th><th className="text-end">Reste dû</th><th>Niveau</th><th>Dernière relance</th><th className="text-end pe-3">Actions</th></tr>
+              <tr><th scope="col" className="ps-3">Facture</th><th scope="col">Client</th><th scope="col">Échéance</th><th scope="col" className="text-end">Reste dû</th><th scope="col">Niveau</th><th scope="col">Dernière relance</th><th scope="col" className="text-end pe-3">Actions</th></tr>
             </thead>
             <tbody>
               {q.isLoading && <tr><td colSpan={7} className="text-center py-4"><Spinner size="sm" /></td></tr>}

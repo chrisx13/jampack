@@ -76,7 +76,7 @@ function PricingModal({ product, onHide }: { product: { id: string; name: string
       <Modal.Body>
         <p className="text-secondary small">Priorité : tarif <strong>client</strong> puis <strong>palier de quantité</strong> le plus élevé atteint. Sans règle, le prix de base de l'article s'applique.</p>
         <Table size="sm" className="align-middle mb-3">
-          <thead className="text-secondary small"><tr><th>Client</th><th>À partir de (qté)</th><th className="text-end">PU HT</th><th /></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col">Client</th><th scope="col">À partir de (qté)</th><th scope="col" className="text-end">PU HT</th><th scope="col"><span className="visually-hidden">Retirer</span></th></tr></thead>
           <tbody>
             {mine.map((r) => (
               <tr key={r.id}>
@@ -194,7 +194,7 @@ export default function Catalogue() {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Référence</th><th>Nom</th><th>Catégorie</th><th>Type</th><th>Unité</th><th className="text-end">Prix HT</th><th>TVA</th><th className="text-end pe-3">Actions</th></tr>
+              <tr><th scope="col" className="ps-3">Référence</th><th scope="col">Nom</th><th scope="col">Catégorie</th><th scope="col">Type</th><th scope="col">Unité</th><th scope="col" className="text-end">Prix HT</th><th scope="col">TVA</th><th scope="col" className="text-end pe-3">Actions</th></tr>
             </thead>
             <tbody>
               {rows.map((p) => (

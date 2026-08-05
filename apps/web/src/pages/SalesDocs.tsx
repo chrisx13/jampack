@@ -374,7 +374,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
         <Card.Body className="p-0">
           <Table className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3" style={{ width: 200 }}>Article</th><th>Désignation</th><th className="text-end" style={{ width: 90 }}>Qté</th><th className="text-end" style={{ width: 120 }}>PU HT</th><th className="text-end" style={{ width: 110 }}>TVA</th><th className="text-end" style={{ width: 120 }}>Total HT</th><th style={{ width: 50 }} /></tr>
+              <tr><th scope="col" className="ps-3" style={{ width: 200 }}>Article</th><th scope="col">Désignation</th><th scope="col" className="text-end" style={{ width: 90 }}>Qté</th><th scope="col" className="text-end" style={{ width: 120 }}>PU HT</th><th scope="col" className="text-end" style={{ width: 110 }}>TVA</th><th scope="col" className="text-end" style={{ width: 120 }}>Total HT</th><th scope="col" style={{ width: 50 }}><span className="visually-hidden">Retirer</span></th></tr>
             </thead>
             <tbody>
               {lines.map((l, i) => (
@@ -596,7 +596,7 @@ export default function SalesDocs({ cfg }: { cfg: SalesCfg }) {
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
             <thead className="text-secondary small">
-              <tr><th className="ps-3">Numéro</th><th>Client</th><th>Émission</th>{cfg.dateLabel && <th>{cfg.dateLabel}</th>}<th className="text-end">Total TTC</th><th>Statut</th><th className="text-end pe-3" /></tr>
+              <tr><th scope="col" className="ps-3">Numéro</th><th scope="col">Client</th><th scope="col">Émission</th>{cfg.dateLabel && <th scope="col">{cfg.dateLabel}</th>}<th scope="col" className="text-end">Total TTC</th><th scope="col">Statut</th><th scope="col" className="text-end pe-3"><span className="visually-hidden">Actions</span></th></tr>
             </thead>
             <tbody>
               {list.isLoading && <tr><td colSpan={7} className="text-center py-4"><Spinner size="sm" /></td></tr>}

@@ -52,7 +52,7 @@ export default function TimeTracking() {
 
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3">Date</th><th>Client</th><th>Description</th><th>Durée</th><th className="text-end">Taux/h</th><th className="text-end">Montant HT</th><th>Statut</th><th className="text-end pe-3" /></tr></thead>
+          <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Date</th><th scope="col">Client</th><th scope="col">Description</th><th scope="col">Durée</th><th scope="col" className="text-end">Taux/h</th><th scope="col" className="text-end">Montant HT</th><th scope="col">Statut</th><th scope="col" className="text-end pe-3"><span className="visually-hidden">Actions</span></th></tr></thead>
           <tbody>
             {list.isLoading && <tr><td colSpan={8} className="text-center py-4"><Spinner size="sm" /></td></tr>}
             {rows.map((e) => (

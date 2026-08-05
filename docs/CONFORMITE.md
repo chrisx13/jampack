@@ -129,6 +129,7 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | 3 Couleurs / contrastes | 🔧 | Thème Jampack clair/sombre à auditer (ratio ≥ 4,5:1 texte, 3:1 UI) ; ne pas véhiculer l'info par la seule couleur (badges de statut portent un libellé). |
 | 7 Scripts / composants | 🔧 | Composants react-bootstrap globalement accessibles ; vérifier rôles/états ARIA des menus, modales, onglets, kanban (drag&drop → alternative clavier). |
 | 8 Éléments obligatoires | 🔧 | `lang="fr"`, titres de page, structure HTML valide à confirmer. |
+| 5 Tableaux | 🔧 | **En-têtes de colonnes `scope="col"`** sur les listes principales ✅ (pièces de vente, Clients, Catalogue, Notes de frais, Abonnements, Suivi du temps, Relances, Grand livre) ; `<caption>` sur la page publique. Reste : caption/summary systématiques. |
 | 9 Structuration | 🔧 | **Landmarks `nav`/`main`/`aside` nommés** ✅ (`AppShell`) ; hiérarchie des titres h1→h6 à vérifier par page. |
 | 10 Présentation | 🔧 | Zoom 200 %, responsive ≥ 360 px ✅ ; **focus clavier visible** (`:focus-visible`) ✅. |
 | 11 Formulaires | 🔧 | Étiquettes `<label>` associées, messages d'erreur explicites, regroupements. |
