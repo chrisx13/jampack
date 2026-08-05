@@ -27,6 +27,11 @@ Documents versionnés avec le code, tenus à jour à chaque incrément.
 | 14 | [Conventions de code](CODING-STANDARDS.md) | Style, conventions, revue | — |
 | 15 | [Glossaire](GLOSSAIRE.md) | Terminologie métier & technique | — |
 | 16 | [Kit de marque](BRAND-KIT.md) | Identité visuelle : logo, palette, typo, composants, modèles de documents | — |
+| 17 | [Journal des évolutions](CHANGELOG.md) | Récapitulatif fonctionnel des livraisons | — |
+| 18 | [Revue concurrentielle](CONCURRENCE.md) | Positionnement vs marché + backlog priorisé | — |
+| 19 | [Interop expert-comptable](CONNECTEURS-EXPERT-COMPTABLE.md) | Échange fichiers (FEC/CSV) + API découplées | — |
+| 20 | [Liasse fiscale](LIASSE-FISCALE.md) | Préparation + analyse faisabilité (Teledec/EDI-TDFC) | — |
+| 21 | [Déclaration d'accessibilité](DECLARATION-ACCESSIBILITE.md) | RGAA — état de conformité | RGAA 4.1 |
 | — | [Traçabilité code ↔ specs](TRACABILITE.md) | État d'avancement code vs spécifications | — |
 
 ## Normes et référentiels couverts
