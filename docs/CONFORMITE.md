@@ -144,7 +144,7 @@ tableau de données avec **`<caption>`** et **`scope="col"`**, **`<label>` assoc
 ### 4.3 Plan
 1. **Audit RGAA** (échantillon de pages : connexion, tableau de bord, liste, formulaire facture).
 2. Corriger **contrastes**, **focus visible**, **labels**, **landmarks**, **alternatives clavier** (kanban).
-3. Publier une **déclaration d'accessibilité** (taux de conformité, dérogations, contact).
+3. Publier une **déclaration d'accessibilité** (taux de conformité, dérogations, contact) → **brouillon rédigé** : [DECLARATION-ACCESSIBILITE.md](DECLARATION-ACCESSIBILITE.md) (à finaliser après audit).
 - **1er lot livré** (`AppShell` + thème) : lien d'évitement, landmarks nommés, `aria-current`/`aria-expanded`,
   navigation clavier des vues, focus visible global. Reste : contrastes mesurés, formulaires (labels/erreurs),
   onglets au clavier, alternative au kanban, déclaration d'accessibilité.
