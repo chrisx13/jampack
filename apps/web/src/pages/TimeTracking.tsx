@@ -78,17 +78,17 @@ export default function TimeTracking() {
         <Modal.Header closeButton><Modal.Title>Saisir un temps</Modal.Title></Modal.Header>
         <Modal.Body>
           <div className="row g-2">
-            <div className="col-md-6"><Form.Label>Date</Form.Label><Form.Control type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} /></div>
-            <div className="col-md-6"><Form.Label>Client</Form.Label>
+            <Form.Group className="col-md-6" controlId="te-date"><Form.Label>Date</Form.Label><Form.Control type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-6" controlId="te-company"><Form.Label>Client</Form.Label>
               <Form.Select value={f.companyId} onChange={(e) => setF({ ...f, companyId: e.target.value })}>
                 <option value="">— Sélectionner —</option>
                 {(companies.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Form.Select>
-            </div>
-            <div className="col-12"><Form.Label>Description</Form.Label><Form.Control value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Tâche réalisée…" /></div>
-            <div className="col-md-3"><Form.Label>Heures</Form.Label><Form.Control type="number" min={0} value={f.hours} onChange={(e) => setF({ ...f, hours: e.target.value })} /></div>
-            <div className="col-md-3"><Form.Label>Minutes</Form.Label><Form.Control type="number" min={0} max={59} value={f.minutes} onChange={(e) => setF({ ...f, minutes: e.target.value })} /></div>
-            <div className="col-md-6"><Form.Label>Taux horaire HT</Form.Label><Form.Control type="number" min={0} step="0.01" value={f.hourlyRateHt} onChange={(e) => setF({ ...f, hourlyRateHt: e.target.value })} /></div>
+            </Form.Group>
+            <Form.Group className="col-12" controlId="te-desc"><Form.Label>Description</Form.Label><Form.Control value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Tâche réalisée…" /></Form.Group>
+            <Form.Group className="col-md-3" controlId="te-hours"><Form.Label>Heures</Form.Label><Form.Control type="number" min={0} value={f.hours} onChange={(e) => setF({ ...f, hours: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-3" controlId="te-minutes"><Form.Label>Minutes</Form.Label><Form.Control type="number" min={0} max={59} value={f.minutes} onChange={(e) => setF({ ...f, minutes: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-6" controlId="te-rate"><Form.Label>Taux horaire HT</Form.Label><Form.Control type="number" min={0} step="0.01" value={f.hourlyRateHt} onChange={(e) => setF({ ...f, hourlyRateHt: e.target.value })} /></Form.Group>
           </div>
         </Modal.Body>
         <Modal.Footer>

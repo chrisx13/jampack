@@ -41,20 +41,20 @@ function Editor({ id, onClose }: { id: string | 'new'; onClose: () => void }) {
       <Modal.Header closeButton><Modal.Title>{id === 'new' ? 'Nouvel abonnement' : 'Modifier l’abonnement'}</Modal.Title></Modal.Header>
       <Modal.Body>
         <div className="row g-2 mb-3">
-          <div className="col-md-6"><Form.Label>Client</Form.Label>
+          <Form.Group className="col-md-6" controlId="rec-company"><Form.Label>Client</Form.Label>
             <Form.Select value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
               <option value="">— Sélectionner —</option>
               {(companies.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Form.Select>
-          </div>
-          <div className="col-md-6"><Form.Label>Libellé</Form.Label><Form.Control value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Maintenance mensuelle…" /></div>
-          <div className="col-md-4"><Form.Label>Fréquence</Form.Label>
+          </Form.Group>
+          <Form.Group className="col-md-6" controlId="rec-label"><Form.Label>Libellé</Form.Label><Form.Control value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Maintenance mensuelle…" /></Form.Group>
+          <Form.Group className="col-md-4" controlId="rec-freq"><Form.Label>Fréquence</Form.Label>
             <Form.Select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
               {RECURRENCE_FREQUENCIES.map((f) => <option key={f} value={f}>{recurrenceLabel(f)}</option>)}
             </Form.Select>
-          </div>
-          <div className="col-md-4"><Form.Label>Tous les</Form.Label><Form.Control type="number" min={1} value={interval} onChange={(e) => setIntervalV(e.target.value)} /></div>
-          <div className="col-md-4"><Form.Label>Prochaine échéance</Form.Label><Form.Control type="date" value={nextRunAt} onChange={(e) => setNextRunAt(e.target.value)} /></div>
+          </Form.Group>
+          <Form.Group className="col-md-4" controlId="rec-interval"><Form.Label>Tous les</Form.Label><Form.Control type="number" min={1} value={interval} onChange={(e) => setIntervalV(e.target.value)} /></Form.Group>
+          <Form.Group className="col-md-4" controlId="rec-next"><Form.Label>Prochaine échéance</Form.Label><Form.Control type="date" value={nextRunAt} onChange={(e) => setNextRunAt(e.target.value)} /></Form.Group>
         </div>
 
         <Table size="sm" className="align-middle mb-2">

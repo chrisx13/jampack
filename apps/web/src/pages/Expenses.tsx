@@ -73,15 +73,15 @@ export default function Expenses() {
         <Modal.Header closeButton><Modal.Title>Nouvelle note de frais</Modal.Title></Modal.Header>
         <Modal.Body>
           <div className="row g-2">
-            <div className="col-md-6"><Form.Label>Date</Form.Label><Form.Control type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} /></div>
-            <div className="col-md-6"><Form.Label>Catégorie</Form.Label>
+            <Form.Group className="col-md-6" controlId="exp-date"><Form.Label>Date</Form.Label><Form.Control type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-6" controlId="exp-category"><Form.Label>Catégorie</Form.Label>
               <Form.Select value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>
                 {EXPENSE_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
               </Form.Select>
-            </div>
-            <div className="col-12"><Form.Label>Description</Form.Label><Form.Control value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Objet de la dépense…" /></div>
-            <div className="col-md-6"><Form.Label>Montant HT</Form.Label><Form.Control type="number" min={0} step="0.01" value={f.amountHt} onChange={(e) => setF({ ...f, amountHt: e.target.value })} /></div>
-            <div className="col-md-6"><Form.Label>TVA %</Form.Label><Form.Control type="number" min={0} step="0.1" value={f.taxRatePct} onChange={(e) => setF({ ...f, taxRatePct: e.target.value })} /></div>
+            </Form.Group>
+            <Form.Group className="col-12" controlId="exp-desc"><Form.Label>Description</Form.Label><Form.Control value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Objet de la dépense…" /></Form.Group>
+            <Form.Group className="col-md-6" controlId="exp-ht"><Form.Label>Montant HT</Form.Label><Form.Control type="number" min={0} step="0.01" value={f.amountHt} onChange={(e) => setF({ ...f, amountHt: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-6" controlId="exp-tva"><Form.Label>TVA %</Form.Label><Form.Control type="number" min={0} step="0.1" value={f.taxRatePct} onChange={(e) => setF({ ...f, taxRatePct: e.target.value })} /></Form.Group>
           </div>
         </Modal.Body>
         <Modal.Footer>
