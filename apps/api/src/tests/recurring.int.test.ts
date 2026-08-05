@@ -37,4 +37,16 @@ describe('Factures récurrentes (abonnements)', () => {
     const after = await C.prisma.recurringInvoice.findUniqueOrThrow({ where: { id: tpl.id } });
     expect(new Date(after.nextRunAt).getTime()).toBeGreaterThan(Date.now());
   });
+
+  it('duplique un abonnement (copie suspendue, libellé suffixé)', async () => {
+    const companyId = (await C.prisma.company.findFirstOrThrow({ where: { societeId: C.soc.id, isCustomer: true } })).id;
+    const tpl = await caller.recurring.create({ companyId, label: 'Hébergement', frequency: 'yearly', interval: 1, nextRunAt: new Date().toISOString(), active: true, discountType: 'none', discountValue: 0, lines: [{ label: 'Hosting', quantity: 1, unitPriceHt: 200, taxRatePct: 20 }] });
+    tplIds.push(tpl.id);
+    const copy = await caller.recurring.duplicate({ id: tpl.id });
+    tplIds.push(copy.id);
+    expect(copy.id).not.toBe(tpl.id);
+    expect(copy.label).toBe('Hébergement (copie)');
+    expect(copy.active).toBe(false);
+    expect(copy.companyId).toBe(companyId);
+  });
 });

@@ -97,6 +97,7 @@ export default function RecurringInvoices() {
   const editable = can('create', 'Invoice');
   const list = trpc.recurring.list.useQuery();
   const remove = trpc.recurring.remove.useMutation({ onSuccess: () => utils.recurring.list.invalidate() });
+  const duplicate = trpc.recurring.duplicate.useMutation({ onSuccess: () => utils.recurring.list.invalidate() });
   const generate = trpc.recurring.generateDue.useMutation({ onSuccess: (r) => { utils.recurring.list.invalidate(); utils.invoices.list.invalidate(); alert(`${r.generated} facture(s) générée(s) en brouillon — voir l’onglet Factures.`); } });
   const [edit, setEdit] = useState<string | 'new' | null>(null);
   const rows = list.data ?? [];
@@ -126,6 +127,7 @@ export default function RecurringInvoices() {
                 <td className="text-secondary">{dfmt(r.nextRunAt)}</td>
                 <td>{r.active ? <Badge bg="success-subtle" text="success" className="fw-normal">Actif</Badge> : <Badge bg="secondary-subtle" text="secondary" className="fw-normal">Suspendu</Badge>}</td>
                 <td className="text-end pe-3" onClick={(e) => e.stopPropagation()}>
+                  {can('create', 'Invoice') && <Button variant="light" size="sm" className="me-1" title="Dupliquer" onClick={() => duplicate.mutate({ id: r.id })} disabled={duplicate.isPending}><i className="bi bi-files" /></Button>}
                   {can('update', 'Invoice') && <Button variant="light" size="sm" className="text-danger" title="Supprimer" onClick={() => { if (confirm(`Supprimer l’abonnement « ${r.label} » ?`)) remove.mutate({ id: r.id }); }}><i className="bi bi-trash" /></Button>}
                 </td>
               </tr>

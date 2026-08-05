@@ -57,6 +57,23 @@ export const recurringRouter = router({
     withTenant(ctx.user.organizationId, ctx.societeId, (tx) => tx.recurringInvoice.delete({ where: { id: input.id } }))
   ),
 
+  /** Duplique un abonnement (modèle identique, libellé suffixé « (copie) », suspendu par défaut). */
+  duplicate: authed('create', 'Invoice').input(byId).mutation(({ ctx, input }) => {
+    const societeId = requireSociete(ctx.societeId);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const src = await tx.recurringInvoice.findUniqueOrThrow({ where: { id: input.id } });
+      return tx.recurringInvoice.create({
+        data: {
+          organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id,
+          companyId: src.companyId, label: `${src.label} (copie)`, frequency: src.frequency, interval: src.interval,
+          nextRunAt: src.nextRunAt, active: false, // suspendu : à réviser avant activation
+          paymentTermId: src.paymentTermId, bankAccountId: src.bankAccountId,
+          discountType: src.discountType, discountValue: src.discountValue, lines: src.lines as never,
+        },
+      });
+    });
+  }),
+
   /**
    * Génère les factures dues : pour chaque modèle actif dont `nextRunAt` ≤ maintenant, crée une
    * facture brouillon (lignes + remise du modèle) et avance `nextRunAt` selon la fréquence.
