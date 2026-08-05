@@ -43,6 +43,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-VEN-5 | `billing.router.ts`, `resolveBilling` | subrogation dans le PDF | ✅ |
 | FR-VEN-6 | `invoice/payment.router.ts` | e2e : acompte→validée, solde→payée | ✅ |
 | FR-VEN-7 | `payment.router.ts` (`echeancier`) | e2e : reste dû, hors échéancier si payé | ✅ |
+| FR-VEN-7b | `payments.statement` + `statementHtml.ts`, bouton Relevé `Clients.tsx` | relevé de compte PDF (factures/avoirs/règlements, solde progressif) | ✅ |
 | FR-VEN-9 | `payment.router.ts` (`reminders`/`recordReminder`/`reminderLetter`), `dunningMessage`, `Invoice.reminderLevel`, `Reminders.tsx` | unit : libellés + message ; e2e int : échue → relance niveau 1, lettre niveau 2 | ✅ |
 | FR-VEN-10 | `quote.router.ts` (`expiring`), `isQuoteExpired`/`quoteDaysToExpiry`, `Invoice.validUntil`, `QuotesExpiring.tsx` | unit : expiré/valide/non applicable + jours restants ; e2e int : devis émis à validité dépassée = expiré, TTC calculé | ✅ |
 | FR-VEN-11 | `discountMention`/`DISCOUNT_MENTION_NONE`, `Societe.discountTerms`, mention dans `invoiceHtml.ts`, champ `SocieteSettings.tsx` | unit : sans condition → « néant », avec condition → détaillée ; e2e int : discountTerms paramétré persiste | ✅ |

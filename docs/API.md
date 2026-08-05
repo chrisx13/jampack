@@ -30,7 +30,7 @@ Suivi du temps (facturation au temps). `list · create · update · remove · in
 `invoiceForCompany` génère une facture brouillon depuis les temps ouverts + facturables d'un client (une ligne par temps : durée × taux) et marque ces temps « facturés ».
 
 ### `payments`
-`listForInvoice · create · remove · echeancier · reminders · recordReminder · reminderLetter` (recalcule le statut *payée* ; relances = factures échues non soldées, incrément de niveau, lettre de relance texte)
+`listForInvoice · create · remove · echeancier · reminders · recordReminder · reminderLetter · statement` (recalcule le statut *payée* ; relances = factures échues non soldées ; statement = relevé de compte client PDF)
 
 ### `purchases`
 `suppliers` · `orders.{list,get,create,update,validate,cancel,duplicate,receive,receivePartial,overdue}` (duplicate = copie en brouillon) (receive = tout réceptionner ; receivePartial = livraisons échelonnées par ligne, statut *partial* → *received* ; overdue = commandes envoyées/partielles en retard de livraison)

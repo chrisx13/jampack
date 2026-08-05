@@ -8,7 +8,10 @@
 - Navigation type VS Code : **barre d'activité** (domaines à gauche) → **panneau** (vues) → **onglets**.
   Le panneau peut être **épinglé** (statique) ou **à la volée** (se referme après sélection).
 - **Tableau de bord** : indicateurs clés (CRM + finances) et panneau **« À traiter »** (échéances et tâches
-  des 14 prochains jours, retards signalés) — l'essentiel visible sans naviguer.
+  des 14 prochains jours, retards signalés) — **chaque ligne est cliquable** et ouvre l'écran concerné. Une carte
+  **« Stock sous seuil »** alerte sur les articles à réapprovisionner. L'essentiel visible sans naviguer.
+- **Exports CSV** (format FR, importables par un tableur ou l'expert-comptable) disponibles sur : écritures
+  comptables, balance, grand livre, balance âgée, journal d'audit, niveaux de stock, notes de frais, suivi du temps.
 - **Notes de vue** (bouton **Note**, en bas à droite de chaque vue) : pense-bêtes **partagés** — visibles par
   tous les utilisateurs ayant accès à la vue. On peut en créer **plusieurs**, les **déplacer** (glisser l'en-tête)
   pour ne pas masquer les données, changer leur **couleur**, et consulter l'**historique** des modifications
@@ -28,6 +31,7 @@
 - **Devis** : créer → **Envoyer** (numéro DE-) → **Accepter/Refuser** → **Convertir en facture**.
 - **Devis à échéance** : liste des devis émis par date de validité (valide / expire sous 7 j / expiré) — pour relancer avant caducité de l'offre.
 - **Dupliquer** : depuis une pièce ouverte, le bouton **Dupliquer** crée un brouillon identique (client, lignes) — pratique pour une facturation récurrente.
+- **Relevé de compte** (liste Clients, icône relevé) : PDF listant factures, avoirs et règlements du client par date, avec **solde dû**.
 - **Réf. commande client** : saisir le n° de bon de commande / marché du client ; il apparaît sur le PDF (exigence fréquente en B2B).
 - **Remise globale** : dans le bloc des totaux, choisir « Remise % » ou « Remise € » et saisir la valeur ; elle
   s'applique à toute la pièce (la TVA par taux reste exacte) et apparaît sur le PDF (sous-total, remise, net).
