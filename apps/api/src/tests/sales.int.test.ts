@@ -267,6 +267,20 @@ describe('Ventes — signature en ligne du devis', () => {
     // Double acceptation refusée.
     await expect(caller.publicQuote.accept({ token: link.token, signerName: 'Bis' })).rejects.toThrow();
   });
+
+  it('refus en ligne → statut « refused » + décideur tracé', async () => {
+    const companyId = await anyCustomer();
+    const devis = await caller.quotes.create({ companyId, notes: '[INT]', lines: [{ label: 'X', quantity: 1, unitPriceHt: 100, taxRatePct: 20 }] });
+    await caller.quotes.validate({ id: devis.id });
+    const link = await caller.quotes.publicLink({ id: devis.id });
+    const res = await caller.publicQuote.decline({ token: link.token, signerName: 'Client Réticent' });
+    expect(res.ok).toBe(true);
+    const after = await caller.quotes.get({ id: devis.id });
+    expect(after.status).toBe('refused');
+    expect(after.acceptedByName).toBe('Client Réticent');
+    // Un devis refusé ne peut plus être accepté en ligne.
+    await expect(caller.publicQuote.accept({ token: link.token, signerName: 'X' })).rejects.toThrow();
+  });
 });
 
 describe('Ventes — facture d\'acompte', () => {

@@ -45,4 +45,18 @@ export const publicQuoteRouter = router({
       return { ok: true };
     })
   ),
+
+  /** Refus du devis par le client via le lien public (statut « refused », décision tracée). */
+  decline: publicProcedure.input(byToken.extend({ signerName: z.string().min(2).max(120) })).mutation(({ ctx, input }) =>
+    withPublicToken(input.token, async (tx) => {
+      const q = await tx.invoice.findFirst({ where: { publicToken: input.token, docType: 'devis' }, select: { id: true, status: true } });
+      if (!q) throw new TRPCError({ code: 'NOT_FOUND', message: 'Devis introuvable.' });
+      if (q.status !== 'sent') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Ce devis ne peut plus être refusé en ligne.' });
+      await tx.invoice.update({
+        where: { id: q.id },
+        data: { status: 'refused', acceptedAt: new Date(), acceptedByName: input.signerName, acceptedIp: ctx.ip ?? null },
+      });
+      return { ok: true };
+    })
+  ),
 });

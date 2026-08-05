@@ -10,6 +10,7 @@ export default function PublicQuote({ token }: { token: string }) {
   const q = trpc.publicQuote.get.useQuery({ token }, { retry: false });
   const utils = trpc.useUtils();
   const accept = trpc.publicQuote.accept.useMutation({ onSuccess: () => utils.publicQuote.get.invalidate({ token }) });
+  const decline = trpc.publicQuote.decline.useMutation({ onSuccess: () => utils.publicQuote.get.invalidate({ token }) });
   const [name, setName] = useState('');
 
   return (
@@ -70,20 +71,27 @@ export default function PublicQuote({ token }: { token: string }) {
                 <Alert variant="success" className="mb-0">
                   <i className="bi bi-check-circle me-2" />Devis <strong>accepté</strong> le {dfmt(q.data.acceptedAt)}{q.data.acceptedByName ? ` par ${q.data.acceptedByName}` : ''}.
                 </Alert>
+              ) : q.data.status === 'refused' ? (
+                <Alert variant="secondary" className="mb-0">
+                  <i className="bi bi-x-circle me-2" />Devis <strong>refusé</strong> le {dfmt(q.data.acceptedAt)}{q.data.acceptedByName ? ` par ${q.data.acceptedByName}` : ''}.
+                </Alert>
               ) : q.data.status === 'sent' ? (
                 <div>
-                  <div className="fw-semibold mb-2">Accepter ce devis en ligne</div>
-                  <p className="text-secondary small">En saisissant votre nom et en validant, vous acceptez ce devis (« Bon pour accord »). L’horodatage et votre adresse IP sont enregistrés comme preuve.</p>
-                  {accept.isError && <Alert variant="danger" className="py-2">{accept.error.message}</Alert>}
-                  <div className="d-flex gap-2 flex-wrap" style={{ maxWidth: 480 }}>
-                    <Form.Control placeholder="Vos nom et prénom" value={name} onChange={(e) => setName(e.target.value)} />
+                  <div className="fw-semibold mb-2">Répondre à ce devis</div>
+                  <p className="text-secondary small">En saisissant votre nom et en validant, vous acceptez (« Bon pour accord ») ou refusez ce devis. L’horodatage et votre adresse IP sont enregistrés comme preuve.</p>
+                  {(accept.isError || decline.isError) && <Alert variant="danger" className="py-2">{(accept.error || decline.error)?.message}</Alert>}
+                  <Form.Control className="mb-2" placeholder="Vos nom et prénom" value={name} onChange={(e) => setName(e.target.value)} style={{ maxWidth: 360 }} />
+                  <div className="d-flex gap-2 flex-wrap">
                     <Button variant="success" disabled={name.trim().length < 2 || accept.isPending} onClick={() => accept.mutate({ token, signerName: name.trim() })}>
                       {accept.isPending ? <Spinner size="sm" /> : <><i className="bi bi-check2-circle me-1" />Accepter le devis</>}
+                    </Button>
+                    <Button variant="outline-danger" disabled={name.trim().length < 2 || decline.isPending} onClick={() => { if (confirm('Confirmer le refus de ce devis ?')) decline.mutate({ token, signerName: name.trim() }); }}>
+                      {decline.isPending ? <Spinner size="sm" /> : <><i className="bi bi-x me-1" />Refuser</>}
                     </Button>
                   </div>
                 </div>
               ) : (
-                <Alert variant="secondary" className="mb-0">Ce devis n’est pas disponible pour une acceptation en ligne.</Alert>
+                <Alert variant="secondary" className="mb-0">Ce devis n’est pas disponible pour une réponse en ligne.</Alert>
               )}
             </Card.Body>
           </Card>
