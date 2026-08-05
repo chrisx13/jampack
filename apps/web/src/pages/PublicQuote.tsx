@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Table, Button, Form, Spinner, Alert } from 'react-bootstrap';
 import { trpc } from '../trpc';
 
@@ -12,16 +12,21 @@ export default function PublicQuote({ token }: { token: string }) {
   const accept = trpc.publicQuote.accept.useMutation({ onSuccess: () => utils.publicQuote.get.invalidate({ token }) });
   const decline = trpc.publicQuote.decline.useMutation({ onSuccess: () => utils.publicQuote.get.invalidate({ token }) });
   const [name, setName] = useState('');
+  // RGAA 8.5/8.6 : titre de page pertinent, mis à jour selon le devis.
+  useEffect(() => {
+    document.title = q.data?.number ? `Devis ${q.data.number} — ${q.data.societe?.name ?? 'JAMPACK'}` : 'Devis — JAMPACK';
+  }, [q.data]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f1f5f9', padding: '32px 16px' }}>
+    <main style={{ minHeight: '100vh', background: '#f1f5f9', padding: '32px 16px' }} lang="fr">
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
-        <div style={{ height: 5, borderRadius: 4, background: 'linear-gradient(90deg, #3E3A52, #6366F1, #0EA5E9)', marginBottom: 20 }} />
-        {q.isLoading && <div className="text-center py-5"><Spinner /></div>}
+        <div style={{ height: 5, borderRadius: 4, background: 'linear-gradient(90deg, #3E3A52, #6366F1, #0EA5E9)', marginBottom: 20 }} aria-hidden="true" />
+        {q.isLoading && <div className="text-center py-5" role="status"><Spinner /><span className="visually-hidden">Chargement du devis…</span></div>}
         {q.isError && <Alert variant="danger">Devis introuvable ou lien invalide.</Alert>}
         {q.data && (
           <Card className="shadow-sm">
             <Card.Body className="p-4">
+              <h1 className="visually-hidden">Devis {q.data.number ?? ''} de {q.data.societe?.name ?? ''}</h1>
               <div className="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
                 <div>
                   <div className="fw-bold fs-5">{q.data.societe?.name}</div>
@@ -31,7 +36,7 @@ export default function PublicQuote({ token }: { token: string }) {
                   <div className="text-secondary small">{[q.data.societe?.siret && `SIRET ${q.data.societe.siret}`, q.data.societe?.tvaNumber && `TVA ${q.data.societe.tvaNumber}`].filter(Boolean).join(' · ')}</div>
                 </div>
                 <div className="text-end">
-                  <h4 className="mb-1 fw-semibold" style={{ color: '#3E3A52' }}>DEVIS</h4>
+                  <p className="mb-1 fw-semibold fs-4" style={{ color: '#3E3A52' }} aria-hidden="true">DEVIS</p>
                   <div className="fw-medium">{q.data.number ?? '—'}</div>
                   <div className="text-secondary small">Émis le {dfmt(q.data.issueDate)}</div>
                   {q.data.validUntil && <div className="text-secondary small">Valable jusqu’au {dfmt(q.data.validUntil)}</div>}
@@ -41,7 +46,8 @@ export default function PublicQuote({ token }: { token: string }) {
               {q.data.client && <div className="text-secondary small mb-3">À l’attention de <strong>{q.data.client}</strong></div>}
 
               <Table className="align-middle mb-3">
-                <thead className="text-secondary small"><tr><th>Désignation</th><th className="text-end">Qté</th><th className="text-end">PU HT</th><th className="text-end">TVA</th><th className="text-end">Total HT</th></tr></thead>
+                <caption className="visually-hidden">Détail des lignes du devis</caption>
+                <thead className="text-secondary small"><tr><th scope="col">Désignation</th><th scope="col" className="text-end">Qté</th><th scope="col" className="text-end">PU HT</th><th scope="col" className="text-end">TVA</th><th scope="col" className="text-end">Total HT</th></tr></thead>
                 <tbody>
                   {q.data.lines.map((l, i) => (
                     <tr key={i}>
@@ -68,36 +74,39 @@ export default function PublicQuote({ token }: { token: string }) {
               <hr className="my-4" />
 
               {q.data.status === 'accepted' ? (
-                <Alert variant="success" className="mb-0">
-                  <i className="bi bi-check-circle me-2" />Devis <strong>accepté</strong> le {dfmt(q.data.acceptedAt)}{q.data.acceptedByName ? ` par ${q.data.acceptedByName}` : ''}.
+                <Alert variant="success" className="mb-0" role="status">
+                  <i className="bi bi-check-circle me-2" aria-hidden="true" />Devis <strong>accepté</strong> le {dfmt(q.data.acceptedAt)}{q.data.acceptedByName ? ` par ${q.data.acceptedByName}` : ''}.
                 </Alert>
               ) : q.data.status === 'refused' ? (
-                <Alert variant="secondary" className="mb-0">
-                  <i className="bi bi-x-circle me-2" />Devis <strong>refusé</strong> le {dfmt(q.data.acceptedAt)}{q.data.acceptedByName ? ` par ${q.data.acceptedByName}` : ''}.
+                <Alert variant="secondary" className="mb-0" role="status">
+                  <i className="bi bi-x-circle me-2" aria-hidden="true" />Devis <strong>refusé</strong> le {dfmt(q.data.acceptedAt)}{q.data.acceptedByName ? ` par ${q.data.acceptedByName}` : ''}.
                 </Alert>
               ) : q.data.status === 'sent' ? (
                 <div>
-                  <div className="fw-semibold mb-2">Répondre à ce devis</div>
+                  <h2 className="fw-semibold mb-2 fs-5">Répondre à ce devis</h2>
                   <p className="text-secondary small">En saisissant votre nom et en validant, vous acceptez (« Bon pour accord ») ou refusez ce devis. L’horodatage et votre adresse IP sont enregistrés comme preuve.</p>
-                  {(accept.isError || decline.isError) && <Alert variant="danger" className="py-2">{(accept.error || decline.error)?.message}</Alert>}
-                  <Form.Control className="mb-2" placeholder="Vos nom et prénom" value={name} onChange={(e) => setName(e.target.value)} style={{ maxWidth: 360 }} />
+                  {(accept.isError || decline.isError) && <Alert variant="danger" className="py-2" role="alert">{(accept.error || decline.error)?.message}</Alert>}
+                  <Form.Group className="mb-2" style={{ maxWidth: 360 }}>
+                    <Form.Label htmlFor="signer-name">Vos nom et prénom</Form.Label>
+                    <Form.Control id="signer-name" autoComplete="name" placeholder="Ex. Marie Dupont" value={name} onChange={(e) => setName(e.target.value)} />
+                  </Form.Group>
                   <div className="d-flex gap-2 flex-wrap">
                     <Button variant="success" disabled={name.trim().length < 2 || accept.isPending} onClick={() => accept.mutate({ token, signerName: name.trim() })}>
-                      {accept.isPending ? <Spinner size="sm" /> : <><i className="bi bi-check2-circle me-1" />Accepter le devis</>}
+                      {accept.isPending ? <Spinner size="sm" /> : <><i className="bi bi-check2-circle me-1" aria-hidden="true" />Accepter le devis</>}
                     </Button>
                     <Button variant="outline-danger" disabled={name.trim().length < 2 || decline.isPending} onClick={() => { if (confirm('Confirmer le refus de ce devis ?')) decline.mutate({ token, signerName: name.trim() }); }}>
-                      {decline.isPending ? <Spinner size="sm" /> : <><i className="bi bi-x me-1" />Refuser</>}
+                      {decline.isPending ? <Spinner size="sm" /> : <><i className="bi bi-x me-1" aria-hidden="true" />Refuser</>}
                     </Button>
                   </div>
                 </div>
               ) : (
-                <Alert variant="secondary" className="mb-0">Ce devis n’est pas disponible pour une réponse en ligne.</Alert>
+                <Alert variant="secondary" className="mb-0" role="status">Ce devis n’est pas disponible pour une réponse en ligne.</Alert>
               )}
             </Card.Body>
           </Card>
         )}
         <div className="text-center text-secondary small mt-3">Édité avec JAMPACK</div>
       </div>
-    </div>
+    </main>
   );
 }

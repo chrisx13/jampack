@@ -135,6 +135,11 @@ Cartographie des normes, référentiels et obligations applicables, et de leur p
 | 12 Navigation | 🔧 | **Lien d'évitement** ✅, **`aria-current`** sur domaine/vue actifs ✅, **liens de sous-domaine activables au clavier** ✅ ; ordre de tabulation des onglets à compléter. |
 | 13 Consultation | ✅/🔧 | Pas de limite de temps bloquante ; PDF de facture : tag/accessibilité à vérifier. |
 
+**Page publique de signature du devis (`/devis/:token`)** — surface **grand public**, donc RGAA prioritaire.
+Traitée : `<main lang="fr">`, **titre de page** dynamique (n° de devis), **h1** (structure) + h2 pour la réponse,
+tableau de données avec **`<caption>`** et **`scope="col"`**, **`<label>` associée** au champ signataire
+(+ `autocomplete`), **`role="status"`/`role="alert"`** sur les retours, icônes décoratives `aria-hidden`. ✅
+
 ### 4.3 Plan
 1. **Audit RGAA** (échantillon de pages : connexion, tableau de bord, liste, formulaire facture).
 2. Corriger **contrastes**, **focus visible**, **labels**, **landmarks**, **alternatives clavier** (kanban).
