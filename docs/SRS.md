@@ -110,6 +110,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-REF-3 | **Numérotation des pièces** par société et type (facture/devis/avoir/commande), atomique. | M | ✅ |
 | FR-REF-4 | **Import CSV du catalogue** (`référence ; nom ; prix HT ; unité ; type`) : création + mise à jour par référence (upsert). | C | ✅ |
 | FR-REF-5 | **Grille tarifaire** : prix par palier de quantité et/ou par client ; résolution automatique du PU HT dans l'éditeur de vente (priorité tarif client puis palier atteint). | S | ✅ |
+| FR-REF-6 | **Formes juridiques** : catalogue structuré (SARL, SAS, SA, EURL/SASU, EI, micro, SCI, profession libérale, SCOP, association…) pilotant les **mentions légales** par forme (capital/RCS/RNE/293 B/encaissements/AGA), le **tag « EI »**, le **régime de TVA par défaut** et le **type de comptabilité** suggéré. Sélection dans le paramétrage société. **À valider par un expert-comptable.** | M | ✅ |
 
 ### 3.4 Ventes
 | ID | Exigence | Prio | Statut |

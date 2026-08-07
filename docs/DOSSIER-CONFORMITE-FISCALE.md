@@ -14,6 +14,7 @@ par un professionnel et par les **outils officiels**, avant tout usage réel. JA
 | **Immobilisations / amortissements** | Comptabilité ▸ Immobilisations | PCG | Base, durée, prorata, dotation 681/281 |
 | **Liasse fiscale (préparation)** | Comptabilité ▸ Liasse fiscale | Imprimés 2050…/2033… | Bilan, compte de résultat, **résultat FISCAL à établir par le pro** ([LIASSE-FISCALE](LIASSE-FISCALE.md)) |
 | **Mentions légales des factures** | Gabarit PDF | art. 242 nonies A CGI · L441-9 C. com. | Vendeur/acheteur, LME, escompte, franchise/autoliquidation |
+| **Mentions par forme juridique** | Paramétrage société + gabarit PDF (`legalForms`) | Code de commerce (R123-237…) · décret 2022 (EI) | « FORME au capital de … », RCS/RNE, tag « EI », 293 B, encaissements, AGA ; **régime de compta par forme** (micro/trésorerie/engagement) à confirmer |
 
 ## 2. Comment valider (outils officiels)
 - **FEC** → outil **« Test Compta Demat »** de la DGFiP (contrôle de structure et de cohérence du FEC).

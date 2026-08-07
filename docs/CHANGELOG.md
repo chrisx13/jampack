@@ -40,6 +40,12 @@ le backlog **implémentable sans dépendance externe (8/8)** a été livré :
 - Validation **IBAN** (mod-97) / **BIC** + formatage du RIB sur la facture.
 - Mentions **devis** (validité, CGV, « Bon pour accord »), **avoir** référençant la facture d'origine,
   **référence commande client** (BT-13) portée sur PDF et Factur-X.
+- **Formes juridiques** (SARL, SAS, SA, EURL/SASU, EI, micro-entreprise, SCI, profession libérale,
+  SCOP, association…) : catalogue structuré (`legalForms`) pilotant les **mentions légales par forme**
+  (au capital de / RCS / RNE / « TVA non applicable art. 293 B » / encaissements / AGA), le **tag « EI »**
+  sur le nom, le **régime de TVA par défaut** et le **type de comptabilité** suggéré. Sélecteur dans
+  *Administration ▸ Société* avec application des défauts + aperçu des mentions. **À valider par un
+  expert-comptable** (voir [DOSSIER-CONFORMITE-FISCALE](DOSSIER-CONFORMITE-FISCALE.md)).
 
 ## Interopérabilité expert-comptable ([CONNECTEURS-EXPERT-COMPTABLE](CONNECTEURS-EXPERT-COMPTABLE.md))
 - Échange par **fichiers** (sans identifiants) : **FEC** + **export CSV des écritures** (importable par Sage,
