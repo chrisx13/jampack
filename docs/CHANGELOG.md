@@ -29,8 +29,11 @@ le backlog **implémentable sans dépendance externe (8/8)** a été livré :
     indice de confiance par champ** + contrôle de cohérence des totaux. Aucune donnée ne sort.
   - **Niveau 2 (option)** : enrichissement **IA Claude** (Anthropic) pour photos/scans, **mesuré en
     crédits** (`AiCreditLedger`), **désactivé par défaut**. Le structuré local **prime** sur l'IA.
-  - IHM : bouton **« Scanner »** sur les notes de frais → pré-remplissage à **valider** (photo jointe
-    en justificatif).
+  - IHM : bouton **« Scanner »** sur les **notes de frais** *et* les **factures fournisseurs** →
+    pré-remplissage à **valider** (frais : photo en justificatif ; facture : fournisseur associé par
+    nom + ligne depuis les totaux).
+  - Administration ▸ **Crédits IA** : solde, statut (modèle Claude), **recharge** (décision admin) et
+    **historique** tracé.
 
 ## Conformité franco-française
 - Validation **SIREN/SIRET** (clé de Luhn) + **calcul auto du n° de TVA intracommunautaire** (règle DGFiP).

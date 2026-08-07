@@ -45,13 +45,20 @@ s'active que si une clé est configurée **et** que l'organisation a des crédit
 - **Crédits** (`AiCreditLedger`, append-only, RLS org) : 1 crédit / document ; recharge = décision
   d'**administration** (hors périmètre paiement).
 
-## 3. Parcours utilisateur (Notes de frais → « Scanner »)
+## 3. Parcours utilisateur (bouton « Scanner »)
+Disponible sur **Notes de frais** *et* sur l'éditeur de **Facture fournisseur** (même composant,
+mêmes deux brouillons calculés côté serveur).
 1. Dépôt d'un **PDF** ou d'une **photo**.
 2. **PDF** → extraction **locale gratuite** (texte + Factur-X) → **résumé + brouillon + confiance**.
    **Photo** → aperçu ; l'extraction fine passe par l'IA (le socle lit surtout les PDF).
 3. Option **« Affiner avec l'IA (1 crédit) »** si activée & créditée → fusion avec le local.
-4. **« Pré-remplir »** → le formulaire de note de frais s'ouvre pré-rempli (photo jointe en justificatif).
+4. **« Pré-remplir »** :
+   - *Note de frais* → formulaire pré-rempli (catégorie devinée, HT/TVA, photo jointe en justificatif) ;
+   - *Facture fournisseur* → référence, date, **fournisseur associé par nom**, une ligne depuis les totaux.
 5. L'utilisateur **corrige/valide** puis enregistre. Rien n'est créé avant cette validation.
+
+**Pilotage des crédits** : *Administration ▸ Crédits IA* — solde, statut (modèle Claude), **recharge**
+(décision d'admin, hors périmètre paiement) et **historique** tracé (`documents.creditsHistory`).
 
 ## 4. Configuration (niveau 2)
 | Variable | Rôle | Défaut |
