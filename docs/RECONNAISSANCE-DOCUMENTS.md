@@ -66,6 +66,12 @@ mêmes deux brouillons calculés côté serveur).
 | `ANTHROPIC_API_KEY` | Active l'IA (absente = **niveau 1 seul**) | — (désactivé) |
 | `AI_MODEL` | Modèle Claude d'extraction | `claude-haiku-4-5-20251001` (rapide/économique) |
 | `ANTHROPIC_BASE_URL` | URL de l'API (proxy/tests) | `https://api.anthropic.com` |
+| `AI_FREE_MONTHLY_PER_USER` | **Franchise gratuite** : analyses IA gratuites / utilisateur / mois (incluses dans l'abo) ; au-delà = crédits. À calibrer (prix abo vs coût Claude). | `20` |
+
+**Franchise IA (pricing) :** chaque utilisateur bénéficie d'un **seuil gratuit mensuel** (inclus dans
+l'abonnement). L'ordre de consommation est : **franchise de l'utilisateur d'abord**, puis **crédits de
+l'organisation**. Le grand livre `AiCreditLedger` trace les analyses gratuites (`delta 0`, motif
+« free ») et payantes (`delta -1`, motif « analyze »).
 
 Recharge de crédits : `documents.creditsTopup` (rôle **administrateur**). Solde : `documents.aiStatus`.
 

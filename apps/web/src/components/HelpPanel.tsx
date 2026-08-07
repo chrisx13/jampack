@@ -35,6 +35,8 @@ export default function HelpPanel() {
 
   const aiEnabled = !!aiStatus.data?.enabled;
   const balance = aiStatus.data?.balance ?? 0;
+  const freeRemaining = aiStatus.data?.freeRemaining ?? 0;
+  const canUseAi = freeRemaining > 0 || balance > 0;
 
   return (
     <>
@@ -89,16 +91,16 @@ export default function HelpPanel() {
           <div className="mb-2 d-flex align-items-center justify-content-between">
             <span className="fw-semibold"><i className="bi bi-robot me-1" />Assistant IA</span>
             {aiEnabled
-              ? <Badge bg="light" text="dark" className="border fw-normal">{balance} crédit(s)</Badge>
+              ? <Badge bg="light" text="dark" className="border fw-normal">{freeRemaining} gratuite(s) · {balance} crédit(s)</Badge>
               : <Badge bg="secondary-subtle" text="secondary" className="fw-normal">indisponible</Badge>}
           </div>
           {aiEnabled ? (
             <>
               <Form.Control as="textarea" rows={2} placeholder="Posez votre question…" value={question} onChange={(e) => setQuestion(e.target.value)} className="mb-2" />
-              <Button size="sm" disabled={ask.isPending || balance <= 0 || question.trim().length < 3} onClick={() => ask.mutate({ question: question.trim() })}>
-                {ask.isPending ? <Spinner size="sm" /> : <><i className="bi bi-send me-1" />Demander (1 crédit)</>}
+              <Button size="sm" disabled={ask.isPending || !canUseAi || question.trim().length < 3} onClick={() => ask.mutate({ question: question.trim() })}>
+                {ask.isPending ? <Spinner size="sm" /> : <><i className="bi bi-send me-1" />Demander ({freeRemaining > 0 ? 'gratuit' : '1 crédit'})</>}
               </Button>
-              {balance <= 0 && <div className="small text-secondary mt-1">Crédits épuisés — la recherche gratuite reste disponible.</div>}
+              {!canUseAi && <div className="small text-secondary mt-1">Franchise et crédits épuisés — la recherche gratuite reste disponible.</div>}
               {ask.isError && <Alert variant="danger" className="py-2 small mt-2 mb-0">{ask.error.message}</Alert>}
               {ask.data && (
                 <Alert variant="light" className="border mt-2 mb-0">

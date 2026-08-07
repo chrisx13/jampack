@@ -70,11 +70,13 @@ function FraisTab() {
     if (d.amountHt != null) setAmount(String(d.amountHt));
     if (d.taxRatePct != null) setRate(String(d.taxRatePct));
     if (d.description) setDesc(d.description);
-    setAiMsg(`Reconnu — 1 crédit utilisé, solde restant : ${r.balance}.`);
+    setAiMsg(r.charged ? `Reconnu — 1 crédit utilisé (solde : ${r.balance}).` : `Reconnu — gratuit (${r.freeRemaining} restante(s) ce mois).`);
     aiStatus.refetch();
   };
   const aiEnabled = !!aiStatus.data?.enabled;
   const balance = aiStatus.data?.balance ?? 0;
+  const freeRemaining = aiStatus.data?.freeRemaining ?? 0;
+  const canUseAi = freeRemaining > 0 || balance > 0;
 
   const onPhoto = async (file?: File) => {
     setPhotoErr('');
@@ -125,11 +127,11 @@ function FraisTab() {
                 <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => setReceipt(null)}><i className="bi bi-x-lg me-1" aria-hidden="true" />Retirer</button>
               </div>
               {aiEnabled ? (
-                balance > 0
+                canUseAi
                   ? <button type="button" className="btn btn-outline-primary" onClick={recognize} disabled={aiAnalyze.isPending}>
-                      {aiAnalyze.isPending ? 'Reconnaissance…' : <><i className="bi bi-magic me-1" aria-hidden="true" />Reconnaître (IA, 1 crédit)</>}
+                      {aiAnalyze.isPending ? 'Reconnaissance…' : <><i className="bi bi-magic me-1" aria-hidden="true" />Reconnaître (IA, {freeRemaining > 0 ? 'gratuit' : '1 crédit'})</>}
                     </button>
-                  : <button type="button" className="btn btn-outline-secondary" disabled><i className="bi bi-magic me-1" aria-hidden="true" />Crédits IA épuisés</button>
+                  : <button type="button" className="btn btn-outline-secondary" disabled><i className="bi bi-magic me-1" aria-hidden="true" />IA indisponible (franchise + crédits épuisés)</button>
               ) : (
                 <div className="small text-secondary"><i className="bi bi-info-circle me-1" aria-hidden="true" />Reconnaissance IA indisponible — la photo est jointe comme justificatif (gratuit).</div>
               )}

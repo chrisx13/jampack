@@ -40,6 +40,9 @@ Réf. sécurité : [SECURITE-REVUE-PROD](SECURITE-REVUE-PROD.md).
 - [ ] **Par défaut désactivé** : sans `ANTHROPIC_API_KEY`, seul le **niveau 1 gratuit** (local) fonctionne.
 - [ ] Pour activer l'enrichissement **Claude** : définir `ANTHROPIC_API_KEY` (secret), éventuellement
   `AI_MODEL` (défaut `claude-haiku-4-5-20251001`) et `ANTHROPIC_BASE_URL`.
+- [ ] **Franchise IA** : `AI_FREE_MONTHLY_PER_USER` (défaut **20**) = nombre d'analyses IA **gratuites
+  par utilisateur et par mois** (incluses dans l'abonnement) ; au-delà, consommation de **crédits**.
+  **À calibrer** selon le prix de l'abonnement et le coût réel de l'API Claude.
 - [ ] **RGPD** : l'IA est le **seul** chemin où un document sort de l'instance (vers **Anthropic**) —
   encadrer par une **clause de sous-traitance** ; informer les utilisateurs ; garder l'usage **mesuré**
   (crédits `AiCreditLedger`).

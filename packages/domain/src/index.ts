@@ -9,3 +9,4 @@ export * from './secrets';
 export * from './configChecks';
 export * from './legalForms';
 export * from './helpContent';
+export * from './aiAllowance';

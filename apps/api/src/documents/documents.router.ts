@@ -4,6 +4,7 @@ import { withTenant } from '@jampack/db';
 import { router, authed, protectedProcedure } from '../trpc/trpc';
 import { analyzeDocument, toExpenseDraft, toSupplierInvoiceDraft } from '@jampack/domain';
 import { claudeExtract, aiConfigFromEnv } from './aiExtractor';
+import { checkAiAllowance, recordAiUsage, allowanceStatus } from '../ai/allowance';
 
 // Reconnaissance de documents.
 // NIVEAU 1 (gratuit, déterministe, local) : le client fournit ce qu'il a extrait localement, SANS
@@ -44,7 +45,8 @@ export const documentsRouter = router({
   aiStatus: protectedProcedure.query(({ ctx }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const cfg = aiConfigFromEnv();
-      return { enabled: !!cfg, model: cfg?.model ?? null, balance: await creditBalance(tx, ctx.user.organizationId) };
+      const a = await allowanceStatus(tx, ctx.user.organizationId, ctx.user.id);
+      return { enabled: !!cfg, model: cfg?.model ?? null, balance: a.balance, freeRemaining: a.freeRemaining, freeThreshold: a.freeThreshold };
     })
   ),
 
@@ -56,17 +58,14 @@ export const documentsRouter = router({
       if (!cfg) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Enrichissement IA désactivé (aucune clé configurée).' });
       if (!input.text && !input.imageDataUrl && !input.ocrText) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Fournir un texte ou une image.' });
       return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
-        const balance = await creditBalance(tx, ctx.user.organizationId);
-        if (balance <= 0) throw new TRPCError({ code: 'FORBIDDEN', message: 'Crédits IA épuisés. Rechargez pour utiliser l’enrichissement Claude.' });
+        const allow = await checkAiAllowance(tx, ctx.user.organizationId, ctx.user.id);
         const ai = await claudeExtract({ text: input.text ?? input.ocrText, imageDataUrl: input.imageDataUrl }, cfg).catch((e: Error) => {
           throw new TRPCError({ code: 'BAD_GATEWAY', message: `Échec de l’enrichissement IA : ${e.message}` });
         });
         const result = analyzeDocument({ text: input.text, facturxXml: input.facturxXml, ocrText: input.ocrText, aiFields: ai.fields });
-        await tx.aiCreditLedger.create({
-          data: { organizationId: ctx.user.organizationId, delta: -1, reason: 'analyze', documentRef: result.fields.supplierName?.value?.slice(0, 120) ?? null, createdById: ctx.user.id },
-        });
+        await recordAiUsage(tx, ctx.user.organizationId, ctx.user.id, allow.charged, result.fields.supplierName?.value?.slice(0, 120) ?? null);
         const raw = input.text ?? input.ocrText ?? null;
-        return { result, expenseDraft: toExpenseDraft(result, raw), supplierInvoiceDraft: toSupplierInvoiceDraft(result), balance: balance - 1, usage: ai.usage };
+        return { result, expenseDraft: toExpenseDraft(result, raw), supplierInvoiceDraft: toSupplierInvoiceDraft(result), charged: allow.charged, freeRemaining: allow.freeRemaining, balance: allow.charged ? allow.balance - 1 : allow.balance, usage: ai.usage };
       });
     }),
 

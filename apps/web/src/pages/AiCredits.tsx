@@ -6,7 +6,7 @@ import { trpc } from '../trpc';
 // Fournisseur unique : Claude (Anthropic). Hors périmètre paiement : la recharge est une décision d'admin.
 
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleString('fr-FR') : '—');
-const REASON: Record<string, string> = { topup: 'Recharge', analyze: 'Analyse document', adjust: 'Ajustement' };
+const REASON: Record<string, string> = { topup: 'Recharge', analyze: 'Analyse (créditée)', free: 'Analyse (franchise gratuite)', adjust: 'Ajustement' };
 
 export default function AiCredits() {
   const utils = trpc.useUtils();
@@ -26,7 +26,7 @@ export default function AiCredits() {
     <>
       <div className="mb-4">
         <h4 className="mb-1 fw-semibold">Crédits IA</h4>
-        <p className="text-secondary mb-0">Enrichissement des documents par <strong>Claude</strong> — 1 crédit par document analysé.</p>
+        <p className="text-secondary mb-0">Enrichissement par <strong>Claude</strong>. Chaque utilisateur dispose d'une <strong>franchise gratuite mensuelle</strong> (incluse dans l'abonnement) ; au-delà, 1 crédit par analyse.</p>
       </div>
 
       {status.data && !status.data.enabled && (

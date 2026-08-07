@@ -27,11 +27,14 @@ beforeAll(async () => {
   caller = C.caller;
   // Repartir d'un solde de crédits IA propre pour cette organisation.
   await C.prisma.aiCreditLedger.deleteMany({ where: { organizationId: C.org.id } });
+  // Franchise gratuite désactivée ici pour tester le chemin PAYANT (crédits). Franchise testée à part.
+  process.env.AI_FREE_MONTHLY_PER_USER = '0';
 });
 afterAll(async () => {
   await C.prisma.aiCreditLedger.deleteMany({ where: { organizationId: C.org.id } });
   vi.unstubAllGlobals();
   delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.AI_FREE_MONTHLY_PER_USER;
 });
 
 describe('Reconnaissance de documents — niveau 1 (gratuit, local)', () => {
@@ -62,7 +65,7 @@ describe('Reconnaissance de documents — niveau 2 (IA Claude, crédits)', () =>
 
   it('refuse l’analyse IA sans crédits', async () => {
     process.env.ANTHROPIC_API_KEY = 'test-key';
-    await expect(caller.documents.aiAnalyze({ text: 'facture' })).rejects.toThrow(/crédits/i);
+    await expect(caller.documents.aiAnalyze({ text: 'facture' })).rejects.toThrow(/crédit|franchise/i);
   });
 
   it('recharge (admin) → statut activé + solde', async () => {

@@ -9,11 +9,13 @@ beforeAll(async () => {
   C = await demoCaller();
   caller = C.caller;
   await C.prisma.aiCreditLedger.deleteMany({ where: { organizationId: C.org.id } });
+  process.env.AI_FREE_MONTHLY_PER_USER = '0'; // teste le chemin payant (crédits)
 });
 afterAll(async () => {
   await C.prisma.aiCreditLedger.deleteMany({ where: { organizationId: C.org.id } });
   vi.unstubAllGlobals();
   delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.AI_FREE_MONTHLY_PER_USER;
 });
 
 describe('Aide — niveau 1 (gratuit, local)', () => {
@@ -36,7 +38,7 @@ describe('Aide — niveau 2 (assistant IA, crédits)', () => {
 
   it('refuse sans crédits', async () => {
     process.env.ANTHROPIC_API_KEY = 'test-key';
-    await expect(caller.help.ask({ question: 'Comment créer un devis ?' })).rejects.toThrow(/crédits/i);
+    await expect(caller.help.ask({ question: 'Comment créer un devis ?' })).rejects.toThrow(/crédit|franchise/i);
   });
 
   it('répond, ancré sur l’aide, en consommant 1 crédit', async () => {

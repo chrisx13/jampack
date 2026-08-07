@@ -4,6 +4,7 @@ import { withTenant } from '@jampack/db';
 import { router, protectedProcedure } from '../trpc/trpc';
 import { HELP_ARTICLES, HELP_CATEGORIES, searchHelp } from '@jampack/domain';
 import { aiConfigFromEnv, type AiExtractorConfig } from '../documents/aiExtractor';
+import { checkAiAllowance, recordAiUsage, allowanceStatus } from '../ai/allowance';
 
 // Aide à l'utilisation. NIVEAU 1 (gratuit, local) : recherche dans la base de connaissances +
 // scénarios pas à pas. NIVEAU 2 (option, IA Claude, 1 crédit) : assistant qui répond en s'ANCRANT
@@ -15,12 +16,6 @@ const SYSTEM = [
   "Donne des étapes concrètes (où cliquer). Si l'information n'est pas dans les articles, dis-le et oriente vers l'article le plus proche.",
   "Ne donne jamais de conseil juridique, fiscal ou comptable définitif : renvoie vers un expert-comptable pour toute validation réglementaire.",
 ].join('\n');
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function creditBalance(tx: any, organizationId: string): Promise<number> {
-  const agg = await tx.aiCreditLedger.aggregate({ _sum: { delta: true }, where: { organizationId } });
-  return agg._sum.delta ?? 0;
-}
 
 /** Appelle Claude pour répondre à une question d'aide, ancré sur les articles fournis. */
 async function claudeAnswer(question: string, context: string, cfg: AiExtractorConfig): Promise<{ answer: string; usage?: unknown }> {
@@ -51,7 +46,8 @@ export const helpRouter = router({
   aiStatus: protectedProcedure.query(({ ctx }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const cfg = aiConfigFromEnv();
-      return { enabled: !!cfg, balance: await creditBalance(tx, ctx.user.organizationId) };
+      const a = await allowanceStatus(tx, ctx.user.organizationId, ctx.user.id);
+      return { enabled: !!cfg, balance: a.balance, freeRemaining: a.freeRemaining, freeThreshold: a.freeThreshold };
     })
   ),
 
@@ -63,13 +59,12 @@ export const helpRouter = router({
       const articles = searchHelp(input.question, 4);
       const context = articles.map((a) => `# ${a.title} (${a.screen})\n${a.summary}\nÉtapes : ${a.steps.join(' | ')}`).join('\n\n') || 'Aucun article directement pertinent.';
       return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
-        const balance = await creditBalance(tx, ctx.user.organizationId);
-        if (balance <= 0) throw new TRPCError({ code: 'FORBIDDEN', message: 'Crédits IA épuisés. La recherche d’aide gratuite reste disponible.' });
+        const allow = await checkAiAllowance(tx, ctx.user.organizationId, ctx.user.id);
         const r = await claudeAnswer(input.question, context, cfg).catch((e: Error) => {
           throw new TRPCError({ code: 'BAD_GATEWAY', message: `Assistant indisponible : ${e.message}` });
         });
-        await tx.aiCreditLedger.create({ data: { organizationId: ctx.user.organizationId, delta: -1, reason: 'analyze', documentRef: 'aide', createdById: ctx.user.id } });
-        return { answer: r.answer, sources: articles.map((a) => ({ id: a.id, title: a.title, screen: a.screen })), balance: balance - 1 };
+        await recordAiUsage(tx, ctx.user.organizationId, ctx.user.id, allow.charged, 'aide');
+        return { answer: r.answer, sources: articles.map((a) => ({ id: a.id, title: a.title, screen: a.screen })), charged: allow.charged, freeRemaining: allow.freeRemaining, balance: allow.charged ? allow.balance - 1 : allow.balance };
       });
     }),
 });

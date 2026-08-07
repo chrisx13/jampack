@@ -111,6 +111,9 @@ export default function DocumentScanner({ show, onClose, onPrefill }: { show: bo
   const fields = data?.result.fields ?? {};
   const aiEnabled = aiStatus.data?.enabled;
   const balance = aiStatus.data?.balance ?? 0;
+  const freeRemaining = aiStatus.data?.freeRemaining ?? 0;
+  const canUseAi = freeRemaining > 0 || balance > 0; // gratuit tant que la franchise du mois dure
+  const aiCostLabel = freeRemaining > 0 ? 'gratuit' : '1 crédit';
 
   return (
     <Modal show={show} onHide={close} size="lg" centered>
@@ -133,9 +136,9 @@ export default function DocumentScanner({ show, onClose, onPrefill }: { show: bo
         {imageDataUrl && !data && (
           <div className="mb-3 text-center">
             <img src={imageDataUrl} alt="aperçu" style={{ maxHeight: 180, maxWidth: '100%' }} className="rounded border" />
-            {aiEnabled && balance > 0
+            {aiEnabled && canUseAi
               ? <p className="text-secondary small mt-2 mb-0">Photo : lancez <strong>« Affiner avec l'IA »</strong> pour extraire les champs, ou <strong>« Pré-remplir »</strong> pour joindre la photo en justificatif.</p>
-              : <Alert variant="warning" className="py-2 small mt-2 mb-0"><i className="bi bi-exclamation-triangle me-1" />Reconnaissance IA indisponible ({aiEnabled ? 'crédits épuisés' : 'désactivée'}). La photo sera <strong>jointe en justificatif</strong> ; complétez les champs à la main via « Pré-remplir ».</Alert>}
+              : <Alert variant="warning" className="py-2 small mt-2 mb-0"><i className="bi bi-exclamation-triangle me-1" />Reconnaissance IA indisponible ({aiEnabled ? 'franchise épuisée et aucun crédit' : 'désactivée'}). La photo sera <strong>jointe en justificatif</strong> ; complétez les champs à la main via « Pré-remplir ».</Alert>}
           </div>
         )}
 
@@ -175,13 +178,13 @@ export default function DocumentScanner({ show, onClose, onPrefill }: { show: bo
       <Modal.Footer className="d-flex justify-content-between">
         <div className="small text-secondary">
           {aiEnabled
-            ? <>Enrichissement IA (Claude) : <strong>{balance}</strong> crédit(s){aiStatus.data?.model ? ` · ${aiStatus.data.model}` : ''}</>
+            ? <>IA Claude : <strong>{freeRemaining}</strong> gratuite(s) ce mois · <strong>{balance}</strong> crédit(s)</>
             : <>Enrichissement IA désactivé — extraction locale seulement</>}
         </div>
         <div className="d-flex gap-2">
           {aiEnabled && (text || facturxXml || imageDataUrl) && (
-            <Button variant="outline-primary" disabled={busy || balance <= 0} onClick={runAi} title={balance <= 0 ? 'Crédits épuisés' : 'Envoie le document à Claude'}>
-              <i className="bi bi-magic me-1" />Affiner avec l'IA (1 crédit)
+            <Button variant="outline-primary" disabled={busy || !canUseAi} onClick={runAi} title={!canUseAi ? 'Franchise épuisée et aucun crédit' : 'Envoie le document à Claude'}>
+              <i className="bi bi-magic me-1" />Affiner avec l'IA ({aiCostLabel})
             </Button>
           )}
           <Button variant="primary" disabled={!data && !imageDataUrl} onClick={prefill}><i className="bi bi-check2 me-1" />Pré-remplir</Button>
