@@ -40,6 +40,7 @@ Documents versionnés avec le code, tenus à jour à chaque incrément.
 | 27 | [Reconnaissance de documents](RECONNAISSANCE-DOCUMENTS.md) | Niveau 1 gratuit (Factur-X/PDF/règles FR) + niveau 2 IA Claude (crédits) | — |
 | 28 | [Pilotage technique (super-admin)](PILOTAGE-TECHNIQUE.md) | Catalogue d'opérations d'exploitation sans SSH — danger/confirmation/audit | — |
 | 29 | [Scénarios d'utilisation](SCENARIOS.md) | Parcours pas à pas de bout en bout ; source de l'aide en ligne | — |
+| 30 | [Approvisionnement IA (fournisseur)](AI-SOURCING.md) | JAMPACK → Anthropic : provisioning, leviers de coût, métrage/réconciliation | — |
 | — | [Traçabilité code ↔ specs](TRACABILITE.md) | État d'avancement code vs spécifications | — |
 
 ## Normes et référentiels couverts

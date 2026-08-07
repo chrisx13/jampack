@@ -39,10 +39,22 @@ export async function checkAiAllowance(tx: any, organizationId: string, userId: 
   return { charged: d.charged, freeRemaining: d.freeRemaining, freeThreshold: t, balance };
 }
 
-/** Journalise la consommation APRÈS succès de l'appel IA (gratuite ou payante). */
+export interface AiUsageMeta {
+  model?: string | null;
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_read_input_tokens?: number;
+}
+
+/** Journalise la consommation APRÈS succès de l'appel IA (gratuite ou payante) + le coût fournisseur. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function recordAiUsage(tx: any, organizationId: string, userId: string, charged: boolean, ref: string | null): Promise<void> {
-  await tx.aiCreditLedger.create({ data: { organizationId, delta: charged ? -1 : 0, reason: charged ? 'analyze' : 'free', documentRef: ref, createdById: userId } });
+export async function recordAiUsage(tx: any, organizationId: string, userId: string, charged: boolean, ref: string | null, usage?: AiUsageMeta): Promise<void> {
+  await tx.aiCreditLedger.create({
+    data: {
+      organizationId, delta: charged ? -1 : 0, reason: charged ? 'analyze' : 'free', documentRef: ref, createdById: userId,
+      model: usage?.model ?? null, inputTokens: usage?.input_tokens ?? null, outputTokens: usage?.output_tokens ?? null, cacheReadTokens: usage?.cache_read_input_tokens ?? null,
+    },
+  });
 }
 
 /** État de franchise pour l'utilisateur (affichage) : franchise restante + solde payant. */

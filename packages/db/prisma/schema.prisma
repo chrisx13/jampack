@@ -68,8 +68,13 @@ model AiCreditLedger {
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
   delta          Int          // crédits +/- (1 crédit = 1 document analysé par l'IA)
-  reason         String       // topup | analyze | adjust
+  reason         String       // topup | analyze | free | adjust
   documentRef    String?      // repère lisible (fournisseur / n° pièce)
+  // Métrage du coût fournisseur (réconciliation coût Anthropic ↔ revenu des crédits vendus).
+  model          String?      // modèle Claude utilisé
+  inputTokens    Int?
+  outputTokens   Int?
+  cacheReadTokens Int?        // tokens d'input servis depuis le cache (prompt caching)
   createdById    String?
   createdAt      DateTime     @default(now())
   @@index([organizationId, createdAt])

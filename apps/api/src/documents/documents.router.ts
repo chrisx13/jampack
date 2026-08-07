@@ -63,7 +63,7 @@ export const documentsRouter = router({
           throw new TRPCError({ code: 'BAD_GATEWAY', message: `Échec de l’enrichissement IA : ${e.message}` });
         });
         const result = analyzeDocument({ text: input.text, facturxXml: input.facturxXml, ocrText: input.ocrText, aiFields: ai.fields });
-        await recordAiUsage(tx, ctx.user.organizationId, ctx.user.id, allow.charged, result.fields.supplierName?.value?.slice(0, 120) ?? null);
+        await recordAiUsage(tx, ctx.user.organizationId, ctx.user.id, allow.charged, result.fields.supplierName?.value?.slice(0, 120) ?? null, { model: cfg.model, ...ai.usage });
         const raw = input.text ?? input.ocrText ?? null;
         return { result, expenseDraft: toExpenseDraft(result, raw), supplierInvoiceDraft: toSupplierInvoiceDraft(result), charged: allow.charged, freeRemaining: allow.freeRemaining, balance: allow.charged ? allow.balance - 1 : allow.balance, usage: ai.usage };
       });
@@ -74,6 +74,29 @@ export const documentsRouter = router({
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const rows = await tx.aiCreditLedger.findMany({ where: { organizationId: ctx.user.organizationId }, orderBy: { createdAt: 'desc' }, take: 50 });
       return { balance: await creditBalance(tx, ctx.user.organizationId), rows };
+    })
+  ),
+
+  /** Synthèse de dépense IA du mois (admin) : tokens consommés + analyses gratuites/payantes + crédits.
+   *  Sert à réconcilier le coût fournisseur (Anthropic) avec le revenu des crédits vendus. */
+  spendSummary: authed('manage', 'all').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const now = new Date();
+      const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      const rows = await tx.aiCreditLedger.findMany({
+        where: { organizationId: ctx.user.organizationId, createdAt: { gte: start } },
+        select: { reason: true, delta: true, inputTokens: true, outputTokens: true, cacheReadTokens: true, model: true },
+      });
+      let inputTokens = 0, outputTokens = 0, cacheReadTokens = 0, freeAnalyses = 0, paidAnalyses = 0, creditsAdded = 0;
+      const models = new Set<string>();
+      for (const r of rows) {
+        inputTokens += r.inputTokens ?? 0; outputTokens += r.outputTokens ?? 0; cacheReadTokens += r.cacheReadTokens ?? 0;
+        if (r.model) models.add(r.model);
+        if (r.reason === 'free') freeAnalyses++;
+        else if (r.reason === 'analyze') paidAnalyses++;
+        else if (r.reason === 'topup') creditsAdded += r.delta;
+      }
+      return { since: start, inputTokens, outputTokens, cacheReadTokens, freeAnalyses, paidAnalyses, creditsAdded, balance: await creditBalance(tx, ctx.user.organizationId), models: [...models] };
     })
   ),
 

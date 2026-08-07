@@ -3,7 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
 import { router, protectedProcedure } from '../trpc/trpc';
 import { HELP_ARTICLES, HELP_CATEGORIES, searchHelp } from '@jampack/domain';
-import { aiConfigFromEnv, type AiExtractorConfig } from '../documents/aiExtractor';
+import { aiConfigFromEnv, type AiExtractorConfig, type AiUsage } from '../documents/aiExtractor';
 import { checkAiAllowance, recordAiUsage, allowanceStatus } from '../ai/allowance';
 
 // Aide à l'utilisation. NIVEAU 1 (gratuit, local) : recherche dans la base de connaissances +
@@ -18,18 +18,18 @@ const SYSTEM = [
 ].join('\n');
 
 /** Appelle Claude pour répondre à une question d'aide, ancré sur les articles fournis. */
-async function claudeAnswer(question: string, context: string, cfg: AiExtractorConfig): Promise<{ answer: string; usage?: unknown }> {
+async function claudeAnswer(question: string, context: string, cfg: AiExtractorConfig): Promise<{ answer: string; usage?: AiUsage }> {
   const doFetch = cfg.fetchImpl ?? fetch;
   const res = await doFetch((cfg.baseUrl ?? 'https://api.anthropic.com') + '/v1/messages', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-api-key': cfg.apiKey, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({
-      model: cfg.model, max_tokens: 700, system: SYSTEM,
+      model: cfg.model, max_tokens: 700, system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
       messages: [{ role: 'user', content: `Articles d'aide pertinents :\n${context}\n\nQuestion de l'utilisateur : ${question}` }],
     }),
   });
   if (!res.ok) throw new Error(`Anthropic API ${res.status}`);
-  const body = (await res.json()) as { content?: { type: string; text?: string }[]; usage?: unknown };
+  const body = (await res.json()) as { content?: { type: string; text?: string }[]; usage?: AiUsage };
   const answer = (body.content ?? []).filter((b) => b.type === 'text').map((b) => b.text ?? '').join('').trim();
   return { answer, usage: body.usage };
 }
@@ -63,7 +63,7 @@ export const helpRouter = router({
         const r = await claudeAnswer(input.question, context, cfg).catch((e: Error) => {
           throw new TRPCError({ code: 'BAD_GATEWAY', message: `Assistant indisponible : ${e.message}` });
         });
-        await recordAiUsage(tx, ctx.user.organizationId, ctx.user.id, allow.charged, 'aide');
+        await recordAiUsage(tx, ctx.user.organizationId, ctx.user.id, allow.charged, 'aide', { model: cfg.model, ...r.usage });
         return { answer: r.answer, sources: articles.map((a) => ({ id: a.id, title: a.title, screen: a.screen })), charged: allow.charged, freeRemaining: allow.freeRemaining, balance: allow.charged ? allow.balance - 1 : allow.balance };
       });
     }),

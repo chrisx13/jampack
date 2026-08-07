@@ -12,6 +12,7 @@ export default function AiCredits() {
   const utils = trpc.useUtils();
   const status = trpc.documents.aiStatus.useQuery();
   const history = trpc.documents.creditsHistory.useQuery();
+  const spend = trpc.documents.spendSummary.useQuery();
   const topup = trpc.documents.creditsTopup.useMutation({
     onSuccess: () => { utils.documents.aiStatus.invalidate(); utils.documents.creditsHistory.invalidate(); setAmount(''); },
   });
@@ -72,6 +73,19 @@ export default function AiCredits() {
           </Card.Body></Card>
         </div>
       </div>
+
+      {spend.data && (
+        <Card className="mt-3"><Card.Body>
+          <h6 className="fw-semibold mb-2"><i className="bi bi-graph-up me-2" />Consommation du mois (coût fournisseur)</h6>
+          <div className="row g-2 text-center small">
+            <div className="col-6 col-md-3"><div className="border rounded-3 p-2"><div className="fw-semibold fs-6">{spend.data.freeAnalyses}</div><div className="text-secondary">gratuites (franchise)</div></div></div>
+            <div className="col-6 col-md-3"><div className="border rounded-3 p-2"><div className="fw-semibold fs-6">{spend.data.paidAnalyses}</div><div className="text-secondary">payantes (crédits)</div></div></div>
+            <div className="col-6 col-md-3"><div className="border rounded-3 p-2"><div className="fw-semibold fs-6">{(spend.data.inputTokens + spend.data.outputTokens).toLocaleString('fr-FR')}</div><div className="text-secondary">tokens (in+out)</div></div></div>
+            <div className="col-6 col-md-3"><div className="border rounded-3 p-2"><div className="fw-semibold fs-6">{spend.data.cacheReadTokens.toLocaleString('fr-FR')}</div><div className="text-secondary">tokens en cache</div></div></div>
+          </div>
+          <p className="text-secondary small mb-0 mt-2">Depuis le 1er du mois{spend.data.models.length ? ` · modèle(s) : ${spend.data.models.join(', ')}` : ''}. À réconcilier avec le coût Anthropic (Console) et le revenu des crédits vendus.</p>
+        </Card.Body></Card>
+      )}
 
       <Card className="mt-3"><Card.Body className="p-0">
         <div className="p-3 pb-2"><h6 className="fw-semibold mb-0">Historique (50 derniers mouvements)</h6></div>

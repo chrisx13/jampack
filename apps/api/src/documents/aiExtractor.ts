@@ -23,10 +23,11 @@ export interface AiExtractorConfig {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
 }
+/** Usage renvoyé par l'API Anthropic (jetons) — coût fournisseur + observabilité. */
+export interface AiUsage { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number; cache_creation_input_tokens?: number }
 export interface AiExtractOutput {
   fields: NonNullable<ExtractionResult['fields']>;
-  /** Usage renvoyé par l'API (jetons) — utile pour la facturation/observabilité. */
-  usage?: { input_tokens?: number; output_tokens?: number };
+  usage?: AiUsage;
 }
 
 const SYSTEM = [
@@ -57,10 +58,12 @@ export async function claudeExtract(input: AiExtractInput, cfg: AiExtractorConfi
   const res = await doFetch((cfg.baseUrl ?? 'https://api.anthropic.com') + '/v1/messages', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-api-key': cfg.apiKey, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: cfg.model, max_tokens: 1024, system: SYSTEM, messages: [{ role: 'user', content }] }),
+    // `cache_control` : prompt caching du system prompt (bénéfice automatique si le prompt dépasse le
+    // seuil minimal du modèle ; sans effet sinon — aucun inconvénient).
+    body: JSON.stringify({ model: cfg.model, max_tokens: 1024, system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }], messages: [{ role: 'user', content }] }),
   });
   if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${(await res.text().catch(() => '')).slice(0, 300)}`);
-  const body = (await res.json()) as { content?: { type: string; text?: string }[]; usage?: AiExtractOutput['usage'] };
+  const body = (await res.json()) as { content?: { type: string; text?: string }[]; usage?: AiUsage };
   const textOut = (body.content ?? []).filter((b) => b.type === 'text').map((b) => b.text ?? '').join('');
   const raw = parseJsonObject(textOut);
   if (!raw) throw new Error('Réponse IA illisible (JSON introuvable).');
