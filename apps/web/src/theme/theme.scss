@@ -37,7 +37,7 @@ $body-bg:               #F8FAFC;
 $secondary-color:       $gray-500;
 $border-color:          $gray-200;
 
-$font-family-sans-serif: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+$font-family-sans-serif: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 $headings-font-weight:   600;
 
 $border-radius:     .625rem;
@@ -112,6 +112,8 @@ body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none; // pas de fausse graisse/italique (net avec la police variable)
   letter-spacing: -.006em;
 }
 
