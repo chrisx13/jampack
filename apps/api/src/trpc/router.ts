@@ -21,6 +21,7 @@ import { expensesRouter } from '../expenses/expenses.router';
 import { analyticsRouter } from '../analytics/analytics.router';
 import { auditRouter } from '../iam/audit.router';
 import { notesRouter } from '../notes/notes.router';
+import { documentsRouter } from '../documents/documents.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -45,6 +46,7 @@ export const appRouter = router({
   analytics: analyticsRouter,
   audit: auditRouter,
   notes: notesRouter,
+  documents: documentsRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */

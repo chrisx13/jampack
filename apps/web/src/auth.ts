@@ -8,7 +8,8 @@ export const authEnabled = Boolean(OIDC_AUTHORITY);
 export const oidcConfig = {
   authority: OIDC_AUTHORITY ?? '',
   client_id: OIDC_CLIENT_ID,
-  redirect_uri: typeof window !== 'undefined' ? window.location.origin + '/' : '/',
+  // On revient sur le chemin courant après login (ex. /m garde /m) — Keycloak autorise origin/*.
+  redirect_uri: typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '/',
   post_logout_redirect_uri: typeof window !== 'undefined' ? window.location.origin + '/' : '/',
   response_type: 'code',
   scope: 'openid profile email',
