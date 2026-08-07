@@ -11,10 +11,9 @@ import App from './App';
 import PublicQuote from './pages/PublicQuote';
 import MobileApp from './MobileApp';
 
-// Thème JAMPACK (Bootstrap 5 + Inter variable + icônes)
-// Police VARIABLE (axe de graisse) : rendu plus net/lisse que la statique — notamment sous Windows
-// où `-webkit-font-smoothing` est ignoré.
-import '@fontsource-variable/inter/wght.css';
+// Thème JAMPACK (Bootstrap 5 + Plus Jakarta Sans + icônes)
+// Police VARIABLE, plus douce/arrondie qu'Inter, rendu net (surtout sous Windows).
+import '@fontsource-variable/plus-jakarta-sans/wght.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './theme/theme.scss';
 
