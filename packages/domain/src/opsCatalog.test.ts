@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { OPS_CATALOG, getOp, validateOpParams, canExecute } from './opsCatalog';
+import { OPS_CATALOG, getOp, validateOpParams, canExecute, tierAllows } from './opsCatalog';
 
 describe('OPS_CATALOG', () => {
   it('ids uniques et cohérence des métadonnées', () => {
@@ -55,5 +55,19 @@ describe('canExecute — confirmation typée', () => {
 
   it('opération sûre sans paramètre : exécutable directement', () => {
     expect(canExecute(getOp('db.health')!, {}, { dryRun: false }).ok).toBe(true);
+  });
+});
+
+describe('tierAllows — niveau requis', () => {
+  const provision = getOp('instance.provision')!; // tier platform
+  const health = getOp('db.health')!; // tier any
+
+  it('opération « platform » réservée au général', () => {
+    expect(tierAllows(provision, { instance: true, platform: false })).toBe(false);
+    expect(tierAllows(provision, { instance: false, platform: true })).toBe(true);
+  });
+  it('opération « any » accessible aux deux niveaux', () => {
+    expect(tierAllows(health, { instance: true, platform: false })).toBe(true);
+    expect(tierAllows(health, { instance: false, platform: true })).toBe(true);
   });
 });

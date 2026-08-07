@@ -5,3 +5,5 @@ export * from './admin-guard';
 export * from './docExtract';
 export * from './aiFields';
 export * from './opsCatalog';
+export * from './secrets';
+export * from './configChecks';

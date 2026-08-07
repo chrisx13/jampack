@@ -1,13 +1,19 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { appRouter } from '../trpc/router';
 import { demoCaller } from './caller';
 
 let C: Awaited<ReturnType<typeof demoCaller>>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let caller: any;
+let caller: any; // manage:all → technicien + général
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let technicianOnly: any; // manage:Ops uniquement (technicien d'instance)
 
 beforeAll(async () => {
   C = await demoCaller();
   caller = C.caller;
+  const ctx = { user: { id: 'u-tech', organizationId: C.org.id, permissions: [{ action: 'manage', subject: 'Ops' }], accessibleSocietes: null as string[] | null }, societeId: C.soc.id as string | null };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  technicianOnly = appRouter.createCaller(ctx as any);
   await C.prisma.opsExecution.deleteMany({ where: { organizationId: C.org.id } });
 });
 afterAll(async () => { await C.prisma.opsExecution.deleteMany({ where: { organizationId: C.org.id } }); });
@@ -74,5 +80,36 @@ describe('Console super-admin — garde-fous', () => {
     const h = await caller.ops.history();
     expect(h.rows.length).toBeGreaterThan(0);
     expect(h.rows.every((r: { organizationId: string }) => r.organizationId === C.org.id)).toBe(true);
+  });
+
+  it('provisionnement réservé au niveau « platform »', async () => {
+    // Le technicien d'instance ne voit pas l'opération et ne peut pas l'exécuter.
+    const cat = await technicianOnly.ops.catalogue();
+    expect(cat.operations.some((o: { id: string }) => o.id === 'instance.provision')).toBe(false);
+    await expect(technicianOnly.ops.run({ id: 'instance.provision', params: { name: 'x', mode: 'test' }, confirmation: 'CREER' })).rejects.toThrow();
+  });
+});
+
+describe('Console super-admin — diagnostic de configuration', () => {
+  it('renvoie des défauts avec gravités et synthèse', async () => {
+    const d = await caller.ops.diagnostics();
+    expect(d.summary).toHaveProperty('total');
+    expect(Array.isArray(d.findings)).toBe(true);
+    if (d.findings.length) expect(['critical', 'warning', 'info']).toContain(d.findings[0].severity);
+  });
+});
+
+describe('Instance — bascule prod/test', () => {
+  it('défaut « test », bascule en test sans confirmation', async () => {
+    const s0 = await caller.instance.status();
+    expect(['test', 'prod']).toContain(s0.mode);
+    const r = await caller.instance.setMode({ mode: 'test' });
+    expect(r.mode).toBe('test');
+  });
+  it('passage en prod exige la confirmation « PROD »', async () => {
+    await expect(caller.instance.setMode({ mode: 'prod' })).rejects.toThrow(/PROD/);
+    const r = await caller.instance.setMode({ mode: 'prod', confirmation: 'PROD' });
+    expect(r.mode).toBe('prod');
+    await caller.instance.setMode({ mode: 'test' }); // remise en test
   });
 });

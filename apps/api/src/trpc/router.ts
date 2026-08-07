@@ -23,6 +23,8 @@ import { auditRouter } from '../iam/audit.router';
 import { notesRouter } from '../notes/notes.router';
 import { documentsRouter } from '../documents/documents.router';
 import { opsRouter } from '../ops/ops.router';
+import { configRouter } from '../ops/config.router';
+import { instanceRouter } from '../ops/instance.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -49,6 +51,8 @@ export const appRouter = router({
   notes: notesRouter,
   documents: documentsRouter,
   ops: opsRouter,
+  config: configRouter,
+  instance: instanceRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */

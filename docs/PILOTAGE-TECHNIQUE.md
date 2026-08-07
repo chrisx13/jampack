@@ -3,6 +3,28 @@
 **Objet :** réaliser les actions d'exploitation **sans SSH ni console de tiers** (hébergement, base…)
 depuis l'application, via un **catalogue d'opérations prédéfinies**. **Statut : socle livré.**
 
+## Deux niveaux de super-admin
+| Niveau | Qui | Droit | Peut |
+|---|---|---|---|
+| **Technicien d'instance** | technicien de la structure cliente | `manage:Ops` | gérer **toute la conf de SON instance** ; **révéler** les clés en clair ; basculer **prod/test** ; opérations d'instance |
+| **Général (JAMPACK)** | société JAMPACK (opérateur flotte) | `manage:PlatformOps` | **pousser** de la conf/clés vers les instances (secrets **tronqués**, jamais en clair) ; **générer des instances** ; basculer **prod/test** |
+
+Le mécanisme des **clés** est identique partout : `secret=true` → chiffré au repos (si `SECRETS_KEY`),
+**révélable en clair par le technicien** de l'instance, **tronqué** pour le général ; `secret=false`
+→ réglage visible en clair par les deux niveaux. Le général peut **positionner** une clé sans jamais
+la relire en clair.
+
+## Capacités
+- **Configuration & clés** (`config.*`) : gestion intégrale de la conf d'instance (réglages + secrets),
+  avec la visibilité à deux niveaux ci-dessus.
+- **Diagnostic** (`ops.diagnostics`) : détection des **défauts de configuration** (auth de dév en prod,
+  migrations/RLS, chiffrement des secrets, CORS, sauvegardes, identifiants légaux…), triés par gravité,
+  avec remédiation. Portée : instance courante (agrégat flotte à venir pour le général).
+- **Mode d'instance** (`instance.status` / `instance.setMode`) : bascule **test ↔ prod** (passage en
+  prod = confirmation typée « PROD »), auditée. Accessible aux deux niveaux.
+- **Provisionnement** (`instance.provision`, catalogue, `tier=platform`) : génération d'une instance —
+  réservé au général, opération hôte **bloquée par défaut** (orchestrateur de flotte à venir).
+
 ## Principe de sécurité (non négociable)
 - **Aucun shell arbitraire.** Seules des **opérations enregistrées** (catalogue) sont exposées.
 - Chaque opération porte : **niveau de danger** (sûre / attention / sensible), **avertissements**,

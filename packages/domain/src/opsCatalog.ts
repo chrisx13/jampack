@@ -10,6 +10,8 @@
 export type OpDanger = 'safe' | 'caution' | 'danger';
 export type OpScope = 'instance' | 'fleet' | 'both';
 export type OpCategory = 'base' | 'donnees' | 'maintenance' | 'observabilite' | 'securite';
+/** Niveau requis : `instance` (technicien), `platform` (général JAMPACK) ou `any` (les deux). */
+export type OpTier = 'instance' | 'platform' | 'any';
 
 export interface OpParam {
   key: string;
@@ -38,6 +40,8 @@ export interface OpDef {
   confirmToken?: string;
   /** Opération exécutée en-process/BDD (sûre) vs nécessitant un runner hôte (désactivé par défaut). */
   needsHostRunner: boolean;
+  /** Niveau super-admin requis (défaut : any). Ex. provisionnement = platform (général JAMPACK). */
+  tier?: OpTier;
 }
 
 export const OPS_CATEGORIES: { key: OpCategory; label: string }[] = [
@@ -111,7 +115,27 @@ export const OPS_CATALOG: OpDef[] = [
     warnings: ['Coupe l’accès le temps du redémarrage.', 'Nécessite un runner hôte configuré.'],
     params: [], supportsDryRun: false, requiresConfirmation: true, confirmToken: 'REDEMARRER', needsHostRunner: true,
   },
+  {
+    id: 'instance.provision',
+    label: 'Générer une instance',
+    description: 'Provisionne une nouvelle instance JAMPACK (flotte). Réservé au super-admin général JAMPACK.',
+    category: 'base', danger: 'caution', scope: 'fleet', tier: 'platform',
+    warnings: ['Crée une nouvelle instance dans la flotte.', 'Nécessite l’orchestrateur de flotte (runner hôte, désactivé par défaut).'],
+    params: [
+      { key: 'name', label: 'Nom de l’instance', type: 'string', required: true, placeholder: 'ex. client-durand' },
+      { key: 'mode', label: 'Mode initial', type: 'select', required: true, options: [{ value: 'test', label: 'Test' }, { value: 'prod', label: 'Production' }] },
+    ],
+    supportsDryRun: true, requiresConfirmation: true, confirmToken: 'CREER', needsHostRunner: true,
+  },
 ];
+
+/** Vrai si le niveau `t` autorise l'opération (compte tenu de son `tier`). */
+export function tierAllows(op: OpDef, t: { instance: boolean; platform: boolean }): boolean {
+  const required = op.tier ?? 'any';
+  if (required === 'platform') return t.platform;
+  if (required === 'instance') return t.instance;
+  return t.instance || t.platform;
+}
 
 export function getOp(id: string): OpDef | undefined {
   return OPS_CATALOG.find((o) => o.id === id);

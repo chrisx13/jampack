@@ -51,7 +51,8 @@ async function main() {
     ['read', 'Accounting'], ['create', 'Accounting'],
     ['read', 'Note'], ['create', 'Note'], ['update', 'Note'], ['delete', 'Note'],
     ['read', 'Expense'], ['create', 'Expense'], ['update', 'Expense'], ['delete', 'Expense'],
-    ['manage', 'Ops'], // console super-admin de pilotage technique
+    ['manage', 'Ops'], // super-admin technicien d'instance (pilotage + clés en clair de son instance)
+    ['manage', 'PlatformOps'], // super-admin général JAMPACK (flotte ; clés vues tronquées)
   ];
   const perms = Object.fromEntries(
     await Promise.all(
