@@ -53,7 +53,9 @@ import Agenda from './pages/Agenda';
  *  - sous-domaines    = panneau secondaire (vues ouvrables en onglets)
  *  - `can` (optionnel) = droit requis pour afficher la vue [action, subject]
  */
-export type View = { id: string; label: string; icon: string; element: ReactNode; can?: [string, string] };
+// `can` : un droit requis, OU une liste de droits (accès si AU MOINS UN est accordé).
+export type Perm = [string, string];
+export type View = { id: string; label: string; icon: string; element: ReactNode; can?: Perm | Perm[] };
 export type Domain = { id: string; label: string; icon: string; views: View[] };
 
 /** Onglet fixe, toujours présent et non fermable : le tableau de bord personnel. */
@@ -163,7 +165,7 @@ export const DOMAINS: Domain[] = [
       { id: 'company', label: 'Société (facturation)', icon: 'bi-building-gear', element: <SocieteSettings />, can: ['manage', 'all'] },
       { id: 'billing', label: 'Facturation (banques, affacturage…)', icon: 'bi-bank', element: <BillingSettings />, can: ['manage', 'all'] },
       { id: 'ai-credits', label: 'Crédits IA', icon: 'bi-magic', element: <AiCredits />, can: ['manage', 'all'] },
-      { id: 'ops', label: 'Pilotage technique', icon: 'bi-terminal', element: <OpsConsole />, can: ['manage', 'Ops'] },
+      { id: 'ops', label: 'Pilotage technique', icon: 'bi-terminal', element: <OpsConsole />, can: [['manage', 'Ops'], ['manage', 'PlatformOps']] },
       { id: 'appearance', label: 'Apparence', icon: 'bi-palette', element: <Appearance />, can: ['manage', 'all'] },
     ],
   },

@@ -4,7 +4,7 @@ import { withTenant } from '@jampack/db';
 import { maskSecret } from '@jampack/domain';
 import { router, protectedProcedure } from '../trpc/trpc';
 import { encryptSecret, decryptSecret, secretsEncryptionEnabled } from './crypto';
-import { tierOf, requireAny } from './tier';
+import { resolveTier, requireAny } from './tier';
 
 // Gestion INTÉGRALE de la configuration d'une instance (réglages + clés/secrets).
 // Deux niveaux de super-admin :
@@ -18,8 +18,8 @@ const nameSchema = z.string().min(1).max(120).regex(/^[A-Za-z0-9_.-]+$/, 'Nom in
 
 export const configRouter = router({
   /** Liste de la configuration. Secrets → masqués ; non-secrets → en clair (pour les deux niveaux). */
-  list: protectedProcedure.query(({ ctx }) => {
-    const t = tierOf(ctx.user.permissions); requireAny(t);
+  list: protectedProcedure.query(async ({ ctx }) => {
+    const t = await resolveTier(ctx); requireAny(t);
     return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const rows = await tx.instanceConfig.findMany({ where: { organizationId: ctx.user.organizationId }, orderBy: [{ secret: 'desc' }, { name: 'asc' }] });
       return {
@@ -40,8 +40,8 @@ export const configRouter = router({
   }),
 
   /** Révèle la valeur en clair d'un SECRET — technicien de l'instance uniquement. */
-  reveal: protectedProcedure.input(z.object({ name: nameSchema })).query(({ ctx, input }) => {
-    const t = tierOf(ctx.user.permissions);
+  reveal: protectedProcedure.input(z.object({ name: nameSchema })).query(async ({ ctx, input }) => {
+    const t = await resolveTier(ctx);
     if (!t.instance) throw new TRPCError({ code: 'FORBIDDEN', message: 'Seul le technicien de l’instance peut révéler un secret en clair.' });
     return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const s = await tx.instanceConfig.findUniqueOrThrow({ where: { organizationId_name: { organizationId: ctx.user.organizationId, name: input.name } } });
@@ -52,8 +52,8 @@ export const configRouter = router({
   /** Positionne/pousse une entrée (upsert). Technicien de l'instance OU super-admin général. */
   set: protectedProcedure
     .input(z.object({ name: nameSchema, value: z.string().min(1).max(20_000), secret: z.boolean().default(true), description: z.string().max(200).optional() }))
-    .mutation(({ ctx, input }) => {
-      const t = tierOf(ctx.user.permissions); requireAny(t);
+    .mutation(async ({ ctx, input }) => {
+      const t = await resolveTier(ctx); requireAny(t);
       const enc = input.secret ? encryptSecret(input.value) : { value: input.value, encrypted: false };
       return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
         await tx.instanceConfig.upsert({
@@ -66,8 +66,8 @@ export const configRouter = router({
     }),
 
   /** Supprime une entrée — technicien de l'instance uniquement. */
-  remove: protectedProcedure.input(z.object({ name: nameSchema })).mutation(({ ctx, input }) => {
-    const t = tierOf(ctx.user.permissions);
+  remove: protectedProcedure.input(z.object({ name: nameSchema })).mutation(async ({ ctx, input }) => {
+    const t = await resolveTier(ctx);
     if (!t.instance) throw new TRPCError({ code: 'FORBIDDEN', message: 'Seul le technicien de l’instance peut supprimer une entrée.' });
     return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       await tx.instanceConfig.delete({ where: { organizationId_name: { organizationId: ctx.user.organizationId, name: input.name } } });

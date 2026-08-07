@@ -11,8 +11,20 @@ depuis l'application, via un **catalogue d'opérations prédéfinies**. **Statut
 
 Le mécanisme des **clés** est identique partout : `secret=true` → chiffré au repos (si `SECRETS_KEY`),
 **révélable en clair par le technicien** de l'instance, **tronqué** pour le général ; `secret=false`
-→ réglage visible en clair par les deux niveaux. Le général peut **positionner** une clé sans jamais
-la relire en clair.
+→ réglage visible en clair. Le général peut **positionner** une clé sans jamais la relire en clair.
+
+## Hébergement & isolation absolue
+Chaque instance porte un **mode d'hébergement** (`HOSTING_MODE`) : `self` (serveur du client) ou
+`jampack` (hébergé). Il détermine **quel niveau existe** (exactement un) :
+
+| Hébergement | Niveau actif | Isolation |
+|---|---|---|
+| **`self`** (serveur du client) | **Technicien de structure** (instance) | **Le super-admin général JAMPACK n'a AUCUN accès effectif** — isolation absolue |
+| **`jampack`** (hébergé) | **Général JAMPACK** (masqué sur les secrets) | Le technicien de structure n'existe pas |
+
+`resolveTier` : `instance = manage:Ops && self` ; `platform = manage:PlatformOps && jampack`. Un serveur
+client réellement isolé n'a de toute façon **aucun principal `PlatformOps`**. Le mode d'hébergement est
+posé au **provisioning** par le général (autorité brute), `instance.setHosting`.
 
 ## Capacités
 - **Configuration & clés** (`config.*`) : gestion intégrale de la conf d'instance (réglages + secrets),

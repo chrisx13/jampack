@@ -18,33 +18,51 @@ const SEV: Record<string, { bg: string; text: string; icon: string }> = {
 };
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleString('fr-FR') : '—');
 
-/** Bascule prod/test de l'instance. */
+/** Mode d'instance (prod/test) + hébergement (self/jampack, contrôlé par le général). */
 function InstanceMode() {
   const utils = trpc.useUtils();
   const status = trpc.instance.status.useQuery();
-  const setMode = trpc.instance.setMode.useMutation({ onSuccess: () => { utils.instance.status.invalidate(); utils.ops.diagnostics.invalidate(); } });
+  const inval = () => { utils.instance.status.invalidate(); utils.ops.diagnostics.invalidate(); utils.ops.catalogue.invalidate(); utils.config.list.invalidate(); };
+  const setMode = trpc.instance.setMode.useMutation({ onSuccess: inval });
+  const setHosting = trpc.instance.setHosting.useMutation({ onSuccess: inval });
   const [confirm, setConfirm] = useState('');
   const mode = status.data?.mode ?? 'test';
+  const hosting = status.data?.hosting ?? 'self';
+  const isGeneral = status.data?.tier?.platform;
 
   return (
-    <Card className="mb-3"><Card.Body className="d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <div>
-        <div className="text-secondary small">Mode de l'instance</div>
-        <div className="fs-5 fw-semibold">{mode === 'prod' ? <Badge bg="danger">PRODUCTION</Badge> : <Badge bg="secondary">TEST</Badge>}</div>
-      </div>
-      <div className="d-flex align-items-end gap-2">
-        {mode !== 'prod' && (
-          <div>
-            <Form.Label className="small mb-1 text-danger">Saisir « PROD » pour passer en production</Form.Label>
-            <div className="d-flex gap-2">
-              <Form.Control size="sm" style={{ maxWidth: 120 }} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="PROD" />
-              <Button size="sm" variant="danger" disabled={setMode.isPending} onClick={() => setMode.mutate({ mode: 'prod', confirmation: confirm })}>Passer en prod</Button>
+    <Card className="mb-3"><Card.Body>
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+          <div className="text-secondary small">Mode de l'instance</div>
+          <div className="fs-5 fw-semibold">{mode === 'prod' ? <Badge bg="danger">PRODUCTION</Badge> : <Badge bg="secondary">TEST</Badge>}</div>
+        </div>
+        <div>
+          <div className="text-secondary small">Hébergement</div>
+          <Badge bg={hosting === 'self' ? 'primary-subtle' : 'info-subtle'} text={hosting === 'self' ? 'primary' : 'info'} className="fw-normal">
+            {hosting === 'self' ? 'Serveur du client (super-admin structure actif)' : 'Hébergé JAMPACK (piloté par le général)'}
+          </Badge>
+        </div>
+        <div className="d-flex align-items-end gap-2">
+          {mode !== 'prod' ? (
+            <div>
+              <Form.Label className="small mb-1 text-danger">Saisir « PROD » pour passer en production</Form.Label>
+              <div className="d-flex gap-2">
+                <Form.Control size="sm" style={{ maxWidth: 120 }} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="PROD" />
+                <Button size="sm" variant="danger" disabled={setMode.isPending} onClick={() => setMode.mutate({ mode: 'prod', confirmation: confirm })}>Passer en prod</Button>
+              </div>
             </div>
-          </div>
-        )}
-        {mode === 'prod' && <Button size="sm" variant="outline-secondary" disabled={setMode.isPending} onClick={() => setMode.mutate({ mode: 'test' })}>Repasser en test</Button>}
+          ) : <Button size="sm" variant="outline-secondary" disabled={setMode.isPending} onClick={() => setMode.mutate({ mode: 'test' })}>Repasser en test</Button>}
+        </div>
       </div>
-      {setMode.isError && <Alert variant="danger" className="py-1 px-2 small mb-0 w-100">{setMode.error.message}</Alert>}
+      {isGeneral && (
+        <div className="mt-2 pt-2 border-top small d-flex align-items-center gap-2">
+          <span className="text-secondary">Général JAMPACK — hébergement :</span>
+          <Button size="sm" variant={hosting === 'self' ? 'primary' : 'outline-secondary'} disabled={setHosting.isPending} onClick={() => setHosting.mutate({ hosting: 'self' })}>Serveur client</Button>
+          <Button size="sm" variant={hosting === 'jampack' ? 'info' : 'outline-secondary'} disabled={setHosting.isPending} onClick={() => setHosting.mutate({ hosting: 'jampack' })}>Hébergé JAMPACK</Button>
+        </div>
+      )}
+      {(setMode.isError || setHosting.isError) && <Alert variant="danger" className="py-1 px-2 small mb-0 mt-2">{(setMode.error || setHosting.error)?.message}</Alert>}
     </Card.Body></Card>
   );
 }

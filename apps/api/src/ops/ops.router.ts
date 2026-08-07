@@ -5,7 +5,7 @@ import { router, protectedProcedure } from '../trpc/trpc';
 import { OPS_CATALOG, OPS_CATEGORIES, getOp, canExecute, tierAllows, evaluateConfig, summarizeFindings } from '@jampack/domain';
 import { runOp } from './executor';
 import { secretsEncryptionEnabled } from './crypto';
-import { tierOf, requireAny } from './tier';
+import { resolveTier, requireAny } from './tier';
 
 const EXPECTED_RLS = ['Societe', 'Company', 'Contact', 'Opportunity', 'Invoice', 'Payment', 'SupplierInvoice', 'JournalEntry', 'Expense', 'AiCreditLedger', 'OpsExecution', 'InstanceConfig'];
 
@@ -55,14 +55,14 @@ const runInput = z.object({
 
 export const opsRouter = router({
   /** Catalogue filtré selon le niveau (le technicien ne voit pas les opérations « platform », etc.). */
-  catalogue: protectedProcedure.query(({ ctx }) => {
-    const t = tierOf(ctx.user.permissions); requireAny(t);
+  catalogue: protectedProcedure.query(async ({ ctx }) => {
+    const t = await resolveTier(ctx); requireAny(t);
     return { categories: OPS_CATEGORIES, operations: OPS_CATALOG.filter((op) => tierAllows(op, t)), tier: t };
   }),
 
   /** Diagnostic des défauts de configuration. Portée : instance courante (agrégat flotte à venir). */
   diagnostics: protectedProcedure.query(async ({ ctx }) => {
-    const t = tierOf(ctx.user.permissions); requireAny(t);
+    const t = await resolveTier(ctx); requireAny(t);
     const observation = await observeConfig(ctx.user.organizationId, ctx.societeId);
     const findings = evaluateConfig(observation);
     return {
@@ -74,8 +74,8 @@ export const opsRouter = router({
   }),
 
   /** Historique des exécutions (50 dernières), organisation courante. */
-  history: protectedProcedure.query(({ ctx }) => {
-    const t = tierOf(ctx.user.permissions); requireAny(t);
+  history: protectedProcedure.query(async ({ ctx }) => {
+    const t = await resolveTier(ctx); requireAny(t);
     return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const rows = await tx.opsExecution.findMany({ where: { organizationId: ctx.user.organizationId }, orderBy: { createdAt: 'desc' }, take: 50 });
       return { rows };
@@ -86,7 +86,7 @@ export const opsRouter = router({
   run: protectedProcedure
     .input(runInput)
     .mutation(async ({ ctx, input }) => {
-      const t = tierOf(ctx.user.permissions); requireAny(t);
+      const t = await resolveTier(ctx); requireAny(t);
       const op = getOp(input.id);
       if (!op) throw new TRPCError({ code: 'NOT_FOUND', message: `Opération inconnue : ${input.id}.` });
       if (!tierAllows(op, t)) throw new TRPCError({ code: 'FORBIDDEN', message: `Opération réservée à un autre niveau de super-admin.` });

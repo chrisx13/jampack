@@ -62,9 +62,13 @@ export default function AppShell() {
   // défaut serait instable (un domaine sans droit requis « gagnerait » au 1er rendu).
   const domains = useMemo(() => {
     if (!me.isSuccess) return DOMAINS;
-    return DOMAINS.map((d) => ({ ...d, views: d.views.filter((v) => !v.can || ability.can(v.can[0], v.can[1])) })).filter(
-      (d) => d.views.length > 0
-    );
+    // `can` : un tuple [action, sujet], OU une liste de tuples (accès si AU MOINS UN est accordé).
+    const allowed = (can: View['can']): boolean => {
+      if (!can) return true;
+      const perms = Array.isArray(can[0]) ? (can as [string, string][]) : [can as [string, string]];
+      return perms.some(([a, s]) => ability.can(a, s));
+    };
+    return DOMAINS.map((d) => ({ ...d, views: d.views.filter((v) => allowed(v.can)) })).filter((d) => d.views.length > 0);
   }, [me.isSuccess, ability]);
 
   // Table de toutes les vues (dashboard + toutes vues) pour retrouver un onglet par id.

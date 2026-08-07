@@ -15,8 +15,12 @@ beforeAll(async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   technicianOnly = appRouter.createCaller(ctx as any);
   await C.prisma.opsExecution.deleteMany({ where: { organizationId: C.org.id } });
+  await C.prisma.instanceConfig.deleteMany({ where: { organizationId: C.org.id } });
 });
-afterAll(async () => { await C.prisma.opsExecution.deleteMany({ where: { organizationId: C.org.id } }); });
+afterAll(async () => {
+  await C.prisma.opsExecution.deleteMany({ where: { organizationId: C.org.id } });
+  await C.prisma.instanceConfig.deleteMany({ where: { organizationId: C.org.id } });
+});
 
 describe('Console super-admin — catalogue', () => {
   it('expose le catalogue et les catégories', async () => {
@@ -111,5 +115,27 @@ describe('Instance — bascule prod/test', () => {
     const r = await caller.instance.setMode({ mode: 'prod', confirmation: 'PROD' });
     expect(r.mode).toBe('prod');
     await caller.instance.setMode({ mode: 'test' }); // remise en test
+  });
+});
+
+describe('Hébergement — le super-admin de structure n’existe que si serveur du client', () => {
+  afterAll(async () => { await caller.instance.setHosting({ hosting: 'self' }); });
+
+  it('self : le technicien de structure est actif', async () => {
+    await caller.instance.setHosting({ hosting: 'self' });
+    const s = await technicianOnly.instance.status();
+    expect(s.hosting).toBe('self');
+    expect(s.tier.instance).toBe(true);
+  });
+
+  it('jampack (hébergé) : le technicien de structure n’a plus accès ; seul le général pilote', async () => {
+    await caller.instance.setHosting({ hosting: 'jampack' }); // caller = manage:all → tier platform
+    await expect(technicianOnly.instance.status()).rejects.toThrow(/super-admin/i);
+    await expect(technicianOnly.config.list()).rejects.toThrow(/super-admin/i);
+    expect((await caller.instance.status()).tier.platform).toBe(true);
+  });
+
+  it('setHosting réservé au général (platform)', async () => {
+    await expect(technicianOnly.instance.setHosting({ hosting: 'self' })).rejects.toThrow(/général/i);
   });
 });
