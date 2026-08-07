@@ -44,7 +44,8 @@ façon **découplée** (champ/lien/import) plutôt qu'intégrées à un prestata
 | Commande → réception → facture fournisseur | ✔ | ✔ | — |
 | Réception partielle, rapprochement 3 voies | ✔ | ✔ | — |
 | **Demande de prix / appel d'offres** | ✔ (Odoo) | ✖ | **P3** |
-| **Notes de frais** (dépenses salariés) | ✔ (Sellsy, Zoho, Pennylane) | ✖ | **P2** |
+| **Notes de frais** (dépenses salariés) | ✔ (Sellsy, Zoho, Pennylane) | ✅ (+ justificatif photo mobile) | — |
+| **Reconnaissance auto de documents** (facture/frais, PDF/photo) | ✔ (Pennylane, Dext…) | ⏳ planifié (Factur-X + PDF natif + règles, **sans coût** ; OCR/IA en option) | **P2** — voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md) |
 
 ### Stock
 | Fonction | Marché | JAMPACK | Écart |
