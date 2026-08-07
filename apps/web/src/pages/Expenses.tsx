@@ -32,8 +32,17 @@ export default function Expenses() {
   const [open, setOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
   const [receipt, setReceipt] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [confirmDel, setConfirmDel] = useState<null | { id: string; description: string }>(null);
   const [f, setF] = useState({ date: new Date().toISOString().slice(0, 10), category: 'deplacement', description: '', amountHt: '', taxRatePct: '20' });
   const rows = list.data ?? [];
+  const q = search.trim().toLowerCase();
+  const filtered = rows.filter((e) =>
+    (statusFilter === 'all' || e.status === statusFilter) &&
+    (!q || e.description.toLowerCase().includes(q) || (e.categoryLabel ?? '').toLowerCase().includes(q) || (e.incurredBy?.name ?? e.incurredBy?.email ?? '').toLowerCase().includes(q))
+  );
+  const showSearch = rows.length > 5;
 
   const submit = () => {
     if (!f.description.trim() || !(num(f.amountHt) >= 0)) return;
@@ -59,12 +68,27 @@ export default function Expenses() {
         </div>
       </div>
 
+      {showSearch && (
+        <div className="d-flex flex-wrap gap-2 mb-3">
+          <div className="position-relative" style={{ maxWidth: 360, flex: '1 1 240px' }}>
+            <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+            <input className="form-control form-control-sm ps-4" aria-label="Rechercher une note de frais" placeholder="Rechercher (description, catégorie, salarié)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <Form.Select size="sm" style={{ maxWidth: 180 }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filtrer par statut">
+            <option value="all">Tous les statuts</option>
+            <option value="draft">Brouillon</option>
+            <option value="validated">Validée</option>
+            <option value="reimbursed">Remboursée</option>
+          </Form.Select>
+        </div>
+      )}
+
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
           <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Date</th><th scope="col">Catégorie</th><th scope="col">Description</th><th scope="col">Salarié</th><th scope="col" className="text-end">HT</th><th scope="col" className="text-end">TTC</th><th scope="col">Statut</th><th scope="col" className="text-end pe-3">Actions</th></tr></thead>
           <tbody>
             {list.isLoading && <tr><td colSpan={8} className="text-center py-4"><Spinner size="sm" /></td></tr>}
-            {rows.map((e) => (
+            {filtered.map((e) => (
               <tr key={e.id}>
                 <td className="ps-3 text-secondary">{dfmt(e.date)}</td>
                 <td>{e.categoryLabel}</td>
@@ -78,11 +102,18 @@ export default function Expenses() {
                   {canProcess && e.status === 'draft' && <Button variant="outline-primary" size="sm" className="me-1" title="Valider" onClick={() => validate.mutate({ id: e.id })}><i className="bi bi-check2" /></Button>}
                   {canProcess && e.status !== 'draft' && !e.posted && <Button variant="outline-secondary" size="sm" className="me-1" title="Comptabiliser" onClick={() => post.mutate({ id: e.id })} disabled={post.isPending}><i className="bi bi-journal-plus" /></Button>}
                   {canProcess && e.status === 'validated' && <Button variant="outline-success" size="sm" className="me-1" title="Marquer remboursée" onClick={() => reimburse.mutate({ id: e.id })}><i className="bi bi-cash" /></Button>}
-                  {editable && e.status === 'draft' && <Button variant="light" size="sm" className="text-danger" title="Supprimer" onClick={() => remove.mutate({ id: e.id })}><i className="bi bi-trash" /></Button>}
+                  {editable && e.status === 'draft' && <Button variant="light" size="sm" className="text-danger" title="Supprimer" onClick={() => setConfirmDel({ id: e.id, description: e.description })}><i className="bi bi-trash" /></Button>}
                 </td>
               </tr>
             ))}
-            {list.isSuccess && rows.length === 0 && <tr><td colSpan={8} className="text-center text-secondary py-4">Aucune note de frais</td></tr>}
+            {list.isSuccess && rows.length === 0 && (
+              <tr><td colSpan={8} className="text-center text-secondary py-5">
+                <div className="mb-2"><i className="bi bi-receipt fs-3 opacity-50" aria-hidden="true" /></div>
+                <div className="mb-3">Aucune note de frais pour l'instant.</div>
+                {editable && <Button size="sm" onClick={() => { setF({ date: new Date().toISOString().slice(0, 10), category: 'deplacement', description: '', amountHt: '', taxRatePct: '20' }); setReceipt(null); setOpen(true); }}><i className="bi bi-plus-lg me-1" aria-hidden="true" />Nouvelle note</Button>}
+              </td></tr>
+            )}
+            {list.isSuccess && rows.length > 0 && filtered.length === 0 && <tr><td colSpan={8} className="text-center text-secondary py-4">Aucun résultat pour ce filtre</td></tr>}
           </tbody>
         </Table>
       </Card.Body></Card>
@@ -110,6 +141,15 @@ export default function Expenses() {
       </Modal>
 
       <DocumentScanner show={scanOpen} onClose={() => setScanOpen(false)} onPrefill={onScanPrefill} />
+
+      <Modal show={!!confirmDel} onHide={() => setConfirmDel(null)} centered>
+        <Modal.Header closeButton><Modal.Title className="fs-6">Supprimer la note de frais</Modal.Title></Modal.Header>
+        <Modal.Body>Supprimer définitivement <strong>{confirmDel?.description}</strong> ? Cette action est irréversible.</Modal.Body>
+        <Modal.Footer>
+          <Button variant="light" onClick={() => setConfirmDel(null)}>Annuler</Button>
+          <Button variant="danger" disabled={remove.isPending} onClick={() => { if (confirmDel) remove.mutate({ id: confirmDel.id }, { onSuccess: () => setConfirmDel(null) }); }}>{remove.isPending ? <Spinner size="sm" /> : 'Supprimer'}</Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

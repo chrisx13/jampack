@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Card, Button, Badge, Modal, Form, Alert, Table, Spinner } from 'react-bootstrap';
+import { Card, Button, Badge, Modal, Form, Alert, Table, Spinner, Tabs, Tab } from 'react-bootstrap';
 import { trpc } from '../trpc';
 
 // Console super-admin de pilotage technique. Sections : mode instance (prod/test), diagnostic de
@@ -248,53 +248,62 @@ export default function OpsConsole() {
         <div className="small">Zone <strong>super-admin</strong>. Aucune commande libre : seules des opérations validées sont proposées. Les actions sensibles exigent une <strong>confirmation typée</strong> ; les opérations hôte nécessitent un <strong>runner</strong> configuré (désactivé par défaut). Le super-admin <strong>général</strong> voit les secrets <strong>tronqués</strong>.</div>
       </Alert>
 
-      <InstanceMode />
-      <Diagnostics />
-      <ConfigManager />
+      <Tabs defaultActiveKey="etat" className="mb-3">
+        <Tab eventKey="etat" title="État">
+          <InstanceMode />
+          <Diagnostics />
+        </Tab>
 
-      {cat.isLoading && <div className="text-center py-4"><Spinner size="sm" /></div>}
-      {byCategory.map((g) => (
-        <div key={g.key} className="mb-3">
-          <div className="text-secondary small text-uppercase mb-2">{g.label}</div>
-          <div className="row g-2">
-            {g.ops.map((o) => {
-              const d = DANGER[o.danger];
-              return (
-                <div className="col-md-6 col-xl-4" key={o.id}>
-                  <Card className="h-100"><Card.Body className="d-flex flex-column">
-                    <div className="d-flex justify-content-between align-items-start mb-1"><span className="fw-semibold">{o.label}</span><Badge bg={d.bg} className="fw-normal">{d.label}</Badge></div>
-                    <p className="text-secondary small flex-grow-1 mb-2">{o.description}</p>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <span className="text-secondary small">{o.needsHostRunner ? <><i className="bi bi-hdd-network me-1" />hôte</> : <><i className="bi bi-cpu me-1" />en ligne</>}</span>
-                      <Button size="sm" variant="outline-primary" onClick={() => setActive(o)}>Ouvrir</Button>
+        <Tab eventKey="config" title="Configuration & clés">
+          <ConfigManager />
+        </Tab>
+
+        <Tab eventKey="ops" title="Opérations">
+          {cat.isLoading && <div className="text-center py-4"><Spinner size="sm" /></div>}
+          {byCategory.map((g) => (
+            <div key={g.key} className="mb-3">
+              <div className="text-secondary small text-uppercase mb-2">{g.label}</div>
+              <div className="row g-2">
+                {g.ops.map((o) => {
+                  const d = DANGER[o.danger];
+                  return (
+                    <div className="col-md-6 col-xl-4" key={o.id}>
+                      <Card className="h-100"><Card.Body className="d-flex flex-column">
+                        <div className="d-flex justify-content-between align-items-start mb-1"><span className="fw-semibold">{o.label}</span><Badge bg={d.bg} className="fw-normal">{d.label}</Badge></div>
+                        <p className="text-secondary small flex-grow-1 mb-2">{o.description}</p>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <span className="text-secondary small">{o.needsHostRunner ? <><i className="bi bi-hdd-network me-1" />hôte</> : <><i className="bi bi-cpu me-1" />en ligne</>}</span>
+                          <Button size="sm" variant="outline-primary" onClick={() => setActive(o)}>Ouvrir</Button>
+                        </div>
+                      </Card.Body></Card>
                     </div>
-                  </Card.Body></Card>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+                  );
+                })}
+              </div>
+            </div>
+          ))}
 
-      <Card className="mt-2"><Card.Body className="p-0">
-        <div className="p-3 pb-2"><h6 className="fw-semibold mb-0">Historique des exécutions</h6></div>
-        <Table hover responsive className="mb-0 align-middle">
-          <thead className="text-secondary small"><tr><th className="ps-3">Date</th><th>Opération</th><th>Cible</th><th>Mode</th><th className="pe-3">Résultat</th></tr></thead>
-          <tbody>
-            {history.isLoading && <tr><td colSpan={5} className="text-center py-4"><Spinner size="sm" /></td></tr>}
-            {(history.data?.rows ?? []).map((r: { id: string; createdAt: unknown; opId: string; target: string; dryRun: boolean; status: string; summary?: string | null }) => (
-              <tr key={r.id}>
-                <td className="ps-3 text-secondary">{dfmt(r.createdAt)}</td>
-                <td className="fw-medium">{r.opId}</td>
-                <td className="text-secondary">{r.target}</td>
-                <td>{r.dryRun ? <Badge bg="secondary-subtle" text="secondary" className="fw-normal">simulation</Badge> : <Badge bg="primary-subtle" text="primary" className="fw-normal">réel</Badge>}</td>
-                <td className="pe-3"><Badge bg={r.status === 'ok' ? 'success-subtle' : r.status === 'blocked' ? 'secondary-subtle' : 'danger-subtle'} text={r.status === 'ok' ? 'success' : r.status === 'blocked' ? 'secondary' : 'danger'} className="fw-normal">{r.status}</Badge> <span className="small text-secondary">{r.summary}</span></td>
-              </tr>
-            ))}
-            {history.isSuccess && (history.data?.rows ?? []).length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucune exécution</td></tr>}
-          </tbody>
-        </Table>
-      </Card.Body></Card>
+          <Card className="mt-2"><Card.Body className="p-0">
+            <div className="p-3 pb-2"><h6 className="fw-semibold mb-0">Historique des exécutions</h6></div>
+            <Table hover responsive className="mb-0 align-middle">
+              <thead className="text-secondary small"><tr><th className="ps-3">Date</th><th>Opération</th><th>Cible</th><th>Mode</th><th className="pe-3">Résultat</th></tr></thead>
+              <tbody>
+                {history.isLoading && <tr><td colSpan={5} className="text-center py-4"><Spinner size="sm" /></td></tr>}
+                {(history.data?.rows ?? []).map((r: { id: string; createdAt: unknown; opId: string; target: string; dryRun: boolean; status: string; summary?: string | null }) => (
+                  <tr key={r.id}>
+                    <td className="ps-3 text-secondary">{dfmt(r.createdAt)}</td>
+                    <td className="fw-medium">{r.opId}</td>
+                    <td className="text-secondary">{r.target}</td>
+                    <td>{r.dryRun ? <Badge bg="secondary-subtle" text="secondary" className="fw-normal">simulation</Badge> : <Badge bg="primary-subtle" text="primary" className="fw-normal">réel</Badge>}</td>
+                    <td className="pe-3"><Badge bg={r.status === 'ok' ? 'success-subtle' : r.status === 'blocked' ? 'secondary-subtle' : 'danger-subtle'} text={r.status === 'ok' ? 'success' : r.status === 'blocked' ? 'secondary' : 'danger'} className="fw-normal">{r.status}</Badge> <span className="small text-secondary">{r.summary}</span></td>
+                  </tr>
+                ))}
+                {history.isSuccess && (history.data?.rows ?? []).length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucune exécution</td></tr>}
+              </tbody>
+            </Table>
+          </Card.Body></Card>
+        </Tab>
+      </Tabs>
 
       {active && <OpRunner op={active} onClose={() => setActive(null)} />}
     </>

@@ -47,12 +47,14 @@ function FraisTab() {
   const can = useCan();
   const editable = can('create', 'Expense');
   const list = trpc.expenses.list.useQuery();
-  const create = trpc.expenses.create.useMutation({ onSuccess: () => { utils.expenses.list.invalidate(); setAmount(''); setDesc(''); setReceipt(null); setOk(true); setTimeout(() => setOk(false), 1800); } });
+  const create = trpc.expenses.create.useMutation({ onSuccess: () => { utils.expenses.list.invalidate(); setAmount(''); setDesc(''); setRate('20'); setReceipt(null); setAiMsg(''); setOk(true); setTimeout(() => setOk(false), 1800); } });
   const [category, setCategory] = useState('deplacement');
   const [amount, setAmount] = useState('');
+  const [rate, setRate] = useState('20');
   const [desc, setDesc] = useState('');
   const [receipt, setReceipt] = useState<string | null>(null);
   const [photoErr, setPhotoErr] = useState('');
+  const [aiMsg, setAiMsg] = useState('');
   const [ok, setOk] = useState(false);
   const rows = list.data ?? [];
 
@@ -61,14 +63,18 @@ function FraisTab() {
   const aiAnalyze = trpc.documents.aiAnalyze.useMutation();
   const recognize = async () => {
     if (!receipt) return;
+    setAiMsg('');
     const r = await aiAnalyze.mutateAsync({ imageDataUrl: receipt });
     const d = r.expenseDraft;
     setCategory(d.category);
     if (d.amountHt != null) setAmount(String(d.amountHt));
+    if (d.taxRatePct != null) setRate(String(d.taxRatePct));
     if (d.description) setDesc(d.description);
+    setAiMsg(`Reconnu — 1 crédit utilisé, solde restant : ${r.balance}.`);
     aiStatus.refetch();
   };
-  const aiReady = !!aiStatus.data?.enabled && (aiStatus.data?.balance ?? 0) > 0;
+  const aiEnabled = !!aiStatus.data?.enabled;
+  const balance = aiStatus.data?.balance ?? 0;
 
   const onPhoto = async (file?: File) => {
     setPhotoErr('');
@@ -85,7 +91,7 @@ function FraisTab() {
   return (
     <div>
       <form
-        onSubmit={(e) => { e.preventDefault(); if (desc.trim() && num(amount) >= 0) create.mutate({ date: new Date().toISOString().slice(0, 10), category, description: desc.trim(), amountHt: num(amount), taxRatePct: 20, receipt: receipt ?? undefined }); }}
+        onSubmit={(e) => { e.preventDefault(); if (desc.trim() && num(amount) >= 0) create.mutate({ date: new Date().toISOString().slice(0, 10), category, description: desc.trim(), amountHt: num(amount), taxRatePct: num(rate), receipt: receipt ?? undefined }); }}
         className="d-grid gap-3 mb-4"
       >
         <div>
@@ -94,9 +100,17 @@ function FraisTab() {
             {EXPENSE_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
           </select>
         </div>
-        <div>
-          <label htmlFor="m-amt" className="form-label small text-secondary mb-1">Montant HT (€)</label>
-          <input id="m-amt" className="form-control form-control-lg" type="number" inputMode="decimal" min={0} step="0.01" placeholder="0,00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <div className="row g-2">
+          <div className="col-7">
+            <label htmlFor="m-amt" className="form-label small text-secondary mb-1">Montant HT (€)</label>
+            <input id="m-amt" className="form-control form-control-lg" type="number" inputMode="decimal" min={0} step="0.01" placeholder="0,00" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </div>
+          <div className="col-5">
+            <label htmlFor="m-tva" className="form-label small text-secondary mb-1">TVA</label>
+            <select id="m-tva" className="form-select form-select-lg" value={rate} onChange={(e) => setRate(e.target.value)}>
+              <option value="20">20 %</option><option value="10">10 %</option><option value="5.5">5,5 %</option><option value="0">0 %</option>
+            </select>
+          </div>
         </div>
         <div>
           <label htmlFor="m-desc" className="form-label small text-secondary mb-1">Description</label>
@@ -110,11 +124,16 @@ function FraisTab() {
                 <img src={receipt} alt="Aperçu du justificatif" style={{ height: 56, width: 56, objectFit: 'cover', borderRadius: 8 }} />
                 <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => setReceipt(null)}><i className="bi bi-x-lg me-1" aria-hidden="true" />Retirer</button>
               </div>
-              {aiReady && (
-                <button type="button" className="btn btn-outline-primary" onClick={recognize} disabled={aiAnalyze.isPending}>
-                  {aiAnalyze.isPending ? 'Reconnaissance…' : <><i className="bi bi-magic me-1" aria-hidden="true" />Reconnaître (IA, 1 crédit)</>}
-                </button>
+              {aiEnabled ? (
+                balance > 0
+                  ? <button type="button" className="btn btn-outline-primary" onClick={recognize} disabled={aiAnalyze.isPending}>
+                      {aiAnalyze.isPending ? 'Reconnaissance…' : <><i className="bi bi-magic me-1" aria-hidden="true" />Reconnaître (IA, 1 crédit)</>}
+                    </button>
+                  : <button type="button" className="btn btn-outline-secondary" disabled><i className="bi bi-magic me-1" aria-hidden="true" />Crédits IA épuisés</button>
+              ) : (
+                <div className="small text-secondary"><i className="bi bi-info-circle me-1" aria-hidden="true" />Reconnaissance IA indisponible — la photo est jointe comme justificatif (gratuit).</div>
               )}
+              {aiMsg && <div className="small text-success"><i className="bi bi-check-circle me-1" aria-hidden="true" />{aiMsg}</div>}
               {aiAnalyze.isError && <div className="text-danger small">{aiAnalyze.error.message}</div>}
             </div>
           ) : (

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Table, Button, Form, Spinner, Badge } from 'react-bootstrap';
+import { Card, Table, Button, Form, Spinner, Badge, Alert, Modal } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { computeInvoiceTotals, PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '@jampack/domain';
@@ -66,6 +66,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const readOnly = status !== 'draft';
 
   const [scanOpen, setScanOpen] = useState(false);
+  const [postMsg, setPostMsg] = useState<string | null>(null);
   // Pré-remplissage depuis le scanner : référence, date, une ligne depuis les totaux, fournisseur par nom.
   const onScanPrefill = (r: ScanResult) => {
     const d = r.supplierInvoiceDraft;
@@ -104,7 +105,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const onPost = async () => {
     const r = await postAcc.mutateAsync({ id });
     utils.supplierInvoices.get.invalidate({ id }); utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate();
-    alert(r.alreadyPosted ? 'Déjà comptabilisée.' : 'Écriture générée (journal des achats) — voir Comptabilité ▸ Écritures.');
+    setPostMsg(r.alreadyPosted ? 'Déjà comptabilisée.' : 'Écriture générée (journal des achats) — voir Comptabilité ▸ Écritures.');
   };
   const onUnpaid = async () => { await markUnpaid.mutateAsync({ id }); refreshLists(); utils.supplierInvoices.get.invalidate({ id }); };
 
@@ -137,6 +138,8 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
           )}
         </div>
       </div>
+
+      {postMsg && <Alert variant="success" dismissible onClose={() => setPostMsg(null)} className="py-2"><i className="bi bi-journal-check me-1" />{postMsg}</Alert>}
 
       <Card className="mb-3">
         <Card.Body>
@@ -267,6 +270,7 @@ function SupplierPaymentsCard({ supplierInvoiceId, totalTtc }: { supplierInvoice
   const [method, setMethod] = useState<PaymentMethod>('virement');
   const [date, setDate] = useState('');
   const [reference, setReference] = useState('');
+  const [confirmDel, setConfirmDel] = useState<null | { id: string; amount: number }>(null);
   useEffect(() => { setAmount(remaining > 0 ? remaining : 0); }, [list.data]); // montant réinitialisé au reste dû
 
   const refresh = () => {
@@ -306,7 +310,7 @@ function SupplierPaymentsCard({ supplierInvoiceId, totalTtc }: { supplierInvoice
                   {p.journalEntryId
                     ? <i className="bi bi-journal-check text-success me-1" title="Comptabilisé" />
                     : can('create', 'Accounting') && <Button variant="light" size="sm" className="me-1" title="Comptabiliser (journal banque)" onClick={() => post(p.id)}><i className="bi bi-journal-plus" /></Button>}
-                  {!p.journalEntryId && can('update', 'SupplierInvoice') && <Button variant="light" size="sm" className="text-danger" onClick={() => del(p.id)}><i className="bi bi-trash" /></Button>}
+                  {!p.journalEntryId && can('update', 'SupplierInvoice') && <Button variant="light" size="sm" className="text-danger" title="Supprimer le règlement" onClick={() => setConfirmDel({ id: p.id, amount: num(p.amount) })}><i className="bi bi-trash" /></Button>}
                 </td>
               </tr>
             ))}
@@ -340,6 +344,15 @@ function SupplierPaymentsCard({ supplierInvoiceId, totalTtc }: { supplierInvoice
           </div>
         )}
         {create.error && <div className="text-danger small mt-2">{create.error.message}</div>}
+
+        <Modal show={!!confirmDel} onHide={() => setConfirmDel(null)} centered>
+          <Modal.Header closeButton><Modal.Title className="fs-6">Supprimer le règlement</Modal.Title></Modal.Header>
+          <Modal.Body>Supprimer ce règlement de <strong>{confirmDel ? euro.format(confirmDel.amount) : ''}</strong> ? Cette action est irréversible.</Modal.Body>
+          <Modal.Footer>
+            <Button variant="light" onClick={() => setConfirmDel(null)}>Annuler</Button>
+            <Button variant="danger" disabled={remove.isPending} onClick={async () => { if (confirmDel) { await del(confirmDel.id); setConfirmDel(null); } }}>{remove.isPending ? <Spinner size="sm" /> : 'Supprimer'}</Button>
+          </Modal.Footer>
+        </Modal>
       </Card.Body>
     </Card>
   );

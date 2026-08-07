@@ -93,8 +93,18 @@ export default function DocumentScanner({ show, onClose, onPrefill }: { show: bo
   };
 
   const prefill = () => {
-    if (!data) return;
-    onPrefill({ result: data.result, expenseDraft: data.expenseDraft, supplierInvoiceDraft: data.supplierInvoiceDraft, receipt: imageDataUrl });
+    if (data) {
+      onPrefill({ result: data.result, expenseDraft: data.expenseDraft, supplierInvoiceDraft: data.supplierInvoiceDraft, receipt: imageDataUrl });
+    } else if (imageDataUrl) {
+      // Photo sans extraction (IA indisponible) : joindre au moins le justificatif + date du jour.
+      const today = new Date().toISOString().slice(0, 10);
+      onPrefill({
+        result: { source: 'none', fields: {}, summary: '', needsReview: [], warnings: [] },
+        expenseDraft: { date: today, category: 'autre', description: '', amountHt: undefined, taxRatePct: 20 },
+        supplierInvoiceDraft: {},
+        receipt: imageDataUrl,
+      });
+    } else return;
     close();
   };
 
@@ -123,7 +133,9 @@ export default function DocumentScanner({ show, onClose, onPrefill }: { show: bo
         {imageDataUrl && !data && (
           <div className="mb-3 text-center">
             <img src={imageDataUrl} alt="aperçu" style={{ maxHeight: 180, maxWidth: '100%' }} className="rounded border" />
-            <p className="text-secondary small mt-2 mb-0">Photo : l'extraction fine nécessite l'IA (les règles locales lisent surtout les PDF).</p>
+            {aiEnabled && balance > 0
+              ? <p className="text-secondary small mt-2 mb-0">Photo : lancez <strong>« Affiner avec l'IA »</strong> pour extraire les champs, ou <strong>« Pré-remplir »</strong> pour joindre la photo en justificatif.</p>
+              : <Alert variant="warning" className="py-2 small mt-2 mb-0"><i className="bi bi-exclamation-triangle me-1" />Reconnaissance IA indisponible ({aiEnabled ? 'crédits épuisés' : 'désactivée'}). La photo sera <strong>jointe en justificatif</strong> ; complétez les champs à la main via « Pré-remplir ».</Alert>}
           </div>
         )}
 
@@ -163,8 +175,8 @@ export default function DocumentScanner({ show, onClose, onPrefill }: { show: bo
       <Modal.Footer className="d-flex justify-content-between">
         <div className="small text-secondary">
           {aiEnabled
-            ? <>IA Claude : <strong>{balance}</strong> crédit(s){aiStatus.data?.model ? ` · ${aiStatus.data.model}` : ''}</>
-            : <>IA désactivée (niveau gratuit uniquement)</>}
+            ? <>Enrichissement IA (Claude) : <strong>{balance}</strong> crédit(s){aiStatus.data?.model ? ` · ${aiStatus.data.model}` : ''}</>
+            : <>Enrichissement IA désactivé — extraction locale seulement</>}
         </div>
         <div className="d-flex gap-2">
           {aiEnabled && (text || facturxXml || imageDataUrl) && (
@@ -172,7 +184,7 @@ export default function DocumentScanner({ show, onClose, onPrefill }: { show: bo
               <i className="bi bi-magic me-1" />Affiner avec l'IA (1 crédit)
             </Button>
           )}
-          <Button variant="primary" disabled={!data} onClick={prefill}><i className="bi bi-check2 me-1" />Pré-remplir</Button>
+          <Button variant="primary" disabled={!data && !imageDataUrl} onClick={prefill}><i className="bi bi-check2 me-1" />Pré-remplir</Button>
         </div>
       </Modal.Footer>
     </Modal>
