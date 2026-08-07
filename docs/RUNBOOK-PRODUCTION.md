@@ -36,6 +36,15 @@ Réf. sécurité : [SECURITE-REVUE-PROD](SECURITE-REVUE-PROD.md).
 - [ ] Métriques (CPU/mémoire/latence) + **alerte** sur 5xx et pics de trafic sur `/devis/*`.
 - [ ] Healthcheck des conteneurs (db `pg_isready` déjà présent).
 
+## 5b. Reconnaissance de documents — IA (option, niveau 2)
+- [ ] **Par défaut désactivé** : sans `ANTHROPIC_API_KEY`, seul le **niveau 1 gratuit** (local) fonctionne.
+- [ ] Pour activer l'enrichissement **Claude** : définir `ANTHROPIC_API_KEY` (secret), éventuellement
+  `AI_MODEL` (défaut `claude-haiku-4-5-20251001`) et `ANTHROPIC_BASE_URL`.
+- [ ] **RGPD** : l'IA est le **seul** chemin où un document sort de l'instance (vers **Anthropic**) —
+  encadrer par une **clause de sous-traitance** ; informer les utilisateurs ; garder l'usage **mesuré**
+  (crédits `AiCreditLedger`).
+- [ ] Crédits : recharge par un **administrateur** (`documents.creditsTopup`) ; solde via `documents.aiStatus`.
+
 ## 6. Conformité (rappel)
 - [ ] Sorties fiscales **validées par un expert-comptable** avant émission réelle
   (voir [DOSSIER-CONFORMITE-FISCALE](DOSSIER-CONFORMITE-FISCALE.md)).

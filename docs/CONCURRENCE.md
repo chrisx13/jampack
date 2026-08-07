@@ -45,7 +45,7 @@ façon **découplée** (champ/lien/import) plutôt qu'intégrées à un prestata
 | Réception partielle, rapprochement 3 voies | ✔ | ✔ | — |
 | **Demande de prix / appel d'offres** | ✔ (Odoo) | ✖ | **P3** |
 | **Notes de frais** (dépenses salariés) | ✔ (Sellsy, Zoho, Pennylane) | ✅ (+ justificatif photo mobile) | — |
-| **Reconnaissance auto de documents** (facture/frais, PDF/photo) | ✔ (Pennylane, Dext…) | ⏳ planifié (Factur-X + PDF natif + règles, **sans coût** ; OCR/IA en option) | **P2** — voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md) |
+| **Reconnaissance auto de documents** (facture/frais, PDF/photo) | ✔ (Pennylane, Dext…) | ✅ **niveau 1 gratuit** (Factur-X + PDF natif + règles FR validées, résumé + confiance) **+ niveau 2 IA Claude** en crédits (option) | — voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md) |
 
 ### Stock
 | Fonction | Marché | JAMPACK | Écart |

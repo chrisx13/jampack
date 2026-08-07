@@ -23,6 +23,14 @@ le backlog **implémentable sans dépendance externe (8/8)** a été livré :
 
 ### Achats / Comptabilité
 - **Notes de frais** : dépenses salariés → comptabilisation 6xx/44566 ↔ 421 (FR-ACH-11).
+- **Reconnaissance de documents** (facture fournisseur / frais, PDF/photo) — FR-ACH-12 :
+  - **Niveau 1 gratuit** : extraction **locale** (pdf.js : texte PDF + pièce jointe **Factur-X**) +
+    **règles françaises** (SIREN/SIRET/TVA/IBAN **validés**) → **résumé + brouillon pré-rempli +
+    indice de confiance par champ** + contrôle de cohérence des totaux. Aucune donnée ne sort.
+  - **Niveau 2 (option)** : enrichissement **IA Claude** (Anthropic) pour photos/scans, **mesuré en
+    crédits** (`AiCreditLedger`), **désactivé par défaut**. Le structuré local **prime** sur l'IA.
+  - IHM : bouton **« Scanner »** sur les notes de frais → pré-remplissage à **valider** (photo jointe
+    en justificatif).
 
 ## Conformité franco-française
 - Validation **SIREN/SIRET** (clé de Luhn) + **calcul auto du n° de TVA intracommunautaire** (règle DGFiP).
