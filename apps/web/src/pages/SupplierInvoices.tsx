@@ -3,6 +3,7 @@ import { Card, Table, Button, Form, Spinner, Badge } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { computeInvoiceTotals, PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '@jampack/domain';
+import DocumentScanner, { type ScanResult } from '../components/DocumentScanner';
 
 type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
@@ -64,6 +65,23 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const busy = create.isPending || update.isPending || validate.isPending || markPaid.isPending || markUnpaid.isPending || postAcc.isPending;
   const readOnly = status !== 'draft';
 
+  const [scanOpen, setScanOpen] = useState(false);
+  // Pré-remplissage depuis le scanner : référence, date, une ligne depuis les totaux, fournisseur par nom.
+  const onScanPrefill = (r: ScanResult) => {
+    const d = r.supplierInvoiceDraft;
+    if (d.invoiceNumber) setReference(d.invoiceNumber);
+    if (d.date) setIssueDate(d.date);
+    if (d.supplierName && !supplierId) {
+      const needle = d.supplierName.toLowerCase();
+      const hit = suppliers.data?.find((s) => s.name.toLowerCase().includes(needle) || needle.includes(s.name.toLowerCase()));
+      if (hit) setSupplierId(hit.id);
+    }
+    if (d.totalHt != null) {
+      const rate = d.totalHt > 0 && d.totalTva != null ? Math.round((d.totalTva / d.totalHt) * 1000) / 10 : (num(taxRates.data?.find((t) => t.isDefault)?.rate) || 20);
+      setLines([{ label: d.supplierName || d.invoiceNumber || 'Facture fournisseur', quantity: 1, unitPriceHt: d.totalHt, taxRatePct: rate }]);
+    }
+  };
+
   const totals = useMemo(() => computeInvoiceTotals(lines), [lines]);
   const setLine = (i: number, patch: Partial<Line>) => setLines((ls) => ls.map((l, k) => (k === i ? { ...l, ...patch } : l)));
   const addLine = () => setLines((ls) => [...ls, { label: '', quantity: 1, unitPriceHt: 0, taxRatePct: num(taxRates.data?.find((t) => t.isDefault)?.rate) || 20 }]);
@@ -112,6 +130,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
           {status === 'paid' && <Button variant="outline-secondary" onClick={onUnpaid} disabled={busy}><i className="bi bi-arrow-counterclockwise me-1" />Annuler le paiement</Button>}
           {!readOnly && (
             <>
+              <Button variant="light" onClick={() => setScanOpen(true)} title="Reconnaître la facture (PDF/photo)"><i className="bi bi-magic me-1" />Scanner</Button>
               <Button variant="light" onClick={onSave} disabled={busy || !supplierId}>{busy ? <Spinner size="sm" /> : <><i className="bi bi-save me-1" />Enregistrer</>}</Button>
               <Button onClick={onValidate} disabled={busy || !supplierId || lines.length === 0}><i className="bi bi-check2-circle me-1" />Valider</Button>
             </>
@@ -226,6 +245,8 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
         <SupplierPaymentsCard supplierInvoiceId={id} totalTtc={totals.totalTtc} />
       )}
       {err && <div className="text-danger small mt-2">{err.message}</div>}
+
+      <DocumentScanner show={scanOpen} onClose={() => setScanOpen(false)} onPrefill={onScanPrefill} />
     </>
   );
 }

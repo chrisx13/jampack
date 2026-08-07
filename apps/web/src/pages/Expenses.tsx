@@ -3,7 +3,7 @@ import { Card, Table, Button, Modal, Form, Spinner, Badge } from 'react-bootstra
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { EXPENSE_CATEGORIES } from '@jampack/domain';
-import DocumentScanner, { type ScanPrefill } from '../components/DocumentScanner';
+import DocumentScanner, { type ScanResult } from '../components/DocumentScanner';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-FR') : '—');
@@ -41,9 +41,10 @@ export default function Expenses() {
   };
 
   // Pré-remplissage depuis le scanner de document (à valider par l'utilisateur avant enregistrement).
-  const onScanPrefill = (p: ScanPrefill) => {
+  const onScanPrefill = (r: ScanResult) => {
+    const p = r.expenseDraft;
     setF({ date: p.date ?? new Date().toISOString().slice(0, 10), category: p.category, description: p.description, amountHt: p.amountHt != null ? String(p.amountHt) : '', taxRatePct: String(p.taxRatePct) });
-    setReceipt(p.receipt ?? null);
+    setReceipt(r.receipt ?? null);
     setOpen(true);
   };
 

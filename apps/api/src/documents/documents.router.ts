@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
-import { router, authed } from '../trpc/trpc';
+import { router, authed, protectedProcedure } from '../trpc/trpc';
 import { analyzeDocument, toExpenseDraft, toSupplierInvoiceDraft } from '@jampack/domain';
 import { claudeExtract, aiConfigFromEnv } from './aiExtractor';
 
@@ -32,7 +32,7 @@ async function creditBalance(tx: any, organizationId: string): Promise<number> {
 
 export const documentsRouter = router({
   /** Analyse locale gratuite : Factur-X / texte PDF / OCR → résumé + brouillons + confiance. */
-  analyze: authed('read', 'Expense')
+  analyze: protectedProcedure
     .input(analyzeInput)
     .mutation(({ input }) => {
       const result = analyzeDocument({ text: input.text, facturxXml: input.facturxXml, ocrText: input.ocrText });
@@ -41,7 +41,7 @@ export const documentsRouter = router({
     }),
 
   /** État de l'enrichissement IA : activé (clé présente) et solde de crédits de l'organisation. */
-  aiStatus: authed('read', 'Expense').query(({ ctx }) =>
+  aiStatus: protectedProcedure.query(({ ctx }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const cfg = aiConfigFromEnv();
       return { enabled: !!cfg, model: cfg?.model ?? null, balance: await creditBalance(tx, ctx.user.organizationId) };
@@ -49,7 +49,7 @@ export const documentsRouter = router({
   ),
 
   /** Enrichissement IA (Claude) : consomme 1 crédit. Fusionné avec l'extraction locale (le structuré prime). */
-  aiAnalyze: authed('read', 'Expense')
+  aiAnalyze: protectedProcedure
     .input(aiInput)
     .mutation(async ({ ctx, input }) => {
       const cfg = aiConfigFromEnv();

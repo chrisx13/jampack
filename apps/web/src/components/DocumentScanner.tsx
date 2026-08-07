@@ -16,14 +16,15 @@ type Result = {
   needsReview: string[];
   warnings: string[];
 };
-type Analyze = { result: Result; expenseDraft: { date?: string; category: string; description: string; amountHt?: number; taxRatePct: number } };
+export interface ExpenseDraft { date?: string; category: string; description: string; amountHt?: number; taxRatePct: number }
+export interface SupplierInvoiceDraft { supplierName?: string; siren?: string; tvaNumber?: string; iban?: string; invoiceNumber?: string; date?: string; totalHt?: number; totalTva?: number; totalTtc?: number }
+type Analyze = { result: Result; expenseDraft: ExpenseDraft; supplierInvoiceDraft: SupplierInvoiceDraft };
 
-export interface ScanPrefill {
-  date?: string;
-  category: string;
-  description: string;
-  amountHt?: number;
-  taxRatePct: number;
+/** Charge utile transmise à l'appelant lors du « Pré-remplir » : les deux brouillons + le justificatif. */
+export interface ScanResult {
+  result: Result;
+  expenseDraft: ExpenseDraft;
+  supplierInvoiceDraft: SupplierInvoiceDraft;
   receipt?: string; // data-URL image (photo/justificatif) le cas échéant
 }
 
@@ -37,7 +38,7 @@ const LABELS: Record<string, string> = {
   invoiceNumber: 'N° pièce', date: 'Date', totalHt: 'Total HT', totalTva: 'TVA', totalTtc: 'Total TTC', taxRatePct: 'Taux TVA',
 };
 
-export default function DocumentScanner({ show, onClose, onPrefill }: { show: boolean; onClose: () => void; onPrefill: (p: ScanPrefill) => void }) {
+export default function DocumentScanner({ show, onClose, onPrefill }: { show: boolean; onClose: () => void; onPrefill: (p: ScanResult) => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -93,8 +94,7 @@ export default function DocumentScanner({ show, onClose, onPrefill }: { show: bo
 
   const prefill = () => {
     if (!data) return;
-    const d = data.expenseDraft;
-    onPrefill({ date: d.date, category: d.category, description: d.description, amountHt: d.amountHt, taxRatePct: d.taxRatePct, receipt: imageDataUrl });
+    onPrefill({ result: data.result, expenseDraft: data.expenseDraft, supplierInvoiceDraft: data.supplierInvoiceDraft, receipt: imageDataUrl });
     close();
   };
 
