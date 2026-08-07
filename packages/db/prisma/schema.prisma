@@ -222,6 +222,7 @@ model Expense {
   amountHt       Decimal       @db.Decimal(12, 2)
   taxRatePct     Decimal       @default(20) @db.Decimal(5, 2)
   status         String        @default("draft") // draft | validated | reimbursed
+  receipt        String?        @db.Text // justificatif (image en data-URL compressée, capturée sur mobile)
   incurredBy     User?         @relation("ExpenseIncurredBy", fields: [incurredById], references: [id])
   incurredById   String?
   journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id], onDelete: SetNull)

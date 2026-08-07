@@ -17,6 +17,18 @@
 - **Tâches** : mes tâches en cours, **action unique** « fait » (droit `update Opportunity`).
 - Barre d'onglets en bas (Frais / Tâches), gros boutons tactiles, une seule colonne, zones de sécurité iOS.
 
+## Limites levées (v1.1)
+- **Droits** : la **saisie** d'une note de frais relève désormais du sujet CASL **`Expense`** (accordé au
+  Commercial, au Comptable, à l'Admin) — un salarié en déplacement peut saisir ; la **validation/
+  comptabilisation/remboursement** restent réservées à `Accounting` (Comptable).
+- **Justificatif photo** : capture depuis l'appareil photo (`capture="environment"`), **compressée côté client**
+  (canvas, ≤ 1280 px, JPEG q0.7) et stockée en **data-URL** sur la note (`Expense.receipt`, ≤ ~2,7 Mo) — **sans
+  stockage de fichiers externe**. Visualisation via l'icône trombone (desktop).
+- **Sélecteur de société** : présent dans l'en-tête mobile si l'utilisateur a accès à plusieurs sociétés.
+
+> Note stockage : les justificatifs sont conservés **en base** (data-URL). Acceptable pour des volumes TPE.
+> Pour de gros volumes, prévoir un **stockage objet** (S3) — décision infra.
+
 ## Choix d'architecture
 - **PWA** plutôt qu'un binaire natif d'emblée : livraison immédiate, **réutilisation** de tout l'existant
   (React, tRPC, OIDC, RLS), maintenance unifiée avec le web. Pas de store à gérer.

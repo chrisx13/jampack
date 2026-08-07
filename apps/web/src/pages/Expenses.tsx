@@ -17,7 +17,9 @@ const STATUS: Record<string, { label: string; bg: string; text: string }> = {
 export default function Expenses() {
   const utils = trpc.useUtils();
   const can = useCan();
-  const editable = can('create', 'Accounting');
+  const editable = can('create', 'Expense');        // saisie/gestion (salarié)
+  const canProcess = can('create', 'Accounting');    // validation / comptabilisation / remboursement
+  const canExport = can('read', 'Accounting');
   const list = trpc.expenses.list.useQuery();
   const inv = () => utils.expenses.list.invalidate();
   const create = trpc.expenses.create.useMutation({ onSuccess: () => { inv(); setOpen(false); } });
@@ -40,7 +42,7 @@ export default function Expenses() {
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div><h4 className="mb-1 fw-semibold">Notes de frais</h4><p className="text-secondary mb-0">Dépenses salariés — validation puis comptabilisation (6xx / TVA / 421)</p></div>
         <div className="d-flex gap-2">
-          {rows.length > 0 && <Button variant="light" title="Exporter en CSV" onClick={async () => { const r = await utils.expenses.exportCsv.fetch(); const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url); }}><i className="bi bi-filetype-csv me-1" />CSV</Button>}
+          {rows.length > 0 && canExport && <Button variant="light" title="Exporter en CSV" onClick={async () => { const r = await utils.expenses.exportCsv.fetch(); const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url); }}><i className="bi bi-filetype-csv me-1" />CSV</Button>}
           {editable && <Button onClick={() => { setF({ date: new Date().toISOString().slice(0, 10), category: 'deplacement', description: '', amountHt: '', taxRatePct: '20' }); setOpen(true); }}><i className="bi bi-plus-lg me-1" />Nouvelle note</Button>}
         </div>
       </div>
@@ -60,9 +62,10 @@ export default function Expenses() {
                 <td className="text-end fw-medium">{euro.format(e.ttc)}</td>
                 <td>{(() => { const s = STATUS[e.status] ?? STATUS.draft; return <Badge bg={s.bg} text={s.text} className="fw-normal">{s.label}</Badge>; })()}{e.posted && <Badge bg="info-subtle" text="info" className="fw-normal ms-1">comptabilisée</Badge>}</td>
                 <td className="text-end pe-3">
-                  {editable && e.status === 'draft' && <Button variant="outline-primary" size="sm" className="me-1" title="Valider" onClick={() => validate.mutate({ id: e.id })}><i className="bi bi-check2" /></Button>}
-                  {editable && e.status !== 'draft' && !e.posted && <Button variant="outline-secondary" size="sm" className="me-1" title="Comptabiliser" onClick={() => post.mutate({ id: e.id })} disabled={post.isPending}><i className="bi bi-journal-plus" /></Button>}
-                  {editable && e.status === 'validated' && <Button variant="outline-success" size="sm" className="me-1" title="Marquer remboursée" onClick={() => reimburse.mutate({ id: e.id })}><i className="bi bi-cash" /></Button>}
+                  {e.hasReceipt && <Button variant="light" size="sm" className="me-1" title="Voir le justificatif" onClick={async () => { const r = await utils.expenses.getReceipt.fetch({ id: e.id }); if (r.receipt) window.open(r.receipt, '_blank'); }}><i className="bi bi-paperclip" /></Button>}
+                  {canProcess && e.status === 'draft' && <Button variant="outline-primary" size="sm" className="me-1" title="Valider" onClick={() => validate.mutate({ id: e.id })}><i className="bi bi-check2" /></Button>}
+                  {canProcess && e.status !== 'draft' && !e.posted && <Button variant="outline-secondary" size="sm" className="me-1" title="Comptabiliser" onClick={() => post.mutate({ id: e.id })} disabled={post.isPending}><i className="bi bi-journal-plus" /></Button>}
+                  {canProcess && e.status === 'validated' && <Button variant="outline-success" size="sm" className="me-1" title="Marquer remboursée" onClick={() => reimburse.mutate({ id: e.id })}><i className="bi bi-cash" /></Button>}
                   {editable && e.status === 'draft' && <Button variant="light" size="sm" className="text-danger" title="Supprimer" onClick={() => remove.mutate({ id: e.id })}><i className="bi bi-trash" /></Button>}
                 </td>
               </tr>

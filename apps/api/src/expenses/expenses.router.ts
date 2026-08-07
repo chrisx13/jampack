@@ -26,14 +26,25 @@ const ttcOf = (e: { amountHt: unknown; taxRatePct: unknown }) => {
 
 /** Notes de frais (dépenses salariés). Comptabilisation : charge (6xx) + TVA déductible (44566) ↔ 421. */
 export const expensesRouter = router({
-  list: authed('read', 'Accounting').query(({ ctx }) =>
+  list: authed('read', 'Expense').query(({ ctx }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const rows = await tx.expense.findMany({
         where: scope(ctx.societeId),
-        include: { incurredBy: { select: { name: true, email: true } } },
+        // Le justificatif (image volumineuse) n'est pas renvoyé en liste : on expose juste sa présence.
+        select: { id: true, date: true, category: true, description: true, amountHt: true, taxRatePct: true, status: true, journalEntryId: true, incurredBy: { select: { name: true, email: true } }, receipt: false },
         orderBy: [{ date: 'desc' }],
       });
-      return rows.map((e) => ({ ...e, ...ttcOf(e), categoryLabel: expenseCategoryLabel(e.category), posted: !!e.journalEntryId }));
+      // hasReceipt via une seconde requête légère (ids ayant un justificatif non nul).
+      const withReceipt = new Set((await tx.expense.findMany({ where: { ...scope(ctx.societeId), receipt: { not: null } }, select: { id: true } })).map((r) => r.id));
+      return rows.map((e) => ({ ...e, ...ttcOf(e), categoryLabel: expenseCategoryLabel(e.category), posted: !!e.journalEntryId, hasReceipt: withReceipt.has(e.id) }));
+    })
+  ),
+
+  /** Justificatif (data-URL image) d'une note de frais, à la demande. */
+  getReceipt: authed('read', 'Expense').input(byId).query(({ ctx, input }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const e = await tx.expense.findUniqueOrThrow({ where: { id: input.id }, select: { receipt: true } });
+      return { receipt: e.receipt };
     })
   ),
 
@@ -53,7 +64,7 @@ export const expensesRouter = router({
     })
   ),
 
-  create: authed('create', 'Accounting').input(expenseCreate).mutation(({ ctx, input }) => {
+  create: authed('create', 'Expense').input(expenseCreate).mutation(({ ctx, input }) => {
     const societeId = req(ctx.societeId);
     return withTenant(ctx.user.organizationId, ctx.societeId, (tx) =>
       tx.expense.create({
@@ -61,13 +72,13 @@ export const expensesRouter = router({
           organizationId: ctx.user.organizationId, societeId, createdById: ctx.user.id,
           date: new Date(input.date), category: input.category, description: input.description,
           amountHt: input.amountHt, taxRatePct: input.taxRatePct,
-          incurredById: input.incurredById ?? ctx.user.id,
+          incurredById: input.incurredById ?? ctx.user.id, receipt: input.receipt ?? null,
         },
       })
     );
   }),
 
-  update: authed('update', 'Accounting').input(expenseUpdate).mutation(({ ctx, input }) => {
+  update: authed('update', 'Expense').input(expenseUpdate).mutation(({ ctx, input }) => {
     const { id, date, ...rest } = input;
     return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const e = await tx.expense.findUniqueOrThrow({ where: { id }, select: { status: true } });
@@ -76,7 +87,7 @@ export const expensesRouter = router({
     });
   }),
 
-  remove: authed('update', 'Accounting').input(byId).mutation(({ ctx, input }) =>
+  remove: authed('delete', 'Expense').input(byId).mutation(({ ctx, input }) =>
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const e = await tx.expense.findUniqueOrThrow({ where: { id: input.id }, select: { status: true } });
       if (e.status !== 'draft') throw new TRPCError({ code: 'BAD_REQUEST', message: 'Impossible de supprimer une note de frais validée.' });

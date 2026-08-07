@@ -180,6 +180,8 @@ export const expenseCategoryLabel = (k: string): string => EXPENSE_CATEGORIES.fi
 export const expenseCategoryAccount = (k: string): string => EXPENSE_CATEGORIES.find((c) => c.key === k)?.account ?? '628000';
 
 const EXPENSE_KEYS = EXPENSE_CATEGORIES.map((c) => c.key) as [string, ...string[]];
+// Justificatif : image en data-URL (image/*), plafonnée (~2 Mo d'image ≈ 2,8 Mo en base64).
+const receiptData = z.string().regex(/^data:image\//, 'Justificatif : image attendue').max(2_800_000);
 export const expenseCreate = z.object({
   date: z.string(),
   category: z.enum(EXPENSE_KEYS),
@@ -187,6 +189,7 @@ export const expenseCreate = z.object({
   amountHt: z.number().min(0),
   taxRatePct: z.number().min(0).default(20),
   incurredById: z.string().nullable().optional(), // salarié concerné (défaut : l'auteur)
+  receipt: receiptData.nullable().optional(),
 });
 export const expenseUpdate = expenseCreate.partial().extend({ id: z.string().min(1) });
 

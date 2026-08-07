@@ -50,6 +50,7 @@ async function main() {
     ['read', 'SupplierInvoice'], ['create', 'SupplierInvoice'], ['update', 'SupplierInvoice'],
     ['read', 'Accounting'], ['create', 'Accounting'],
     ['read', 'Note'], ['create', 'Note'], ['update', 'Note'], ['delete', 'Note'],
+    ['read', 'Expense'], ['create', 'Expense'], ['update', 'Expense'], ['delete', 'Expense'],
   ];
   const perms = Object.fromEntries(
     await Promise.all(
@@ -82,6 +83,8 @@ async function main() {
     'read:PurchaseOrder', 'create:PurchaseOrder', 'update:PurchaseOrder',
     'read:SupplierInvoice', 'create:SupplierInvoice', 'update:SupplierInvoice',
     'read:Note', 'create:Note', 'update:Note', 'delete:Note',
+    // Notes de frais : un commercial en déplacement peut saisir/gérer ses frais (validation/compta = Comptable).
+    'read:Expense', 'create:Expense', 'update:Expense', 'delete:Expense',
   ]);
   const comptable = await role('Comptable', [
     'read:Company', 'read:Contact', 'read:Opportunity', 'read:Product',
@@ -90,6 +93,7 @@ async function main() {
     'read:PurchaseOrder', 'read:SupplierInvoice', 'create:SupplierInvoice', 'update:SupplierInvoice',
     'read:Accounting', 'create:Accounting',
     'read:Note', 'create:Note', 'update:Note', 'delete:Note',
+    'read:Expense', 'create:Expense', 'update:Expense', 'delete:Expense',
   ]);
 
   // ── Utilisateurs ──
