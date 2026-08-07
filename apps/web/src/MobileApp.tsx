@@ -56,6 +56,20 @@ function FraisTab() {
   const [ok, setOk] = useState(false);
   const rows = list.data ?? [];
 
+  // Reconnaissance : en déplacement les justificatifs sont des photos → enrichissement IA (Claude).
+  const aiStatus = trpc.documents.aiStatus.useQuery();
+  const aiAnalyze = trpc.documents.aiAnalyze.useMutation();
+  const recognize = async () => {
+    if (!receipt) return;
+    const r = await aiAnalyze.mutateAsync({ imageDataUrl: receipt });
+    const d = r.expenseDraft;
+    setCategory(d.category);
+    if (d.amountHt != null) setAmount(String(d.amountHt));
+    if (d.description) setDesc(d.description);
+    aiStatus.refetch();
+  };
+  const aiReady = !!aiStatus.data?.enabled && (aiStatus.data?.balance ?? 0) > 0;
+
   const onPhoto = async (file?: File) => {
     setPhotoErr('');
     if (!file) return;
@@ -91,9 +105,17 @@ function FraisTab() {
         <div>
           <label className="form-label small text-secondary mb-1">Justificatif (photo, optionnel)</label>
           {receipt ? (
-            <div className="d-flex align-items-center gap-2">
-              <img src={receipt} alt="Aperçu du justificatif" style={{ height: 56, width: 56, objectFit: 'cover', borderRadius: 8 }} />
-              <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => setReceipt(null)}><i className="bi bi-x-lg me-1" aria-hidden="true" />Retirer</button>
+            <div className="d-grid gap-2">
+              <div className="d-flex align-items-center gap-2">
+                <img src={receipt} alt="Aperçu du justificatif" style={{ height: 56, width: 56, objectFit: 'cover', borderRadius: 8 }} />
+                <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => setReceipt(null)}><i className="bi bi-x-lg me-1" aria-hidden="true" />Retirer</button>
+              </div>
+              {aiReady && (
+                <button type="button" className="btn btn-outline-primary" onClick={recognize} disabled={aiAnalyze.isPending}>
+                  {aiAnalyze.isPending ? 'Reconnaissance…' : <><i className="bi bi-magic me-1" aria-hidden="true" />Reconnaître (IA, 1 crédit)</>}
+                </button>
+              )}
+              {aiAnalyze.isError && <div className="text-danger small">{aiAnalyze.error.message}</div>}
             </div>
           ) : (
             <label className="btn btn-outline-secondary btn-lg w-100">

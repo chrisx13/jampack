@@ -25,6 +25,10 @@
   (canvas, ≤ 1280 px, JPEG q0.7) et stockée en **data-URL** sur la note (`Expense.receipt`, ≤ ~2,7 Mo) — **sans
   stockage de fichiers externe**. Visualisation via l'icône trombone (desktop).
 - **Sélecteur de société** : présent dans l'en-tête mobile si l'utilisateur a accès à plusieurs sociétés.
+- **Reconnaissance IA du justificatif** : après la photo, bouton **« Reconnaître (IA, 1 crédit) »**
+  (visible seulement si l'IA est activée et créditée) → pré-remplit catégorie / montant / description
+  via **Claude** (voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md)). En déplacement les
+  justificatifs sont des photos → l'IA est le chemin adapté ; la saisie reste **validable** avant envoi.
 
 > Note stockage : les justificatifs sont conservés **en base** (data-URL). Acceptable pour des volumes TPE.
 > Pour de gros volumes, prévoir un **stockage objet** (S3) — décision infra.
