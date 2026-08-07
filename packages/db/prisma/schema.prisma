@@ -56,6 +56,7 @@ model Organization {
   priceRules        PriceRule[]
   timeEntries       TimeEntry[]
   aiCreditLedger    AiCreditLedger[]
+  opsExecutions     OpsExecution[]
 }
 
 // Grand livre des crédits IA (append-only) : mesure l'usage de l'enrichissement Claude (niveau 2).
@@ -68,6 +69,23 @@ model AiCreditLedger {
   delta          Int          // crédits +/- (1 crédit = 1 document analysé par l'IA)
   reason         String       // topup | analyze | adjust
   documentRef    String?      // repère lisible (fournisseur / n° pièce)
+  createdById    String?
+  createdAt      DateTime     @default(now())
+  @@index([organizationId, createdAt])
+}
+
+// Journal des exécutions d'opérations techniques (console super-admin). Append-only, RLS org.
+// Trace : qui a lancé quelle opération, sur quelle cible, en dry-run ou réel, et le résultat.
+model OpsExecution {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  opId           String       // ex. db.backup
+  target         String       @default("local") // local | <instance-id> (flotte)
+  params         Json?
+  dryRun         Boolean      @default(false)
+  status         String       // ok | error | blocked
+  summary        String?      @db.Text
   createdById    String?
   createdAt      DateTime     @default(now())
   @@index([organizationId, createdAt])

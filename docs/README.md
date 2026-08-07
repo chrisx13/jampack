@@ -37,7 +37,8 @@ Documents versionnés avec le code, tenus à jour à chaque incrément.
 | 24 | [Dossier de conformité fiscale](DOSSIER-CONFORMITE-FISCALE.md) | À faire valider par un expert-comptable | — |
 | 25 | [Runbook pilote](RUNBOOK-PILOTE.md) | Plan de pilote TPE/PME + grille de feedback | — |
 | 26 | [Application mobile (PWA)](MOBILE.md) | Interface mobile déplacements (frais/tâches) | — |
-| 27 | [Reconnaissance de documents](RECONNAISSANCE-DOCUMENTS.md) | Aide OCR/règles (facture/frais) — faisabilité & coûts | — |
+| 27 | [Reconnaissance de documents](RECONNAISSANCE-DOCUMENTS.md) | Niveau 1 gratuit (Factur-X/PDF/règles FR) + niveau 2 IA Claude (crédits) | — |
+| 28 | [Pilotage technique (super-admin)](PILOTAGE-TECHNIQUE.md) | Catalogue d'opérations d'exploitation sans SSH — danger/confirmation/audit | — |
 | — | [Traçabilité code ↔ specs](TRACABILITE.md) | État d'avancement code vs spécifications | — |
 
 ## Normes et référentiels couverts

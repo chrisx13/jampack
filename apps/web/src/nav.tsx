@@ -40,6 +40,7 @@ import Appearance from './pages/Appearance';
 import SocieteSettings from './pages/SocieteSettings';
 import BillingSettings from './pages/BillingSettings';
 import AiCredits from './pages/AiCredits';
+import OpsConsole from './pages/OpsConsole';
 import Members from './pages/Members';
 import Societes from './pages/Societes';
 import AuditLog from './pages/AuditLog';
@@ -162,6 +163,7 @@ export const DOMAINS: Domain[] = [
       { id: 'company', label: 'Société (facturation)', icon: 'bi-building-gear', element: <SocieteSettings />, can: ['manage', 'all'] },
       { id: 'billing', label: 'Facturation (banques, affacturage…)', icon: 'bi-bank', element: <BillingSettings />, can: ['manage', 'all'] },
       { id: 'ai-credits', label: 'Crédits IA', icon: 'bi-magic', element: <AiCredits />, can: ['manage', 'all'] },
+      { id: 'ops', label: 'Pilotage technique', icon: 'bi-terminal', element: <OpsConsole />, can: ['manage', 'Ops'] },
       { id: 'appearance', label: 'Apparence', icon: 'bi-palette', element: <Appearance />, can: ['manage', 'all'] },
     ],
   },
