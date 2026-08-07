@@ -67,11 +67,24 @@
 - Saisir une dépense (date, catégorie, description, HT, TVA). Après **Valider**, la note peut être
   **comptabilisée** (charge 6xx + TVA déductible au débit, compte 421 « dû au salarié » au crédit),
   puis marquée **remboursée**. Les comptes PCG nécessaires sont créés automatiquement s'ils manquent.
+- **Rechercher/filtrer** la liste (par description, catégorie, salarié, statut) apparaît dès quelques lignes.
+
+### Reconnaissance de documents (bouton « Scanner »)
+- Sur **Notes de frais** et sur l'éditeur de **Facture fournisseur**, le bouton **« Scanner »** ouvre une
+  fenêtre où déposer un **PDF** ou une **photo**.
+- **Gratuit** (niveau 1, local) : sur un PDF (facture, y compris **Factur-X**), JAMPACK extrait
+  fournisseur, identifiants, n° de pièce, date et montants, avec un **indice de confiance** par champ.
+- **Payant, en option** (niveau 2) : le bouton **« Affiner avec l'IA (1 crédit) »** — visible seulement si
+  l'IA est activée et créditée — envoie le document à **Claude** pour les cas difficiles (photos, scans).
+- Cliquer **« Pré-remplir »** : le formulaire s'ouvre pré-rempli **à valider** (la photo est jointe en
+  justificatif). **Rien n'est créé sans votre validation.** Voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md).
 
 ### Application mobile (déplacements)
 - Ouvrir **`/m`** sur le téléphone puis **« Ajouter à l'écran d'accueil »** : l'app s'installe et s'ouvre en
-  plein écran. Deux écrans minimalistes : **saisir une note de frais** (catégorie, montant, description →
-  1 bouton) et **traiter ses tâches** (bouton « fait »). Voir [MOBILE](MOBILE.md).
+  plein écran. Deux écrans minimalistes : **saisir une note de frais** (catégorie, montant, TVA, description →
+  1 bouton) et **traiter ses tâches** (bouton « fait »). Après une **photo**, un bouton **« Reconnaître
+  (IA, 1 crédit) »** pré-remplit les champs si l'IA est disponible ; sinon la photo sert de justificatif
+  gratuit. Voir [MOBILE](MOBILE.md).
 
 ## 4. Achats
 - **Commandes fournisseurs** : choisir un fournisseur (tiers marqué fournisseur) et un **entrepôt de
@@ -126,6 +139,14 @@
 - **Sociétés** : gérer les sociétés du compte.
 - **Utilisateurs & rôles** : gérer les membres et leurs rôles par société (RBAC cumulable).
 - **Journal d'audit** : consulter les mutations tracées (utilisateur, action, société, horodatage) ; **Exporter CSV** pour archivage/contrôle.
+- **Crédits IA** : solde, **recharge** et **historique** de l'enrichissement IA (voir Reconnaissance de documents).
+- **Pilotage technique** *(super-admin)* : opérations d'exploitation **sans SSH** — organisé en onglets :
+  - **État** : mode **test/prod** de l'instance et **diagnostic** de configuration (défauts détectés + remédiation).
+  - **Configuration & clés** : réglages et clés de l'instance. Les **secrets** sont **masqués** ; le
+    **technicien de l'instance** peut les **révéler**. Une clé « secrète » est **chiffrée** si le serveur est configuré pour.
+  - **Opérations** : catalogue d'actions prédéfinies (santé, migrations, sauvegarde…). Les actions
+    sensibles demandent une **confirmation typée** ; **« Simuler »** (dry-run) permet un essai sans effet.
+  Réservé aux profils habilités ; voir [PILOTAGE-TECHNIQUE](PILOTAGE-TECHNIQUE.md).
 
 ## 9. Bonnes pratiques
 - Une pièce **validée** n'est plus modifiable (créer un avoir / une nouvelle pièce si besoin).

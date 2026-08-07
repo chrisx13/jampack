@@ -36,6 +36,7 @@ Ces choix ne sont pas encore tranchés ; ils sont suivis ici et dans les documen
 | DO-7 | **Mentions spéciales TVA** : exonérations spécifiques restantes. *(Identifiants acheteur SIREN/TVA, franchise 293 B « E », autoliquidation 283-2 « AE » : ✅ livrés.)* | Conformité facture FR | [Conformité §3.5](CONFORMITE.md), REG-5 |
 | DO-8 | **Régimes de TVA FR** restants : CA12 (réel simplifié), TVA sur débits vs encaissements. *(Franchise en base et autoliquidation : ✅ livrées.)* | Conformité TVA FR | [Conformité §3.7](CONFORMITE.md), REG-7 |
 | DO-9 | **Niveau de conformité RGAA / WCAG 2.1 AA** visé + calendrier d'audit et déclaration d'accessibilité (déclenché notamment par un client public) | Accessibilité, marché public | [Conformité §4](CONFORMITE.md), NFR-UTI |
+| DO-10 | **Runner hôte & orchestrateur de flotte** : activation encadrée de `OPS_HOST_RUNNER` (privilèges, isolation) pour exécuter réellement les opérations hôte (sauvegarde/restauration/redémarrage) ; exécuteur distant par instance + registre d'instances pour le provisionnement (flotte). | Exploitation, sécurité | [PILOTAGE-TECHNIQUE](PILOTAGE-TECHNIQUE.md), ADR-9, FR-OPS-5 |
 
 ## 3. Vue de contexte (C4 niveau 1)
 ```

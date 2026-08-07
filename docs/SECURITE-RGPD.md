@@ -72,7 +72,9 @@ des **données personnelles** (contacts des tiers, utilisateurs) ; la conformit�
 | Établissements / adresses | email, téléphone, adresse | Facturation, livraison | Contrat / obligation légale | Idem tiers |
 | Facturation / comptabilité | identité tiers, montants | Obligation comptable et fiscale | **Obligation légale** | **10 ans** (prévaut sur l'effacement) |
 | Journal d'audit | userId, action, horodatage | Sécurité, traçabilité | Intérêt légitime | **12 mois** (cible) |
+| Journal des opérations (`OpsExecution`) | userId, opération, cible | Sécurité, exploitation | Intérêt légitime | À définir (append-only) |
 | E-invoicing (transmission PDP) | données de facture | Obligation légale (e-invoicing) | Obligation légale | Selon PDP / 10 ans |
+| **Reconnaissance de documents — IA** (option niveau 2, **désactivée par défaut**) | contenu du document (texte/image) transmis à **Anthropic** | Assistance à la saisie (facture/frais) | Intérêt légitime + **consentement/CCT** (transfert hors UE) | Non conservé par JAMPACK ; usage tracé (`AiCreditLedger`) — cf. §5.6/5.7 |
 
 ### 5.3 Principes (art. 5) & privacy by design/default (art. 25)
 - **Minimisation** : seules les données utiles à la gestion sont collectées (pas de données sensibles
