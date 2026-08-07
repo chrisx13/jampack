@@ -89,3 +89,9 @@ le backlog **implémentable sans dépendance externe (8/8)** a été livré :
 - **Niveau 1 gratuit** (local) et **niveau 2 IA Claude** mesuré en **crédits** (`AiCreditLedger`) — cf.
   section Achats. **Administration ▸ Crédits IA** : solde, recharge, historique. Mobile : reconnaissance
   du justificatif photo (option IA).
+
+## Aide à l'utilisation — voir [SCENARIOS](SCENARIOS.md)
+- **Base de connaissances** structurée (guides pas à pas) + **scénarios de bout en bout** (du client au
+  règlement, note de frais mobile, achat fournisseur, clôture TVA/FEC, forme juridique, administration).
+- **Panneau d'aide** in-app (bouton **?**) : **recherche gratuite** locale + **assistant IA (Claude)**
+  optionnel (1 crédit) **ancré** sur les guides, citant ses **sources** ; jamais de conseil réglementaire.

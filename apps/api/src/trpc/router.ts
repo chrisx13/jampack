@@ -25,6 +25,7 @@ import { documentsRouter } from '../documents/documents.router';
 import { opsRouter } from '../ops/ops.router';
 import { configRouter } from '../ops/config.router';
 import { instanceRouter } from '../ops/instance.router';
+import { helpRouter } from '../help/help.router';
 
 export const appRouter = router({
   crm: crmRouter,
@@ -53,6 +54,7 @@ export const appRouter = router({
   ops: opsRouter,
   config: configRouter,
   instance: instanceRouter,
+  help: helpRouter,
 });
 
 /** Type consommé par les clients (web, desktop, mobile) pour la type-safety. */

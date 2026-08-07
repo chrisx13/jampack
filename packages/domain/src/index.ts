@@ -8,3 +8,4 @@ export * from './opsCatalog';
 export * from './secrets';
 export * from './configChecks';
 export * from './legalForms';
+export * from './helpContent';

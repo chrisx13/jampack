@@ -205,6 +205,7 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-TRV-6 | **Agenda consolidé** : échéances et tâches à venir (fenêtre 7/30/90 j) — tâches CRM, échéances factures clients/fournisseurs, livraisons attendues ; retards signalés ; **export iCalendar (.ics)**. | S | ✅ |
 | FR-TRV-7 | **Notes de vue** : pense-bêtes partagés ancrés à une vue, visibles par tout utilisateur ayant accès à la vue ; **édition historisée** ; **déplaçables** (ne masquent pas les données) ; plusieurs par vue. | C | ✅ |
 | FR-TRV-8 | **Application mobile (PWA)** : interface minimaliste installable (`/m`) pour les déplacements — saisie rapide de note de frais + traitement des tâches ; réutilise API/auth/RLS. Natif = hors périmètre. | C | ✅ |
+| FR-TRV-9 | **Aide à l'utilisation** : base de connaissances (guides pas à pas) + **scénarios** de bout en bout ; panneau in-app avec **recherche gratuite** locale et **assistant IA (Claude)** optionnel (1 crédit) **ancré** sur les guides (cite ses sources, pas de conseil réglementaire). Voir [SCENARIOS](SCENARIOS.md). | S | ✅ |
 
 ### 3.10 Pilotage technique / Super-admin
 Console d'exploitation **sans SSH ni console de tiers** — voir [PILOTAGE-TECHNIQUE](PILOTAGE-TECHNIQUE.md).

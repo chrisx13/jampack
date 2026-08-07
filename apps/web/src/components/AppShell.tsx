@@ -7,6 +7,7 @@ import { defineAbilityFor } from '@jampack/domain';
 import { applyTheme } from '../theme/applyTheme';
 import { DOMAINS, DASHBOARD_VIEW, type View } from '../nav';
 import NotesOverlay from './NotesOverlay';
+import HelpPanel from './HelpPanel';
 
 function SocieteSwitcher() {
   const utils = trpc.useUtils();
@@ -325,6 +326,8 @@ export default function AppShell() {
           </div>
         </>
       )}
+
+      <HelpPanel />
     </div>
   );
 }
