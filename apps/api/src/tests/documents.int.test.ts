@@ -100,6 +100,14 @@ describe('Reconnaissance de documents — niveau 2 (IA Claude, crédits)', () =>
     vi.unstubAllGlobals();
   });
 
+  it('historique des crédits : recharges et analyses tracées', async () => {
+    const h = await caller.documents.creditsHistory();
+    expect(h.balance).toBeGreaterThanOrEqual(0);
+    expect(h.rows.some((r: { reason: string }) => r.reason === 'topup')).toBe(true);
+    expect(h.rows.some((r: { reason: string }) => r.reason === 'analyze')).toBe(true);
+    expect(h.rows.every((r: { organizationId: string }) => r.organizationId === C.org.id)).toBe(true);
+  });
+
   it('le structuré local prime sur l’apport IA en cas de conflit', async () => {
     process.env.ANTHROPIC_API_KEY = 'test-key';
     const fetchMock = vi.fn(async () => ({

@@ -70,6 +70,14 @@ export const documentsRouter = router({
       });
     }),
 
+  /** Historique du grand livre de crédits IA (administration). */
+  creditsHistory: authed('manage', 'all').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const rows = await tx.aiCreditLedger.findMany({ where: { organizationId: ctx.user.organizationId }, orderBy: { createdAt: 'desc' }, take: 50 });
+      return { balance: await creditBalance(tx, ctx.user.organizationId), rows };
+    })
+  ),
+
   /** Recharge de crédits IA (administration). Hors périmètre paiement : décision d'admin. */
   creditsTopup: authed('manage', 'all')
     .input(z.object({ amount: z.number().int().min(1).max(100_000), note: z.string().max(200).optional() }))

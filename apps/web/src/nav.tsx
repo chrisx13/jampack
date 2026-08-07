@@ -39,6 +39,7 @@ import Settings from './pages/Settings';
 import Appearance from './pages/Appearance';
 import SocieteSettings from './pages/SocieteSettings';
 import BillingSettings from './pages/BillingSettings';
+import AiCredits from './pages/AiCredits';
 import Members from './pages/Members';
 import Societes from './pages/Societes';
 import AuditLog from './pages/AuditLog';
@@ -160,6 +161,7 @@ export const DOMAINS: Domain[] = [
       { id: 'rgpd-purge', label: 'Purge RGPD', icon: 'bi-person-x', element: <RgpdPurge />, can: ['manage', 'all'] },
       { id: 'company', label: 'Société (facturation)', icon: 'bi-building-gear', element: <SocieteSettings />, can: ['manage', 'all'] },
       { id: 'billing', label: 'Facturation (banques, affacturage…)', icon: 'bi-bank', element: <BillingSettings />, can: ['manage', 'all'] },
+      { id: 'ai-credits', label: 'Crédits IA', icon: 'bi-magic', element: <AiCredits />, can: ['manage', 'all'] },
       { id: 'appearance', label: 'Apparence', icon: 'bi-palette', element: <Appearance />, can: ['manage', 'all'] },
     ],
   },
