@@ -95,6 +95,7 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | — | **Establishment**, **SocieteAddress** | ➕ établissements & adresses (siège/facturation/livraison) |
 | — | **TaxRate, Product, ProductCategory, NumberSequence** | ➕ référentiels (Jalon 1) |
 | — | **Invoice, InvoiceLine, Factor, BankAccount, PaymentTerm** | ➕ facturation & encaissement (Jalon 2 partiel) |
+| — | **InstanceConfig, OpsExecution, AiCreditLedger** | ➕ pilotage super-admin (config/secrets chiffrés, audit d'opérations) + crédits IA — au-delà de la doc socle |
 
 ## 5. Feuille de route ERP (Cartographie) — état réel
 
@@ -150,6 +151,8 @@ Le socle IAM+CRM de l'Archi §5 est **dépassé** par le multi-société. Modèl
 | **5 BI** | Tableaux de bord analytiques avancés (séries temporelles, marges) | 🔧 | KPI consolidés via `analytics.summary` (Dashboard) ; BI approfondie = phase future |
 | transverse | Administration in-app : inviter users, attribuer/révoquer rôles | ✅ | `iam.router` (`invite`/`grantRole`/`revokeRole`), garde-fou dernier admin, page `Members.tsx` |
 | transverse | **Journal d'audit** des mutations + **export CSV** | ✅ | middleware `auditMiddleware`, `audit.router` (`list`/`exportCsv`), `auditLogCsv`, `AuditLog.tsx` |
+| transverse | **Reconnaissance de documents** (niveau 1 gratuit local + niveau 2 IA Claude par crédits) | ✅ | `docExtract.ts`/`aiFields.ts`, `documents.router`, `AiCreditLedger`, `DocumentScanner.tsx`, `AiCredits.tsx` |
+| transverse | **Console de pilotage super-admin** (opérations, config/secrets, diagnostic, mode/hébergement, isolation absolue) | ✅ | `opsCatalog.ts`/`configChecks.ts`, `ops`+`config`+`instance` routers, `executor.ts`/`crypto.ts`/`tier.ts`, `InstanceConfig`/`OpsExecution`, `OpsConsole.tsx` |
 
 **Position actuelle : Jalons 0 à 5 livrés (socle → trésorerie).** Ventes (devis → facture → avoir,
 règlements + échéancier client, un seul modèle `Invoice` discriminé par `docType`), **e-invoicing**
@@ -179,7 +182,7 @@ publique REST, hébergeur UE définitif. Restent en phase future : desktop (Taur
 |---|---|---|
 | `docker compose up` lève Postgres + Adminer (dev) | idem | ✅ `docker/docker-compose.yml` (service `adminer`) |
 | Stack complète en un `docker compose up --build` | db + keycloak + app + web | ✅ ➕ `docker-compose.yml` |
-| CI lint → typecheck → **test** → migrate → build | install → migrate → seed → **lint → typecheck → test:cov → test:int** → build | ✅ `.github/workflows/ci.yml` (couverture ≥ 90 %) |
+| Validation lint → typecheck → **test** → build | **en local** avant commit : lint → typecheck → **test:cov (≥ 90 %) → test:int** → build | ✅ workflow `.github/workflows/ci.yml` présent mais **en standby** (décision) |
 
 ## 8. Backlog d'alignement (issu de cet audit)
 
@@ -190,8 +193,10 @@ Réalisé depuis l'audit initial :
 - [x] **Achats** : commandes → réception → stock, factures **et règlements fournisseurs**.
 - [x] **Comptabilité** : écritures auto, lettrage, TVA/CA3, clôture TVA, FEC.
 - [x] **Trésorerie** : prévisionnel encaissements/décaissements.
-- [x] `lint` + tests unitaires **et** d'intégration en CI (promesse de l'Archi §9 tenue).
+- [x] `lint` + tests unitaires **et** d'intégration **validés en local** avant commit (CI en standby — décision).
 - [x] Administration in-app : invitation d'utilisateurs, édition sociétés/rôles.
+- [x] **Reconnaissance de documents** (niveau 1 gratuit local + niveau 2 IA Claude par crédits) — FR-ACH-12.
+- [x] **Console de pilotage super-admin** : opérations prédéfinies, config/secrets chiffrés, diagnostic, mode/hébergement, isolation absolue — FR-OPS-1..5.
 
 Reste ouvert (décisions ou phases futures — voir [ARCHITECTURE §2 ▸ Décisions ouvertes](ARCHITECTURE.md)) :
 - [ ] **Voie PDP réglementaire** : immatriculation DGFiP/PPF **ou** PDP partenaire (DO-1).

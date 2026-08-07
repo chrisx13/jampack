@@ -30,11 +30,21 @@
   `public_quote_company` en lecture) autorise l'accès **à la seule pièce** dont le jeton correspond à
   `app.public_quote_token` — sans contexte tenant. Le jeton (24 octets aléatoires) est non devinable ;
   l'acceptation conserve **nom, horodatage et IP** comme preuve (`withPublicToken`, `publicQuote.router`).
+- **Pilotage super-admin — isolation absolue** : le niveau effectif dépend de l'hébergement
+  (`InstanceConfig.HOSTING_MODE`). Sur une instance **hors hébergement JAMPACK** (`self`, serveur du
+  client), le super-admin **général JAMPACK n'a AUCUN accès effectif** — et un tel serveur n'a de toute
+  façon aucun principal `manage:PlatformOps`. Sur une instance hébergée (`jampack`), le technicien de
+  structure n'existe pas. Réf. `apps/api/src/ops/tier.ts` (`resolveTier`).
 - Référence : `packages/db/prisma/rls.sql`, `packages/db/src/index.ts`.
 
 ## 4. Protection des données en transit et au repos
 - **Transit** : TLS (terminaison au niveau de l'hébergeur/ingress).
 - **Repos** : chiffrement disque de la base managée + sauvegardes chiffrées.
+- **Secrets d'instance** (`InstanceConfig`, `secret=true`) : **chiffrés au repos en applicatif**
+  (AES-256-GCM) dès que `SECRETS_KEY` est défini ; **jamais renvoyés en clair** au super-admin général
+  (valeurs **tronqués**, `maskSecret`) ; **révélation** réservée au technicien de l'instance, explicite.
+  L'absence de `SECRETS_KEY` (stockage en clair) est **signalée par le diagnostic** de configuration.
+  Réf. `apps/api/src/ops/crypto.ts`.
 - **Données sensibles** : jamais dans les URL/query strings ; pas de secrets en clair.
 
 ## 5. RGPD / CNIL
@@ -92,11 +102,18 @@ des **données personnelles** (contacts des tiers, utilisateurs) ; la conformit�
 - **Hébergeur UE** (OVHcloud / Scaleway / Clever Cloud) : sous-traitant ultérieur, DPA + résidence UE.
 - **Fournisseur d'identité** (Keycloak auto-hébergé par l'éditeur) : traité dans le même périmètre.
 - **PDP partenaire** (si retenue — DO-1) : sous-traitant pour la transmission des factures ; DPA requis.
+- **Anthropic (Claude)** — **uniquement si** l'enrichissement IA (niveau 2 de la reconnaissance de
+  documents) est **activé** (désactivé par défaut) : sous-traitant ultérieur ; le document (texte/image)
+  lui est transmis. Fournisseur **hors UE** → voir §5.7. DPA + clause à mettre en place avant activation.
 - Tenir à jour la **liste des sous-traitants** et informer le client de tout changement.
 
 ### 5.7 Transferts hors UE
 - **Résidence UE obligatoire** ; **aucun transfert hors UE** par défaut. Tout sous-traitant doit être UE
   (ou encadré par des garanties appropriées — à proscrire ici pour un produit franco-français).
+- **Exception encadrée — IA (Anthropic, hors UE)** : le niveau 2 de la reconnaissance de documents est
+  **désactivé par défaut** ; le **niveau 1 traite tout localement** (aucun transfert). L'activation
+  implique un transfert hors UE → **garanties appropriées (CCT) + DPA + information des personnes**
+  requis, et usage **mesuré** (`AiCreditLedger`). Voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md).
 
 ### 5.8 Information des personnes (art. 13/14)
 - **Politique de confidentialité** et mentions d'information à fournir (responsable = le client) ; JAMPACK
@@ -121,11 +138,15 @@ profilage, décision automatisée ou données sensibles.
 - **✅ Implémenté** : un middleware tRPC journalise chaque **mutation** réussie (utilisateur, action = chemin
   de la procédure, société active, horodatage, référence de la pièce) dans `AuditLog` (isolé par compte, RLS).
   Consultable dans **Administration ▸ Journal d'audit**. Non bloquant (une erreur d'audit n'échoue pas l'opération).
+- **✅ Opérations de pilotage** : chaque exécution (réelle ou simulée) et changement de mode/hébergement
+  est tracé dans `OpsExecution` (**append-only**, RLS org : qui, opération, cible, dry-run/réel, résultat).
+  L'usage IA est tracé dans `AiCreditLedger`.
 - Reste : immuabilité renforcée (append-only strict / signature), purge/rétention configurable.
 
 ## 7. Gestion des vulnérabilités
 - Dépendances : audit régulier (`pnpm audit`), mises à jour de sécurité.
-- CI : lint + `typecheck` + tests unitaires (couverture ≥ 90 %) + tests d'intégration + build sur chaque push ; à compléter par SAST (⏳).
+- Validation **locale** avant commit : lint + `typecheck` + tests unitaires (couv. ≥ 90 %) + tests
+  d'intégration + build. Workflow CI présent mais **en standby** (décision projet) ; à compléter par SAST (⏳).
 - Divulgation responsable : point de contact sécurité (à définir dans l'offre).
 
 ## 8. Conformité sectorielle

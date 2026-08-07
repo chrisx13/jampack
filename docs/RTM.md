@@ -114,6 +114,18 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | FR-TRE-2 | rapprochement bancaire (voir FR-CPT-5d) | e2e int | ✅ |
 | FR-TRE-3 | `analytics.agedReceivables`, `AgedReceivables.tsx` | e2e int : facture à 45 j → tranche 31-60 | ✅ |
 
+## Pilotage technique / Super-admin
+| Exigence | Code | Test / Preuve | État |
+|---|---|---|---|
+| FR-OPS-1 | `opsCatalog.ts` (catalogue pur), `ops.router` (`catalogue`/`run`/`history`/`diagnostics`), `executor.ts`, `OpsExecution` (+ RLS org) | unit `opsCatalog.test.ts` (9 : validation, confirmation typée, dry-run) ; int `ops.int.test.ts` (17 : opérations sûres, refus sans confirmation, dry-run/blocage hôte, audit) | ✅ |
+| FR-OPS-2 | `tier.ts` (`resolveTier` : instance=Ops&&self / platform=PlatformOps&&jampack), `HOSTING_KEY`, seed `manage:Ops`/`manage:PlatformOps` | int : self→technicien actif/général isolé ; jampack→général actif/technicien sans accès | ✅ |
+| FR-OPS-3 | `config.router` (`list`/`reveal`/`set`/`remove`), `InstanceConfig` (+ RLS), `crypto.ts` (AES-GCM), `maskSecret`/`configChecks` (domain) | unit `secrets.test.ts` (6) ; int `config.int.test.ts` (5 : révélation technicien, masquage général, push) | ✅ |
+| FR-OPS-4 | `evaluateConfig`/`summarizeFindings` (domain), `ops.diagnostics` | unit `configChecks.test.ts` (8) ; int : gravités + synthèse | ✅ |
+| FR-OPS-5 | `instance.router` (`status`/`setMode`/`setHosting`) | int : défaut test, prod = confirmation « PROD », hébergement (général) | 🔧 |
+| NFR-SEC-5 | `crypto.ts` (`encryptSecret`/`decryptSecret`), `maskSecret` | unit : masque ne révèle que la fin ; int : secret jamais en clair côté général | ✅ |
+| NFR-SEC-6 | `resolveTier` (isolation self/jampack) | int : général sans accès effectif sur `self` | ✅ |
+| NFR-SEC-7 | catalogue `OPS_CATALOG` (pas de shell), `canExecute` (confirmation) | unit/int : confirmation typée requise, opérations hôte bloquées | ✅ |
+
 ## Conformité — identifiants légaux
 | Exigence | Code | Test / Preuve | État |
 |---|---|---|---|
@@ -133,7 +145,7 @@ sauf mention. Pour l'état code↔specs détaillé, voir aussi [TRACABILITE.md](
 | NFR-SEC-1 | `rls.sql`, rôle `jampack_app` | RLS actif au boot (policies vérifiées) | ✅ |
 | NFR-SEC-3 | `authed()` | mutations FORBIDDEN sans droit | ✅ |
 | NFR-MNT-1 | `packages/domain` (Zod partagé) | typecheck 5 packages verts | ✅ |
-| NFR-MNT-3 | `.github/workflows/ci.yml` | install→migrate→seed→lint→typecheck→test:cov (≥90 %)→test:int→build | ✅ |
+| NFR-MNT-3 | `package.json` (`test:cov`/`test:int`), typechecks par package | **Validation locale** avant commit (lint→typecheck→test:cov ≥90 %→test:int→build) ; workflow `.github/workflows/ci.yml` présent mais **en standby** | ✅ |
 
 ## Couverture
 - Exigences **Must** livrées : socle, CRM, référentiels, ventes (dont génération Factur-X + connecteur PDP), achats, stock, comptabilité/FEC.

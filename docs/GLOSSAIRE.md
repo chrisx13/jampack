@@ -37,6 +37,16 @@
 | Zod | Bibliothèque de validation de schémas (partagée `packages/domain`). |
 | `withTenant` | Ouvre une transaction et positionne le contexte RLS (`app.current_org`/`current_societe`). |
 | Seed | Jeu de données de démonstration déterministe. |
+| Super-admin général | Technicien de la société JAMPACK (`manage:PlatformOps`) : pilote la flotte ; voit les secrets **tronqués**. |
+| Technicien de structure | Super-admin d'une instance côté client (`manage:Ops`) : actif **uniquement si serveur du client** (`HOSTING_MODE=self`) ; révèle les secrets en clair. |
+| `HOSTING_MODE` | Mode d'hébergement d'une instance : `self` (serveur du client) ou `jampack` (hébergé) — détermine le niveau super-admin effectif (isolation absolue). |
+| `INSTANCE_MODE` | Mode d'exécution : `test` ou `prod` (passage en prod = confirmation typée). |
+| `OpsExecution` | Journal **append-only** des opérations de pilotage (qui, opération, cible, dry-run/réel, résultat). |
+| Opération hôte / `OPS_HOST_RUNNER` | Opération nécessitant un accès système (sauvegarde/restauration/redémarrage) ; **désactivée par défaut**. |
+| Dry-run | Simulation d'une opération sans effet (aperçu de ce qui serait fait). |
+| Confirmation typée | Jeton à saisir exactement (ex. `RESTAURER`, `PROD`) pour exécuter une action sensible. |
+| `SECRETS_KEY` | Clé (32 octets) activant le **chiffrement au repos** des secrets d'instance (AES-256-GCM). |
+| Crédit IA (`AiCreditLedger`) | Unité de consommation de l'enrichissement IA (Claude) : 1 crédit/document ; le **niveau 1 est gratuit et local**. |
 
 ## Réglementaire
 | Terme | Définition |

@@ -62,3 +62,24 @@ le backlog **implémentable sans dépendance externe (8/8)** a été livré :
 - **Tableau de bord** : panneau « À traiter » **cliquable** (ouvre l'écran concerné) + carte **« Stock sous seuil »**.
 - **Listes harmonisées** : recherche instantanée, états vides avec appel à l'action (Ventes, Achats, Clients, Catalogue).
 - **CRM** : activités & tâches (filtre par client, rouvrir/clôturer), prévisionnel pondéré, taux de conversion.
+
+## Pilotage technique & plateforme (super-admin) — voir [PILOTAGE-TECHNIQUE](PILOTAGE-TECHNIQUE.md)
+- **Console de pilotage sans SSH** : catalogue d'**opérations prédéfinies** (jamais de shell libre) —
+  info d'instance, santé BDD, état des migrations, vérification RLS (sûres, en-process) ; sauvegarde/
+  restauration/reseed/redémarrage (**hôte, bloquées par défaut**, runner désactivé). Avertissements,
+  **dry-run**, **confirmation typée**, **audit** systématique (`OpsExecution`).
+- **Deux niveaux de super-admin** : **général JAMPACK** (`manage:PlatformOps`) et **technicien de
+  structure** (`manage:Ops`, actif seulement si serveur du client). **Isolation absolue** : sur une
+  instance hors hébergement JAMPACK, le général n'a **aucun accès effectif** (`HOSTING_MODE` self/jampack).
+- **Configuration d'instance intégrale** (`InstanceConfig`) : réglages + **clés/secrets** chiffrés au
+  repos (AES-GCM si `SECRETS_KEY`), **révélés en clair par le technicien**, **tronqués** pour le général
+  (qui peut **pousser** sans relire).
+- **Diagnostic de configuration** : détection des défauts (auth de dév, migrations/RLS, chiffrement,
+  CORS, sauvegardes, identifiants légaux…) triés par gravité avec remédiation.
+- **Mode d'instance** test/prod (passage en prod = confirmation « PROD ») ; **provisionnement**
+  d'instance (général, flotte — à venir).
+
+## Reconnaissance de documents & IA (Claude) — voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md)
+- **Niveau 1 gratuit** (local) et **niveau 2 IA Claude** mesuré en **crédits** (`AiCreditLedger`) — cf.
+  section Achats. **Administration ▸ Crédits IA** : solde, recharge, historique. Mobile : reconnaissance
+  du justificatif photo (option IA).

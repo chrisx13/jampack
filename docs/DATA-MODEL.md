@@ -53,6 +53,11 @@ Toute table métier porte `organizationId` (+ `societeId` le cas échéant). Iso
 - **`ViewNote`** (pense-bête de vue : `viewKey`, `content`, `color`, `x`/`y`, `createdBy`, sous RLS org+société) ·
   **`ViewNoteRevision`** (historisation du contenu : une entrée par modification, `author`, `createdAt`, sous RLS org).
 
+### Pilotage technique / Super-admin & IA — voir [PILOTAGE-TECHNIQUE](PILOTAGE-TECHNIQUE.md), [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md)
+- **`InstanceConfig`** (configuration d'instance : `name`, `value`, `secret` bool, `encrypted` bool, `description?`, unique `(organizationId, name)`, sous RLS org) — réglages + clés/secrets ; secret **chiffré au repos** (AES-GCM si `SECRETS_KEY`), révélé en clair au technicien de structure, tronqué au général. Clés notables : `HOSTING_MODE` (self/jampack), `INSTANCE_MODE` (test/prod).
+- **`OpsExecution`** (audit **append-only** des opérations de pilotage : `opId`, `target`, `params` JSON, `dryRun`, `status`, `summary`, `createdById`, sous RLS org) — qui a exécuté/simulé quelle opération et son résultat.
+- **`AiCreditLedger`** (grand livre **append-only** des crédits IA : `delta`, `reason` (topup/analyze), `documentRef?`, sous RLS org) — solde = Σ `delta` ; mesure l'enrichissement IA (Claude) de la reconnaissance de documents.
+
 ## 3. Relations clés
 - `ViewNote 1─* ViewNoteRevision` : historique des modifications d'une note (édition tracée).
 - `Invoice.source → Invoice` : traçabilité devis→facture→avoir.
@@ -79,7 +84,7 @@ billing_entities → **sales_documents** (docType) → **payments** → **stock*
 **supplier_invoices** → **accounting** → invoice_accounting_link → posting_links → **audit_log** →
 **lettrage** → **pdp_transmission** → **supplier_payment** → **product_reorder_point** →
 **company_legal_ids** → **societe_vat_franchise** → **company_do_not_prospect** → **invoice_reverse_charge** → **societe_vat_on_payments** → **stock_lots** → **company_processing_restricted** →
-**bank_reconciliation** → **fixed_assets**.
+**bank_reconciliation** → **fixed_assets** → **expense_receipt** → **ai_credit_ledger** → **ops_execution** → **instance_config**.
 
 ## 7. Schéma (extrait relationnel)
 ```

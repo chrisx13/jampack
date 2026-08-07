@@ -54,6 +54,8 @@ sociétés, rôles, thème, journal d'audit).
 | Commercial | CRM, devis, factures, avoirs, stock, achats | `Commercial` |
 | Comptable | Lecture ventes + saisie règlements, factures fournisseurs | `Comptable` |
 | Lecture seule | Consultation | (rôle dérivé) |
+| Technicien de structure | Pilotage technique de **son** instance (si serveur du client) | `manage:Ops` |
+| Super-admin général JAMPACK | Pilotage de la flotte, provisionnement, conf poussée | `manage:PlatformOps` |
 
 ### 2.4 Environnement d'exploitation
 Navigateur moderne (SPA) ; backend conteneurisé (Docker) ; PostgreSQL 16 ; IdP Keycloak (OIDC) ;
@@ -203,6 +205,16 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 | FR-TRV-7 | **Notes de vue** : pense-bêtes partagés ancrés à une vue, visibles par tout utilisateur ayant accès à la vue ; **édition historisée** ; **déplaçables** (ne masquent pas les données) ; plusieurs par vue. | C | ✅ |
 | FR-TRV-8 | **Application mobile (PWA)** : interface minimaliste installable (`/m`) pour les déplacements — saisie rapide de note de frais + traitement des tâches ; réutilise API/auth/RLS. Natif = hors périmètre. | C | ✅ |
 
+### 3.10 Pilotage technique / Super-admin
+Console d'exploitation **sans SSH ni console de tiers** — voir [PILOTAGE-TECHNIQUE](PILOTAGE-TECHNIQUE.md).
+| ID | Exigence | Prio | Statut |
+|---|---|---|---|
+| FR-OPS-1 | **Catalogue d'opérations prédéfinies** (jamais de shell arbitraire) : info instance, santé BDD, état des migrations, vérification RLS (sûres) ; sauvegarde/restauration/reseed/redémarrage (**hôte, bloquées par défaut**). **Avertissements**, **dry-run**, **confirmation typée**, **audit** (`OpsExecution`). | S | ✅ |
+| FR-OPS-2 | **Deux niveaux de super-admin** : général JAMPACK (`manage:PlatformOps`) et technicien de structure (`manage:Ops`, actif seulement si serveur du client) ; **isolation absolue** selon l'hébergement (`HOSTING_MODE` self/jampack). | M | ✅ |
+| FR-OPS-3 | **Configuration d'instance intégrale** (`InstanceConfig`) : réglages + clés ; secrets **révélés en clair par le technicien**, **tronqués** pour le général (qui peut **pousser** sans relire). | S | ✅ |
+| FR-OPS-4 | **Diagnostic de configuration** : détection des défauts (auth de dév, migrations/RLS, chiffrement, CORS, sauvegardes, identifiants légaux…) triés par gravité + remédiation. | S | ✅ |
+| FR-OPS-5 | **Mode d'instance** test/prod (passage en prod = confirmation « PROD ») ; **provisionnement** d'instance (général, flotte). | C | 🔧 (mode ✅ ; provisioning : orchestrateur flotte ⏳) |
+
 ---
 
 ## 4. Exigences non-fonctionnelles (ISO/IEC 25010)
@@ -234,12 +246,15 @@ hébergement UE (RGPD). Voir [Runbook](RUNBOOK.md).
 - **NFR-SEC-2 (M)** Aucune donnée personnelle en clair dans les URL ; jetons OIDC vérifiés. ✅
 - **NFR-SEC-3 (M)** Autorisation systématique (CASL) sur toute mutation. ✅
 - **NFR-SEC-4 (S)** Secrets hors dépôt (variables d'environnement). ✅
+- **NFR-SEC-5 (S)** **Chiffrement au repos** des secrets d'instance (AES-256-GCM si `SECRETS_KEY`) ; jamais renvoyés en clair au super-admin général (tronqués) ; révélation par le technicien explicite et auditée. ✅
+- **NFR-SEC-6 (M)** **Isolation absolue à deux niveaux** selon l'hébergement : sur une instance hors hébergement JAMPACK (`self`), le super-admin général n'a aucun accès effectif (aucun principal `PlatformOps`). ✅
+- **NFR-SEC-7 (M)** Console de pilotage **sans exécution de shell arbitraire** (catalogue d'opérations), confirmations typées + audit. ✅
 - Détail : [Sécurité & RGPD](SECURITE-RGPD.md).
 
 ### 4.7 Maintenabilité
 - **NFR-MNT-1 (M)** Types et schémas de validation (Zod) partagés front/back (source unique). ✅
 - **NFR-MNT-2 (S)** Découpage modulaire (un module métier = frontières nettes). ✅
-- **NFR-MNT-3 (S)** `lint` (ESLint) + `typecheck` + **tests (unitaires ≥ 90 % + intégration)** + build verts en CI sur chaque push. ✅
+- **NFR-MNT-3 (S)** `lint` (ESLint) + `typecheck` + **tests (unitaires ≥ 90 % + intégration DB réelle/RLS)** + build **validés en local** avant chaque commit. Workflow CI présent mais **en standby** (décision projet). ✅
 
 ### 4.8 Portabilité
 - **NFR-POR-1 (M)** Déploiement conteneurisé reproductible (Docker Compose). ✅

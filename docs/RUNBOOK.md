@@ -57,6 +57,7 @@ rôle `jampack_app` → seed idempotent → lance l'API (via `tsx`, rôle applic
 | Vues inaccessibles < 992px | media query masquait le panneau | overlay + modes épinglé/à la volée |
 
 ## 9. CI/CD
-`.github/workflows/ci.yml` (avec service Postgres) : `install → prisma generate → migrate deploy → seed →
+**Validation locale** avant chaque commit : `install → prisma generate → migrate deploy → seed →
 lint → typecheck → test:cov (unitaires) → test:int (intégration) → build`.
-**À compléter** : SAST, déploiement UE automatisé.
+Le workflow `.github/workflows/ci.yml` (avec service Postgres) reproduit cette chaîne mais est
+**en standby** (décision projet — pas de CI jusqu'à nouvel ordre). **À compléter** : SAST, déploiement UE automatisé.

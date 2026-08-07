@@ -19,6 +19,8 @@ France et isolation multi-tenant **dans les fondations**. Séquencement strict p
 | ADR-6 | Front **Bootstrap 5 + react-bootstrap** (thème Jampack) — remplace Tailwind/shadcn | Actée |
 | ADR-7 | UI unique React réutilisée par desktop (Tauri) et mobile (PWA) | Actée (desktop/PWA ⏳) |
 | ADR-8 | E-invoicing : génération **Factur-X (CII/EN 16931)** + **connecteur PDP** abstrait (adaptateur interne + partenaire branchable), journal `PdpTransmission`. Immatriculation DGFiP / raccordement PPF / e-reporting **hors périmètre logiciel** | Actée (connecteur ✅ ; voie réglementaire ⤵ ouverte) |
+| ADR-9 | **Console de pilotage super-admin** : **catalogue d'opérations prédéfinies** (jamais de shell arbitraire), **deux niveaux** (général JAMPACK / technicien de structure) avec **isolation absolue** selon l'hébergement (`HOSTING_MODE` self/jampack), **secrets chiffrés au repos** (AES-GCM). Opérations hôte via runner **désactivé par défaut** — voir [PILOTAGE-TECHNIQUE](PILOTAGE-TECHNIQUE.md) | Actée (socle ✅ ; runner hôte + orchestrateur flotte ⏳) |
+| ADR-10 | **IA = Claude uniquement** (Anthropic), en option **mesurée par crédits**, **désactivée par défaut** ; reconnaissance de documents à **2 niveaux** (local gratuit / IA) — voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md) | Actée |
 
 ### Décisions ouvertes (à prendre)
 Ces choix ne sont pas encore tranchés ; ils sont suivis ici et dans les documents liés.
@@ -56,8 +58,11 @@ Externe (à venir) : PPF/PDP agréée (dépôt/e-reporting — hors code), exper
 `apps/api/src/` : `auth` (OIDC) · `trpc` (contexte, routeur racine) · `crm` · `catalog` · `invoice`
 (devis/facture/avoir + paiements + **Factur-X/PDP**) · `purchases` (commandes, réceptions, factures
 **et règlements** fournisseurs) · `stock` · `accounting` (journaux, écritures auto, lettrage, TVA/CA3,
-FEC) · `analytics` (**trésorerie**, KPI) · `societe` · `iam` · `settings` · `billing`.
-Packages partagés : `packages/db` (Prisma, RLS, seed, `withTenant`) · `packages/domain` (Zod, CASL, droits).
+FEC) · `analytics` (**trésorerie**, KPI) · `societe` · `iam` · `settings` · `billing` · `expenses`
+(notes de frais) · `documents` (reconnaissance de documents + enrichissement IA Claude) · `ops`
+(**pilotage super-admin** : `opsCatalog`/`executor`, config d'instance & secrets, diagnostic, mode/hébergement).
+Packages partagés : `packages/db` (Prisma, RLS, seed, `withTenant`) · `packages/domain` (Zod, CASL, droits,
+extraction de documents, catalogue d'opérations, masquage des secrets, diagnostics de configuration).
 
 ## 6. Vue données & isolation
 Voir [Modèle de données](DATA-MODEL.md). Chaque requête ouvre une transaction et positionne
@@ -80,7 +85,7 @@ managé, secrets en variables d'environnement. Voir [Runbook](RUNBOOK.md).
 
 ## 9. Risques techniques & dette
 - tsx en exécution (pas de build JS de l'API) — acceptable, à réévaluer pour la prod.
-- CI complète (lint → typecheck → `test:cov` ≥ 90 % → `test:int` → build) — voir `.github/workflows/ci.yml`.
+- **Validation locale** avant commit (lint → typecheck → `test:cov` ≥ 90 % → `test:int` → build) ; workflow `.github/workflows/ci.yml` présent mais **en standby** (décision projet).
 - `InvoiceLine`/lignes filles hors RLS société propre (accès via pièce parente protégée) — TODO.
 - E-invoicing : le connecteur PDP interne **ne vaut pas PDP agréée** tant que l'immatriculation DGFiP /
   raccordement PPF n'est pas réalisé (voir DO-1, [Conformité §3.1](CONFORMITE.md)).

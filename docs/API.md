@@ -68,6 +68,17 @@ Pense-bêtes partagés par vue (`viewKey`) et par société. `list · create · 
 ### `societes` / `iam` / `settings`
 `societes.{list,active,listAll,create,settings,updateSettings}` · `iam.{me,members,roles,societes,invite,grantRole,revokeRole}` · `settings.{getTheme,setTheme}`
 
+### `documents` (reconnaissance de documents + IA Claude)
+`documents.analyze` (niveau 1 gratuit : Factur-X/PDF/OCR → règles FR → résumé + brouillons + confiance) ·
+`documents.aiStatus` · `documents.aiAnalyze` (niveau 2, **1 crédit**, Claude) · `documents.creditsHistory` ·
+`documents.creditsTopup` (admin). Voir [RECONNAISSANCE-DOCUMENTS](RECONNAISSANCE-DOCUMENTS.md).
+
+### `ops` / `config` / `instance` (pilotage super-admin — droits `manage:Ops`/`manage:PlatformOps`)
+`ops.{catalogue,run,history,diagnostics}` (opérations prédéfinies, dry-run + confirmation typée, audit `OpsExecution`) ·
+`config.{list,reveal,set,remove}` (config d'instance + clés ; secret chiffré au repos, révélation technicien / masquage général) ·
+`instance.{status,setMode,setHosting}` (mode test/prod, hébergement self/jampack — **isolation absolue**).
+Voir [PILOTAGE-TECHNIQUE](PILOTAGE-TECHNIQUE.md).
+
 ## Conventions
 - **Lecture** : `query` ; **écriture** : `mutation`. Entrées validées par Zod (`packages/domain`).
 - Erreurs tRPC : `UNAUTHORIZED` (pas de session), `FORBIDDEN` (droit manquant), `BAD_REQUEST` (règle métier).
