@@ -55,6 +55,22 @@ model Organization {
   expenses          Expense[]
   priceRules        PriceRule[]
   timeEntries       TimeEntry[]
+  aiCreditLedger    AiCreditLedger[]
+}
+
+// Grand livre des crédits IA (append-only) : mesure l'usage de l'enrichissement Claude (niveau 2).
+// Solde = somme des `delta`. Recharge = delta > 0 (admin) ; analyse = delta < 0. Aucun paiement ici
+// (hors périmètre) : la recharge est une décision d'administration.
+model AiCreditLedger {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  delta          Int          // crédits +/- (1 crédit = 1 document analysé par l'IA)
+  reason         String       // topup | analyze | adjust
+  documentRef    String?      // repère lisible (fournisseur / n° pièce)
+  createdById    String?
+  createdAt      DateTime     @default(now())
+  @@index([organizationId, createdAt])
 }
 
 // Journal d'audit : trace des mutations (qui, quoi, quand) — traçabilité sécurité/RGPD.

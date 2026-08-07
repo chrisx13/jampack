@@ -1,23 +1,34 @@
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
+import { withTenant } from '@jampack/db';
 import { router, authed } from '../trpc/trpc';
 import { analyzeDocument, toExpenseDraft, toSupplierInvoiceDraft } from '@jampack/domain';
+import { claudeExtract, aiConfigFromEnv } from './aiExtractor';
 
-// Reconnaissance de documents — NIVEAU 1 (gratuit, déterministe, local).
-// Le client fournit ce qu'il a pu extraire localement, SANS aucun envoi à un tiers :
-//  - `facturxXml` : XML CII embarqué dans le PDF (pièce jointe Factur-X) → mapping exact ;
-//  - `text`       : couche texte d'un PDF natif (extraite côté client, ex. pdf.js) ;
-//  - `ocrText`    : texte d'un OCR local (option).
-// Le serveur applique les règles françaises (SIREN/TVA/IBAN validés) et renvoie un résumé + un
-// brouillon pré-rempli à FAIRE VALIDER. Aucune pièce n'est créée ici.
-//
-// Le NIVEAU 2 (enrichissement IA = Claude, mesuré en crédits) est un routeur distinct, désactivé
-// par défaut : voir documents.ai.router.ts. Le socle ci-dessous fonctionne sans clé ni budget.
+// Reconnaissance de documents.
+// NIVEAU 1 (gratuit, déterministe, local) : le client fournit ce qu'il a extrait localement, SANS
+// aucun envoi à un tiers — `facturxXml` (pièce jointe Factur-X), `text` (couche PDF natif), `ocrText`
+// (OCR local option). Le serveur applique les règles FR (SIREN/TVA/IBAN validés) et renvoie un résumé
+// + un brouillon pré-rempli à FAIRE VALIDER. Aucune pièce n'est créée ici.
+// NIVEAU 2 (enrichissement IA = Claude, mesuré en crédits) : `aiAnalyze` — envoie texte/image à
+// Claude, désactivé par défaut (aucune clé = niveau 1 seul), consomme 1 crédit par document.
 
 const analyzeInput = z.object({
   text: z.string().max(200_000).optional(),
   facturxXml: z.string().max(2_000_000).optional(),
   ocrText: z.string().max(200_000).optional(),
 });
+const aiInput = analyzeInput.extend({
+  imageDataUrl: z.string().regex(/^data:image\//).max(7_000_000).optional(),
+});
+
+/** Solde de crédits IA de l'organisation (somme du grand livre). Filtre explicite (défense en profondeur
+ *  au-delà du RLS : correct aussi pour un rôle propriétaire qui contournerait le RLS). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function creditBalance(tx: any, organizationId: string): Promise<number> {
+  const agg = await tx.aiCreditLedger.aggregate({ _sum: { delta: true }, where: { organizationId } });
+  return agg._sum.delta ?? 0;
+}
 
 export const documentsRouter = router({
   /** Analyse locale gratuite : Factur-X / texte PDF / OCR → résumé + brouillons + confiance. */
@@ -26,10 +37,46 @@ export const documentsRouter = router({
     .mutation(({ input }) => {
       const result = analyzeDocument({ text: input.text, facturxXml: input.facturxXml, ocrText: input.ocrText });
       const raw = input.text ?? input.ocrText ?? null;
-      return {
-        result,
-        expenseDraft: toExpenseDraft(result, raw),
-        supplierInvoiceDraft: toSupplierInvoiceDraft(result),
-      };
+      return { result, expenseDraft: toExpenseDraft(result, raw), supplierInvoiceDraft: toSupplierInvoiceDraft(result) };
     }),
+
+  /** État de l'enrichissement IA : activé (clé présente) et solde de crédits de l'organisation. */
+  aiStatus: authed('read', 'Expense').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const cfg = aiConfigFromEnv();
+      return { enabled: !!cfg, model: cfg?.model ?? null, balance: await creditBalance(tx, ctx.user.organizationId) };
+    })
+  ),
+
+  /** Enrichissement IA (Claude) : consomme 1 crédit. Fusionné avec l'extraction locale (le structuré prime). */
+  aiAnalyze: authed('read', 'Expense')
+    .input(aiInput)
+    .mutation(async ({ ctx, input }) => {
+      const cfg = aiConfigFromEnv();
+      if (!cfg) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Enrichissement IA désactivé (aucune clé configurée).' });
+      if (!input.text && !input.imageDataUrl && !input.ocrText) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Fournir un texte ou une image.' });
+      return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        const balance = await creditBalance(tx, ctx.user.organizationId);
+        if (balance <= 0) throw new TRPCError({ code: 'FORBIDDEN', message: 'Crédits IA épuisés. Rechargez pour utiliser l’enrichissement Claude.' });
+        const ai = await claudeExtract({ text: input.text ?? input.ocrText, imageDataUrl: input.imageDataUrl }, cfg).catch((e: Error) => {
+          throw new TRPCError({ code: 'BAD_GATEWAY', message: `Échec de l’enrichissement IA : ${e.message}` });
+        });
+        const result = analyzeDocument({ text: input.text, facturxXml: input.facturxXml, ocrText: input.ocrText, aiFields: ai.fields });
+        await tx.aiCreditLedger.create({
+          data: { organizationId: ctx.user.organizationId, delta: -1, reason: 'analyze', documentRef: result.fields.supplierName?.value?.slice(0, 120) ?? null, createdById: ctx.user.id },
+        });
+        const raw = input.text ?? input.ocrText ?? null;
+        return { result, expenseDraft: toExpenseDraft(result, raw), supplierInvoiceDraft: toSupplierInvoiceDraft(result), balance: balance - 1, usage: ai.usage };
+      });
+    }),
+
+  /** Recharge de crédits IA (administration). Hors périmètre paiement : décision d'admin. */
+  creditsTopup: authed('manage', 'all')
+    .input(z.object({ amount: z.number().int().min(1).max(100_000), note: z.string().max(200).optional() }))
+    .mutation(({ ctx, input }) =>
+      withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+        await tx.aiCreditLedger.create({ data: { organizationId: ctx.user.organizationId, delta: input.amount, reason: 'topup', documentRef: input.note ?? null, createdById: ctx.user.id } });
+        return { balance: await creditBalance(tx, ctx.user.organizationId) };
+      })
+    ),
 });

@@ -52,11 +52,12 @@ ALTER TABLE "RecurringInvoice"  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Expense"           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "PriceRule"         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "TimeEntry"         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "AiCreditLedger"    ENABLE ROW LEVEL SECURITY;
 
 DO $$
 DECLARE t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['Societe','Establishment','Company','Contact','Opportunity','Activity','PipelineStage','Role','Membership','SocieteRole','TaxRate','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice','Payment','Warehouse','StockMovement','PurchaseOrder','SupplierInvoice','Account','Journal','JournalEntry','AuditLog','PdpTransmission','SupplierPayment','FixedAsset','ViewNote','ViewNoteRevision','RecurringInvoice','Expense','PriceRule','TimeEntry']
+  FOREACH t IN ARRAY ARRAY['Societe','Establishment','Company','Contact','Opportunity','Activity','PipelineStage','Role','Membership','SocieteRole','TaxRate','Product','ProductCategory','SocieteAddress','Factor','BankAccount','PaymentTerm','NumberSequence','Invoice','Payment','Warehouse','StockMovement','PurchaseOrder','SupplierInvoice','Account','Journal','JournalEntry','AuditLog','PdpTransmission','SupplierPayment','FixedAsset','ViewNote','ViewNoteRevision','RecurringInvoice','Expense','PriceRule','TimeEntry','AiCreditLedger']
   LOOP
     EXECUTE format('DROP POLICY IF EXISTS org_isolation ON %I;', t);
     EXECUTE format(
