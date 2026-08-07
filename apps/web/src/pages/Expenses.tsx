@@ -3,6 +3,7 @@ import { Card, Table, Button, Modal, Form, Spinner, Badge } from 'react-bootstra
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { EXPENSE_CATEGORIES } from '@jampack/domain';
+import DocumentScanner, { type ScanPrefill } from '../components/DocumentScanner';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-FR') : '—');
@@ -29,12 +30,21 @@ export default function Expenses() {
   const remove = trpc.expenses.remove.useMutation({ onSuccess: inv });
 
   const [open, setOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
+  const [receipt, setReceipt] = useState<string | null>(null);
   const [f, setF] = useState({ date: new Date().toISOString().slice(0, 10), category: 'deplacement', description: '', amountHt: '', taxRatePct: '20' });
   const rows = list.data ?? [];
 
   const submit = () => {
     if (!f.description.trim() || !(num(f.amountHt) >= 0)) return;
-    create.mutate({ date: f.date, category: f.category as 'repas', description: f.description.trim(), amountHt: num(f.amountHt), taxRatePct: num(f.taxRatePct) });
+    create.mutate({ date: f.date, category: f.category as 'repas', description: f.description.trim(), amountHt: num(f.amountHt), taxRatePct: num(f.taxRatePct), receipt: receipt ?? undefined });
+  };
+
+  // Pré-remplissage depuis le scanner de document (à valider par l'utilisateur avant enregistrement).
+  const onScanPrefill = (p: ScanPrefill) => {
+    setF({ date: p.date ?? new Date().toISOString().slice(0, 10), category: p.category, description: p.description, amountHt: p.amountHt != null ? String(p.amountHt) : '', taxRatePct: String(p.taxRatePct) });
+    setReceipt(p.receipt ?? null);
+    setOpen(true);
   };
 
   return (
@@ -43,7 +53,8 @@ export default function Expenses() {
         <div><h4 className="mb-1 fw-semibold">Notes de frais</h4><p className="text-secondary mb-0">Dépenses salariés — validation puis comptabilisation (6xx / TVA / 421)</p></div>
         <div className="d-flex gap-2">
           {rows.length > 0 && canExport && <Button variant="light" title="Exporter en CSV" onClick={async () => { const r = await utils.expenses.exportCsv.fetch(); const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url); }}><i className="bi bi-filetype-csv me-1" />CSV</Button>}
-          {editable && <Button onClick={() => { setF({ date: new Date().toISOString().slice(0, 10), category: 'deplacement', description: '', amountHt: '', taxRatePct: '20' }); setOpen(true); }}><i className="bi bi-plus-lg me-1" />Nouvelle note</Button>}
+          {editable && <Button variant="light" onClick={() => setScanOpen(true)} title="Reconnaître une facture / un justificatif"><i className="bi bi-magic me-1" />Scanner</Button>}
+          {editable && <Button onClick={() => { setF({ date: new Date().toISOString().slice(0, 10), category: 'deplacement', description: '', amountHt: '', taxRatePct: '20' }); setReceipt(null); setOpen(true); }}><i className="bi bi-plus-lg me-1" />Nouvelle note</Button>}
         </div>
       </div>
 
@@ -88,6 +99,7 @@ export default function Expenses() {
             <Form.Group className="col-12" controlId="exp-desc"><Form.Label>Description</Form.Label><Form.Control value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Objet de la dépense…" /></Form.Group>
             <Form.Group className="col-md-6" controlId="exp-ht"><Form.Label>Montant HT</Form.Label><Form.Control type="number" min={0} step="0.01" value={f.amountHt} onChange={(e) => setF({ ...f, amountHt: e.target.value })} /></Form.Group>
             <Form.Group className="col-md-6" controlId="exp-tva"><Form.Label>TVA %</Form.Label><Form.Control type="number" min={0} step="0.1" value={f.taxRatePct} onChange={(e) => setF({ ...f, taxRatePct: e.target.value })} /></Form.Group>
+            {receipt && <div className="col-12"><Badge bg="info-subtle" text="info" className="fw-normal"><i className="bi bi-paperclip me-1" />Justificatif joint (photo)</Badge></div>}
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -95,6 +107,8 @@ export default function Expenses() {
           <Button onClick={submit} disabled={create.isPending || !f.description.trim()}>{create.isPending ? <Spinner size="sm" /> : 'Enregistrer'}</Button>
         </Modal.Footer>
       </Modal>
+
+      <DocumentScanner show={scanOpen} onClose={() => setScanOpen(false)} onPrefill={onScanPrefill} />
     </>
   );
 }
