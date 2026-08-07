@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, Button, Form, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
-import { frTvaNumber, isValidSiren, isValidSiret } from '@jampack/domain';
+import { frTvaNumber, isValidSiren, isValidSiret, LEGAL_FORMS, getLegalForm, legalFormDefaults, legalFormMentions } from '@jampack/domain';
 
 type Settings = Record<string, string | boolean | null | undefined>;
 
@@ -21,6 +21,19 @@ export default function SocieteSettings() {
 
   const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
   const val = (k: string) => (form[k] == null ? '' : String(form[k]));
+
+  // Forme juridique structurée : à la sélection, appliquer les défauts (franchise TVA, capital si applicable).
+  const selectedForm = getLegalForm(val('legalForm'));
+  const legacyForm = val('legalForm') && !selectedForm ? val('legalForm') : null; // valeur libre historique
+  const onLegalForm = (key: string) => {
+    set('legalForm', key);
+    const d = legalFormDefaults(key);
+    if (d) { set('vatFranchise', d.vatFranchise); if (!d.hasCapital) set('capital', ''); }
+  };
+  const derivedMentions = legalFormMentions(selectedForm, {
+    name: val('name'), capital: val('capital'), rcs: val('rcs'), siren: val('siren'),
+    vatFranchise: !!form.vatFranchise, vatOnPayments: !!form.vatOnPayments,
+  });
 
   const submit = () => {
     const keys = ['name', 'legalForm', 'capital', 'siren', 'siret', 'tvaNumber', 'rcs', 'ape', 'addressLine1', 'addressLine2', 'postalCode', 'city', 'phone', 'email', 'website', 'logoUrl', 'legalMentions', 'cgv', 'penaltyRate', 'discountTerms'];
@@ -56,7 +69,35 @@ export default function SocieteSettings() {
         <Col lg={6}>
           <Card className="mb-3"><Card.Header className="fw-semibold">Identité</Card.Header><Card.Body>
             <Text k="name" label="Raison sociale" />
-            <Row><Col md={6}><Text k="legalForm" label="Forme juridique" /></Col><Col md={6}><Text k="capital" label="Capital social" /></Col></Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small text-secondary mb-1">Forme juridique</Form.Label>
+                  <Form.Select value={val('legalForm')} onChange={(e) => onLegalForm(e.target.value)} disabled={!editable}>
+                    <option value="">— Sélectionner —</option>
+                    {legacyForm && <option value={legacyForm}>{legacyForm} (personnalisé)</option>}
+                    {LEGAL_FORMS.map((f) => <option key={f.key} value={f.key}>{f.label}</option>)}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="small text-secondary mb-1">Capital social</Form.Label>
+                  <Form.Control value={val('capital')} onChange={(e) => set('capital', e.target.value)}
+                    disabled={!editable || (!!selectedForm && !selectedForm.hasCapital)}
+                    placeholder={selectedForm && !selectedForm.hasCapital ? 'Sans objet pour cette forme' : 'ex. 10 000 €'} />
+                </Form.Group>
+              </Col>
+            </Row>
+            {(selectedForm || derivedMentions.length > 0) && (
+              <div className="small text-secondary mb-2">
+                <i className="bi bi-info-circle me-1" />Mentions dérivées (aperçu sur les pièces) :
+                <div className="mt-1 d-flex flex-wrap gap-1">
+                  {derivedMentions.map((m, i) => <span key={i} className="badge bg-light text-dark border fw-normal">{m}</span>)}
+                </div>
+                {selectedForm?.accounting && <div className="mt-1">Comptabilité suggérée : <strong>{selectedForm.accounting === 'micro' ? 'micro (livre de recettes)' : selectedForm.accounting === 'tresorerie' ? 'de trésorerie (recettes-dépenses)' : 'd’engagement (bilan/CR)'}</strong> — à confirmer avec votre expert-comptable.</div>}
+              </div>
+            )}
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">

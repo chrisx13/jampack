@@ -1,4 +1,4 @@
-import { lmePaymentMention, discountMention, VAT_FRANCHISE_MENTION, VAT_REVERSE_CHARGE_MENTION, VAT_ON_PAYMENTS_MENTION, formatIban } from '@jampack/domain';
+import { lmePaymentMention, discountMention, VAT_FRANCHISE_MENTION, VAT_REVERSE_CHARGE_MENTION, VAT_ON_PAYMENTS_MENTION, formatIban, getLegalForm, displayLegalName } from '@jampack/domain';
 
 type Line = { label: string; quantity: unknown; unitPriceHt: unknown; taxRatePct: unknown };
 type Invoice = {
@@ -52,11 +52,18 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
   const est = inv.establishment;
   const clientAddr = est ? [est.addressLine1, [est.postalCode, est.city].filter(Boolean).join(' ')].filter(Boolean) : [];
 
+  // Identité juridique pilotée par le catalogue des formes (forme + capital + immatriculation RCS/RNE).
+  const form = getLegalForm(s(soc, 'legalForm'));
+  const formIdentity = form
+    ? (form.hasCapital && s(soc, 'capital') ? `${form.key} au capital de ${s(soc, 'capital')}` : form.key)
+    : (s(soc, 'legalForm') ? `${s(soc, 'legalForm')}${s(soc, 'capital') ? ` au capital de ${s(soc, 'capital')}` : ''}` : '');
+  const usesRcs = !form || form.immatriculation === 'RCS' || form.immatriculation === 'RCS_RM';
   const legalBits = [
-    s(soc, 'legalForm') && `${s(soc, 'legalForm')}${s(soc, 'capital') ? ` au capital de ${s(soc, 'capital')}` : ''}`,
+    formIdentity,
     s(soc, 'siret') && `SIRET ${s(soc, 'siret')}`,
     s(soc, 'tvaNumber') && `TVA ${s(soc, 'tvaNumber')}`,
-    s(soc, 'rcs') && `RCS ${s(soc, 'rcs')}`,
+    usesRcs && s(soc, 'rcs') && `RCS ${s(soc, 'rcs')}`,
+    form && form.immatriculation === 'RNE' && !s(soc, 'rcs') && 'Immatriculée au RNE',
     s(soc, 'ape') && `APE ${s(soc, 'ape')}`,
   ].filter(Boolean).join(' · ');
 
@@ -108,7 +115,7 @@ export function renderDocHtml(inv: Invoice, soc: Societe, totals: Totals): strin
   <div class="head">
     <div class="brand">
       ${s(soc, 'logoUrl') ? `<img class="logo" src="${esc(s(soc, 'logoUrl'))}" />` : ''}
-      <div class="name">${esc(soc.name)}</div>
+      <div class="name">${esc(displayLegalName(form, soc.name))}</div>
       <div class="muted">${addr.map(esc).join('<br>')}</div>
       <div class="muted">${contact.map(esc).join(' · ')}</div>
     </div>
