@@ -115,7 +115,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div className="d-flex align-items-center gap-3">
-          <Button variant="light" onClick={onClose}><i className="bi bi-arrow-left" /></Button>
+          <Button variant="light" aria-label="Retour" onClick={onClose}><i className="bi bi-arrow-left" /></Button>
           <div>
             <h4 className="mb-1 fw-semibold">{reference ? `Facture ${reference}` : id === 'new' ? 'Nouvelle facture fournisseur' : 'Facture fournisseur'}</h4>
             <StatusBadge s={status} />

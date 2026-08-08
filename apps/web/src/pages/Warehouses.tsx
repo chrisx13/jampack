@@ -49,7 +49,7 @@ export default function Warehouses() {
                 <Form.Check type="checkbox" label="Par défaut" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} />
               </div>
               <div className="col-md-1">
-                <Button size="sm" className="w-100" onClick={add} disabled={create.isPending || !name}><i className="bi bi-plus-lg" /></Button>
+                <Button size="sm" className="w-100" aria-label="Ajouter l'entrepôt" onClick={add} disabled={create.isPending || !name}><i className="bi bi-plus-lg" /></Button>
               </div>
             </div>
             {create.error && <div className="text-danger small mt-2">{create.error.message}</div>}

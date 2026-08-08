@@ -42,7 +42,7 @@ function Editor({ onClose }: { onClose: () => void }) {
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div className="d-flex align-items-center gap-3">
-          <Button variant="light" onClick={onClose}><i className="bi bi-arrow-left" /></Button>
+          <Button variant="light" aria-label="Retour" onClick={onClose}><i className="bi bi-arrow-left" /></Button>
           <h4 className="mb-0 fw-semibold">Nouvelle écriture</h4>
         </div>
         <Button onClick={save} disabled={create.isPending || !journalId || !date || !label || !balanced}><i className="bi bi-check2-circle me-1" />Enregistrer</Button>

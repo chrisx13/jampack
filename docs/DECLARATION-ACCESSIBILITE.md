@@ -32,6 +32,9 @@ cartographie par thématique dans [CONFORMITE.md §4](CONFORMITE.md)).
   de la page publique ; messages d'erreur explicites (`Form.Control.Feedback`) sur SIREN/SIRET/IBAN.
 - **Contenus non textuels** : icônes décoratives marquées `aria-hidden`, libellés masqués (`visually-hidden`)
   sur les colonnes d'actions.
+- **Boutons à icône seule** : **nom accessible** (`aria-label`/`title`) — retours, ajouts, attribution de
+  rôle et actions de ligne (validation, comptabilisation, suppression, justificatif…) (WCAG 4.1.2).
+- **Champs de recherche** des listes : `aria-label` explicite (pas seulement un `placeholder`).
 - **Réactivité** : responsive dès 360 px, zoom 200 % supporté.
 
 ## 5. Contenus non accessibles (connus)

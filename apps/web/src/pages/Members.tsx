@@ -51,7 +51,7 @@ export default function Members() {
                 <Form.Select size="sm" value={g.roleId} onChange={(e) => setG({ ...g, roleId: e.target.value })}>
                   <option value="">—</option>{roles.data?.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
                 </Form.Select></div>
-              <div className="col-md-1"><Button size="sm" className="w-100" onClick={onGrant} disabled={grant.isPending || !g.userId || !g.societeId || !g.roleId}><i className="bi bi-plus-lg" /></Button></div>
+              <div className="col-md-1"><Button size="sm" className="w-100" aria-label="Attribuer le rôle" onClick={onGrant} disabled={grant.isPending || !g.userId || !g.societeId || !g.roleId}><i className="bi bi-plus-lg" /></Button></div>
             </div>
             {grant.error && <div className="text-danger small mt-2">{grant.error.message}</div>}
           </Card.Body></Card>

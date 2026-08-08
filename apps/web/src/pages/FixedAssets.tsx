@@ -77,7 +77,7 @@ export default function FixedAssets() {
             <Col md={2}><Form.Label className="small mb-1">Montant HT</Form.Label><Form.Control size="sm" type="number" step="0.01" value={form.amountHt} onChange={(e) => setForm({ ...form, amountHt: e.target.value })} /></Col>
             <Col md={2}><Form.Label className="small mb-1">Acquisition</Form.Label><Form.Control size="sm" type="date" value={form.acquisitionDate} onChange={(e) => setForm({ ...form, acquisitionDate: e.target.value })} /></Col>
             <Col md={2}><Form.Label className="small mb-1">Durée (ans)</Form.Label><Form.Control size="sm" type="number" value={form.durationYears} onChange={(e) => setForm({ ...form, durationYears: e.target.value })} /></Col>
-            <Col md={1}><Button size="sm" className="w-100" onClick={add} disabled={create.isPending}><i className="bi bi-plus-lg" /></Button></Col>
+            <Col md={1}><Button size="sm" className="w-100" aria-label="Ajouter l'immobilisation" onClick={add} disabled={create.isPending}><i className="bi bi-plus-lg" /></Button></Col>
           </Row>
         </Card.Body></Card>
       )}

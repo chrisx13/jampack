@@ -252,7 +252,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     <>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <div className="d-flex align-items-center gap-3">
-          <Button variant="light" onClick={onClose}><i className="bi bi-arrow-left" /></Button>
+          <Button variant="light" aria-label="Retour" onClick={onClose}><i className="bi bi-arrow-left" /></Button>
           <div>
             <h4 className="mb-1 fw-semibold">{number ? `${cfg.singular} ${number}` : id === 'new' ? cfg.newLabel : `${cfg.singular} (brouillon)`}</h4>
             <StatusBadge s={status} cfg={cfg} />
