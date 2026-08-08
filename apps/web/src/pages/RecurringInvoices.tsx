@@ -3,6 +3,7 @@ import { Card, Table, Button, Modal, Form, Spinner, Badge } from 'react-bootstra
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { recurrenceLabel, RECURRENCE_FREQUENCIES, computeInvoiceTotals } from '@jampack/domain';
+import { useToast } from '../components/Toast';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-FR') : '—');
@@ -94,11 +95,12 @@ function Editor({ id, onClose }: { id: string | 'new'; onClose: () => void }) {
 export default function RecurringInvoices() {
   const utils = trpc.useUtils();
   const can = useCan();
+  const toast = useToast();
   const editable = can('create', 'Invoice');
   const list = trpc.recurring.list.useQuery();
   const remove = trpc.recurring.remove.useMutation({ onSuccess: () => utils.recurring.list.invalidate() });
   const duplicate = trpc.recurring.duplicate.useMutation({ onSuccess: () => utils.recurring.list.invalidate() });
-  const generate = trpc.recurring.generateDue.useMutation({ onSuccess: (r) => { utils.recurring.list.invalidate(); utils.invoices.list.invalidate(); alert(`${r.generated} facture(s) générée(s) en brouillon — voir l’onglet Factures.`); } });
+  const generate = trpc.recurring.generateDue.useMutation({ onSuccess: (r) => { utils.recurring.list.invalidate(); utils.invoices.list.invalidate(); toast(`${r.generated} facture(s) générée(s) en brouillon — voir l’onglet Factures.`); } });
   const [edit, setEdit] = useState<string | 'new' | null>(null);
   const rows = list.data ?? [];
 

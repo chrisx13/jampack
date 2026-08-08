@@ -3,6 +3,7 @@ import { Card, Table, Button, Form, Spinner, Badge } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { PO_STATUS_LABELS } from '@jampack/domain';
+import { useToast } from '../components/Toast';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const num = (v: unknown) => { const n = Number(v as never); return Number.isFinite(n) ? n : 0; };
@@ -24,6 +25,7 @@ type Line = { productId?: string; label: string; quantity: number; unitPriceHt: 
 
 function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () => void }) {
   const utils = trpc.useUtils();
+  const toast = useToast();
   const can = useCan();
   const [id, setId] = useState<string | 'new'>(initialId);
   const suppliers = trpc.purchases.suppliers.useQuery();
@@ -66,7 +68,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
   const onInvoice = async () => {
     await invoiceFrom.mutateAsync({ id: id as string });
     utils.supplierInvoices.list.invalidate();
-    alert('Facture fournisseur (brouillon) créée depuis cette commande — voir l’onglet Factures fournisseurs. Complétez la référence et la TVA.');
+    toast('Facture fournisseur (brouillon) créée depuis cette commande — voir l’onglet Factures fournisseurs. Complétez la référence et la TVA.');
   };
   const busy = create.isPending || update.isPending || validate.isPending || receive.isPending || receivePartial.isPending;
   const readOnly = status !== 'draft';
@@ -117,7 +119,7 @@ function Editor({ id: initialId, onClose }: { id: string | 'new'; onClose: () =>
     await receive.mutateAsync({ id });
     utils.purchases.orders.list.invalidate(); utils.purchases.orders.get.invalidate({ id });
     utils.stock.levels.invalidate(); utils.stock.movements.list.invalidate();
-    alert('Réception enregistrée — le stock a été mis à jour (voir Stock ▸ Niveaux).');
+    toast('Réception enregistrée — le stock a été mis à jour (voir Stock ▸ Niveaux).');
   };
 
   const err = create.error || update.error || validate.error || receive.error || receivePartial.error;

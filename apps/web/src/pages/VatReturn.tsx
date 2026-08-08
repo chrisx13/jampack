@@ -1,12 +1,14 @@
 import { Card, Spinner, Button } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
+import { useToast } from '../components/Toast';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 
 export default function VatReturn() {
   const utils = trpc.useUtils();
   const can = useCan();
+  const toast = useToast();
   const tva = trpc.accounting.vatReturn.useQuery({});
   const close = trpc.accounting.closeVat.useMutation();
   const d = tva.data;
@@ -14,7 +16,7 @@ export default function VatReturn() {
   const onClose = async () => {
     const r = await close.mutateAsync({});
     utils.accounting.vatReturn.invalidate(); utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate();
-    alert(`Écriture de clôture générée (journal OD). Net : ${euro.format(Math.abs(r.net))} ${r.net >= 0 ? 'à décaisser' : 'de crédit de TVA'}.`);
+    toast(`Écriture de clôture générée (journal OD). Net : ${euro.format(Math.abs(r.net))} ${r.net >= 0 ? 'à décaisser' : 'de crédit de TVA'}.`);
   };
 
   return (

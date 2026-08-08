@@ -3,6 +3,7 @@ import { Card, Table, Button, Modal, Form, Spinner, Badge } from 'react-bootstra
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { formatDuration } from '@jampack/domain';
+import { useToast } from '../components/Toast';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-FR') : '—');
@@ -11,13 +12,14 @@ const num = (v: unknown) => { const n = Number(v as never); return Number.isFini
 export default function TimeTracking() {
   const utils = trpc.useUtils();
   const can = useCan();
+  const toast = useToast();
   const editable = can('create', 'Invoice');
   const list = trpc.timeEntries.list.useQuery();
   const companies = trpc.crm.companies.list.useQuery();
   const inv = () => { utils.timeEntries.list.invalidate(); utils.invoices.list.invalidate(); };
   const create = trpc.timeEntries.create.useMutation({ onSuccess: () => { inv(); setOpen(false); } });
   const remove = trpc.timeEntries.remove.useMutation({ onSuccess: inv });
-  const invoiceFor = trpc.timeEntries.invoiceForCompany.useMutation({ onSuccess: (r) => { inv(); alert(`${r.count} temps facturé(s) — facture (brouillon) créée, voir l’onglet Factures.`); } });
+  const invoiceFor = trpc.timeEntries.invoiceForCompany.useMutation({ onSuccess: (r) => { inv(); toast(`${r.count} temps facturé(s) — facture (brouillon) créée, voir l’onglet Factures.`); } });
 
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ date: new Date().toISOString().slice(0, 10), description: '', hours: '1', minutes: '0', companyId: '', hourlyRateHt: '' });

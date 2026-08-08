@@ -10,6 +10,7 @@ import { authEnabled, oidcConfig, accessToken } from './auth';
 import App from './App';
 import PublicQuote from './pages/PublicQuote';
 import MobileApp from './MobileApp';
+import { ToastProvider } from './components/Toast';
 
 // Thème JAMPACK (Bootstrap 5 + Plus Jakarta Sans + icônes)
 // Police VARIABLE, plus douce/arrondie qu'Inter, rendu net (surtout sous Windows).
@@ -40,7 +41,7 @@ const trpcClient = trpc.createClient({
 function Providers({ children }: { children: ReactNode }) {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}><ToastProvider>{children}</ToastProvider></QueryClientProvider>
     </trpc.Provider>
   );
 }

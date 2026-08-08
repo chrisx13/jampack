@@ -3,6 +3,7 @@ import { Card, Table, Button, Form, Spinner, Badge } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { computeInvoiceTotals, resolvePrice, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, type PaymentMethod } from '@jampack/domain';
+import { useToast } from '../components/Toast';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const num = (v: unknown) => { const n = Number(v as never); return Number.isFinite(n) ? n : 0; };
@@ -47,6 +48,7 @@ function usePdf(api: any) {
 
 function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | 'new'; onClose: () => void }) {
   const utils = trpc.useUtils();
+  const toast = useToast();
   const can = useCan();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const api = (trpc as any)[cfg.key];
@@ -188,7 +190,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     await convert!.mutateAsync({ id });
     utils.invoices.list.invalidate();
     uapi.list.invalidate(); uapi.get.invalidate({ id });
-    alert('Facture (brouillon) créée depuis ce devis — voir l’onglet Factures.');
+    toast('Facture (brouillon) créée depuis ce devis — voir l’onglet Factures.');
     onClose();
   };
   const deposit = cfg.key === 'quotes' ? (trpc as unknown as { quotes: { createDepositInvoice: { useMutation: () => { mutateAsync: (v: { id: string; pct: number }) => Promise<{ id: string }>; isPending: boolean } } } }).quotes.createDepositInvoice.useMutation() : null;
@@ -196,16 +198,16 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     const raw = window.prompt('Pourcentage d’acompte à facturer (%) :', '30');
     if (raw == null) return;
     const pct = Number(raw.replace(',', '.'));
-    if (!(pct > 0 && pct <= 100)) { alert('Pourcentage invalide (0 à 100).'); return; }
+    if (!(pct > 0 && pct <= 100)) { toast('Pourcentage invalide (0 à 100).', 'danger'); return; }
     await deposit!.mutateAsync({ id, pct });
     utils.invoices.list.invalidate();
-    alert(`Facture d’acompte (${pct} %) créée en brouillon — voir l’onglet Factures. Elle sera déduite à la conversion en facture de solde.`);
+    toast(`Facture d’acompte (${pct} %) créée en brouillon — voir l’onglet Factures. Elle sera déduite à la conversion en facture de solde.`);
   };
   const publicLink = cfg.key === 'quotes' ? (trpc as unknown as { quotes: { publicLink: { useMutation: () => { mutateAsync: (v: { id: string }) => Promise<{ path: string }>; isPending: boolean } } } }).quotes.publicLink.useMutation() : null;
   const onPublicLink = async () => {
     const r = await publicLink!.mutateAsync({ id });
     const url = window.location.origin + r.path;
-    try { await navigator.clipboard.writeText(url); alert(`Lien de signature copié :\n${url}\n\nEnvoyez-le au client pour qu'il accepte le devis en ligne.`); }
+    try { await navigator.clipboard.writeText(url); toast(`Lien de signature copié :\n${url}\n\nEnvoyez-le au client pour qu'il accepte le devis en ligne.`); }
     catch { window.prompt('Lien de signature du devis (copiez-le) :', url); }
   };
   const onAccept = async () => { await accept!.mutateAsync({ id }); uapi.list.invalidate(); uapi.get.invalidate({ id }); };
@@ -213,13 +215,13 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const onCreditNote = async () => {
     await creditNote!.mutateAsync({ id });
     utils.creditNotes.list.invalidate();
-    alert('Avoir (brouillon) créé depuis cette facture — voir l’onglet Avoirs.');
+    toast('Avoir (brouillon) créé depuis cette facture — voir l’onglet Avoirs.');
   };
   const onPost = async () => {
     const r = await postAcc.mutateAsync({ id });
     utils.invoices.get.invalidate({ id });
     utils.accounting.balance.invalidate(); utils.accounting.entries.list.invalidate();
-    alert(r.alreadyPosted ? 'Facture déjà comptabilisée.' : 'Écriture comptable générée (journal des ventes) — voir Comptabilité ▸ Écritures.');
+    toast(r.alreadyPosted ? 'Facture déjà comptabilisée.' : 'Écriture comptable générée (journal des ventes) — voir Comptabilité ▸ Écritures.');
   };
   const onFacturx = async () => {
     const r = await uapi.facturx.fetch({ id });
@@ -229,7 +231,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const onSendPdp = async () => {
     const r = await sendPdp!.mutateAsync({ id });
     uapi.transmissions.invalidate({ id });
-    alert(`Facture transmise (PDP « ${r.provider} ») — statut : ${r.status}, réf. ${r.providerRef}.`);
+    toast(`Facture transmise (PDP « ${r.provider} ») — statut : ${r.status}, réf. ${r.providerRef}.`);
   };
   const delivery = cfg.key === 'invoices' ? api.deliveryNote.useMutation() : null;
   const onDelivery = async () => {
