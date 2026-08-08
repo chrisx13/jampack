@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant, prisma } from '@jampack/db';
 import { router, protectedProcedure } from '../trpc/trpc';
-import { OPS_CATALOG, OPS_CATEGORIES, getOp, canExecute, tierAllows, evaluateConfig, summarizeFindings } from '@jampack/domain';
+import { OPS_CATALOG, OPS_CATEGORIES, getOp, canExecute, tierAllows, evaluateConfig, summarizeFindings, opsHistoryCsv } from '@jampack/domain';
 import { runOp } from './executor';
 import { secretsEncryptionEnabled } from './crypto';
 import { resolveTier, requireAny } from './tier';
@@ -79,6 +79,17 @@ export const opsRouter = router({
     return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const rows = await tx.opsExecution.findMany({ where: { organizationId: ctx.user.organizationId }, orderBy: { createdAt: 'desc' }, take: 50 });
       return { rows };
+    });
+  }),
+
+  /** Export CSV de l'historique des opérations (traçabilité/audit). */
+  historyCsv: protectedProcedure.query(async ({ ctx }) => {
+    const t = await resolveTier(ctx); requireAny(t);
+    return withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const rows = await tx.opsExecution.findMany({ where: { organizationId: ctx.user.organizationId }, orderBy: { createdAt: 'desc' } });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const content = opsHistoryCsv(rows.map((r: any) => ({ date: r.createdAt, opId: r.opId, target: r.target, dryRun: r.dryRun, status: r.status, summary: r.summary })));
+      return { filename: 'operations-pilotage.csv', content };
     });
   }),
 

@@ -950,6 +950,20 @@ export function aiCreditsCsv(rows: AiCreditCsvRow[]): string {
   return [head, ...lines].join('\n');
 }
 
+/** Sérialise l'historique des opérations de pilotage (super-admin) en CSV — traçabilité/audit. */
+export type OpsCsvRow = { date: string | Date; opId: string; target: string; dryRun: boolean; status: string; summary: string | null };
+export function opsHistoryCsv(rows: OpsCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const d = (v: string | Date) => {
+    const x = new Date(v);
+    const p = (k: number) => String(k).padStart(2, '0');
+    return `${p(x.getUTCDate())}/${p(x.getUTCMonth() + 1)}/${x.getUTCFullYear()} ${p(x.getUTCHours())}:${p(x.getUTCMinutes())}`;
+  };
+  const head = 'Date;Opération;Cible;Mode;Statut;Résumé';
+  const lines = rows.map((r) => [d(r.date), esc(r.opId), esc(r.target), r.dryRun ? 'simulation' : 'réel', esc(r.status), esc(r.summary ?? '')].join(';'));
+  return [head, ...lines].join('\n');
+}
+
 /**
  * Génère un calendrier iCalendar (RFC 5545) d'événements « journée » (VALUE=DATE)
  * importable dans Outlook/Google Agenda. `date` au format ISO ; `stamp` = DTSTAMP fixe (déterminisme).

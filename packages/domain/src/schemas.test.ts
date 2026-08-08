@@ -11,7 +11,7 @@ import {
   isValidSiren, isValidSiret, frTvaNumber,
   isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
   timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv, timeEntriesCsv, statementEntries, stockMovementsCsv,
-  aiCreditsCsv,
+  aiCreditsCsv, opsHistoryCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -559,6 +559,19 @@ describe('export CSV — crédits IA', () => {
     expect(l1).toBe('07/08/2026;Recharge;dotation;;0;0;0;10');
     expect(l2).toBe('07/08/2026;Analyse (payante);"ACME; SARL";claude-haiku-4-5;120;45;0;-1');
     expect(l3.startsWith('07/08/2026;Analyse (gratuite);aide;')).toBe(true);
+  });
+});
+
+describe('export CSV — historique des opérations', () => {
+  it('sérialise l’historique (mode simulation/réel, échappement)', () => {
+    const csv = opsHistoryCsv([
+      { date: new Date('2026-08-07T09:05:00Z'), opId: 'db.health', target: 'local', dryRun: false, status: 'ok', summary: 'BDD joignable' },
+      { date: new Date('2026-08-07T09:06:00Z'), opId: 'backup.create', target: 'local', dryRun: true, status: 'blocked', summary: 'Runner absent; simulé' },
+    ]);
+    const [head, l1, l2] = csv.split('\n');
+    expect(head).toBe('Date;Opération;Cible;Mode;Statut;Résumé');
+    expect(l1).toBe('07/08/2026 09:05;db.health;local;réel;ok;BDD joignable');
+    expect(l2).toContain('simulation');
   });
 });
 

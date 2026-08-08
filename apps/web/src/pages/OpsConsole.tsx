@@ -227,9 +227,15 @@ function OpRunner({ op, onClose }: { op: Op; onClose: () => void }) {
 }
 
 export default function OpsConsole() {
+  const utils = trpc.useUtils();
   const cat = trpc.ops.catalogue.useQuery();
   const history = trpc.ops.history.useQuery();
   const [active, setActive] = useState<Op | null>(null);
+  const exportHistory = async () => {
+    const r = await utils.ops.historyCsv.fetch();
+    const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url);
+  };
 
   const byCategory = useMemo(() => {
     const ops = (cat.data?.operations ?? []) as Op[];
@@ -284,7 +290,10 @@ export default function OpsConsole() {
           ))}
 
           <Card className="mt-2"><Card.Body className="p-0">
-            <div className="p-3 pb-2"><h6 className="fw-semibold mb-0">Historique des exécutions</h6></div>
+            <div className="p-3 pb-2 d-flex align-items-center justify-content-between">
+              <h6 className="fw-semibold mb-0">Historique des exécutions</h6>
+              {(history.data?.rows ?? []).length > 0 && <Button size="sm" variant="light" title="Exporter l'historique en CSV" onClick={exportHistory}><i className="bi bi-filetype-csv me-1" aria-hidden="true" />CSV</Button>}
+            </div>
             <Table hover responsive className="mb-0 align-middle">
               <thead className="text-secondary small"><tr><th className="ps-3">Date</th><th>Opération</th><th>Cible</th><th>Mode</th><th className="pe-3">Résultat</th></tr></thead>
               <tbody>
