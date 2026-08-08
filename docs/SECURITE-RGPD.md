@@ -146,13 +146,16 @@ profilage, décision automatisée ou données sensibles.
 - Reste : immuabilité renforcée (append-only strict / signature), purge/rétention configurable.
 
 ## 7. Gestion des vulnérabilités
-- Dépendances : audit régulier (`pnpm audit`), mises à jour de sécurité.
-- Validation **locale** avant commit : lint + `typecheck` + tests unitaires (couv. ≥ 90 %) + tests
-  d'intégration + build, rejoués par une **CI conteneurisée (Docker)** — `scripts/ci.sh` (pas de GitHub Actions).
+- **Audit des dépendances** (`pnpm audit`, script `security:audit`) : correctifs des transitives
+  vulnérables **runtime** forcés via `pnpm.overrides` (body-parser, qs, nanoid, multer, tmp, glob,
+  file-type) → **27 → 14** vulnérabilités (hautes 9→2). Le reliquat est **dev-only** (vite/vitest/esbuild,
+  bumps majeurs) sans impact sur la production (qui sert des **fichiers statiques** derrière nginx).
 - **SAST statique** (`eslint-plugin-security`, offline) intégré au lint : détecte `child_process`/`eval`/
   `require` dynamique, buffers non sûrs, PRNG faible, caractères bidi et **regex ReDoS** — appliqué au
-  parsing de contenu utilisateur (reconnaissance de documents). ✅ ; à compléter par un audit de
-  dépendances (`pnpm audit`, ⏳ — nécessite un accès réseau).
+  parsing de **contenu utilisateur** (reconnaissance de documents). ✅
+- **Actions destructrices** : **confirmation** requise avant toute suppression (listes, clés de config…).
+- Validation avant commit : **CI conteneurisée (Docker)** — lint (dont SAST) + typecheck + tests
+  unitaires (couv. ≥ 90 %) + intégration (Postgres réel/RLS) + build (`scripts/ci.sh`, pas de GitHub Actions).
 - Divulgation responsable : point de contact sécurité (à définir dans l'offre).
 
 ## 8. Conformité sectorielle

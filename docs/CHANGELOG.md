@@ -105,3 +105,7 @@ le backlog **implémentable sans dépendance externe (8/8)** a été livré :
   typecheck → tests unit (≥ 90 %) + intégration (Postgres réel/RLS) → build ; **pas de GitHub Actions**.
 - **Export CSV du grand livre des crédits IA** (Administration ▸ Crédits IA) : réconciliation hors ligne
   du **coût fournisseur** (tokens/modèle) et du **revenu** (crédits) — voir [AI-SOURCING](AI-SOURCING.md).
+- **Audit des dépendances** : correctifs des transitives vulnérables (runtime) via `pnpm.overrides`
+  (27 → 14 vulnérabilités ; hautes 9 → 2) ; reliquat dev-only sans impact production. Script `security:audit`.
+- **Confirmations de suppression** ajoutées partout où elles manquaient (activités, immobilisations,
+  temps, établissements, règles tarifaires, clés de config) — cohérence + sécurité.
