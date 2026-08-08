@@ -58,7 +58,7 @@ function EstablishmentsModal({ company, onClose }: { company: Company; onClose: 
               {canEdit && (
                 <div className="flex-shrink-0">
                   <Button variant="light" size="sm" className="me-1" onClick={() => { setForm({ id: e.id, name: e.name, siret: e.siret ?? '', addressLine1: e.addressLine1 ?? '', postalCode: e.postalCode ?? '', city: e.city ?? '', isHeadquarters: e.isHeadquarters, isBilling: e.isBilling, isDelivery: e.isDelivery }); setEditing(true); }}><i className="bi bi-pencil" /></Button>
-                  <Button variant="light" size="sm" className="text-danger" onClick={() => remove.mutate({ id: e.id })}><i className="bi bi-trash" /></Button>
+                  <Button variant="light" size="sm" className="text-danger" onClick={() => { if (confirm(`Supprimer « ${e.name} » ?`)) remove.mutate({ id: e.id }); }}><i className="bi bi-trash" /></Button>
                 </div>
               )}
             </div>

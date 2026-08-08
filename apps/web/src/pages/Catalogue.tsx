@@ -83,7 +83,7 @@ function PricingModal({ product, onHide }: { product: { id: string; name: string
                 <td>{r.company?.name ?? <span className="text-secondary">Tous</span>}</td>
                 <td>{Number(r.minQuantity)}</td>
                 <td className="text-end">{euro2.format(Number(r.unitPriceHt))}</td>
-                <td className="text-end"><Button variant="link" size="sm" className="text-danger p-0" onClick={() => remove.mutate({ id: r.id })}><i className="bi bi-x-lg" /></Button></td>
+                <td className="text-end"><Button variant="link" size="sm" className="text-danger p-0" title="Supprimer la règle" onClick={() => { if (confirm('Supprimer cette règle tarifaire ?')) remove.mutate({ id: r.id }); }}><i className="bi bi-x-lg" /></Button></td>
               </tr>
             ))}
             {mine.length === 0 && <tr><td colSpan={4} className="text-center text-secondary py-2">Aucune règle</td></tr>}

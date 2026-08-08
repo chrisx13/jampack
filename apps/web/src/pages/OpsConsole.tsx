@@ -139,7 +139,7 @@ function ConfigManager() {
                   ? <Button size="sm" variant="light" title="Masquer" onClick={() => setRevealed((s) => { const n = { ...s }; delete n[it.name]; return n; })}><i className="bi bi-eye-slash" /></Button>
                   : <Button size="sm" variant="light" title="Révéler" onClick={() => reveal(it.name)}><i className="bi bi-eye" /></Button>)}
                 {d?.canWrite && <Button size="sm" variant="light" title="Modifier" onClick={() => setForm({ name: it.name, value: '', secret: it.secret, description: it.description ?? '' })}><i className="bi bi-pencil" /></Button>}
-                {d?.canDelete && <Button size="sm" variant="light" className="text-danger" title="Supprimer" onClick={() => remove.mutate({ name: it.name })}><i className="bi bi-trash" /></Button>}
+                {d?.canDelete && <Button size="sm" variant="light" className="text-danger" title="Supprimer" onClick={() => { if (confirm(`Supprimer la clé « ${it.name} » ?`)) remove.mutate({ name: it.name }); }}><i className="bi bi-trash" /></Button>}
               </td>
             </tr>
           ))}

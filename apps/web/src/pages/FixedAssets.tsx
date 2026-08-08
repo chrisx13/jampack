@@ -99,7 +99,7 @@ export default function FixedAssets() {
                   <td className="text-center">{a.durationYears} ans</td>
                   <td className="text-end pe-3">
                     <Button variant="light" size="sm" className="me-1" title="Plan d'amortissement" onClick={() => setSchedule(a.id)}><i className="bi bi-graph-down" /></Button>
-                    {editable && <Button variant="light" size="sm" className="text-danger" onClick={() => remove.mutate({ id: a.id })}><i className="bi bi-trash" /></Button>}
+                    {editable && <Button variant="light" size="sm" className="text-danger" onClick={() => { if (confirm('Supprimer cette immobilisation ?')) remove.mutate({ id: a.id }); }}><i className="bi bi-trash" /></Button>}
                   </td>
                 </tr>
               ))}

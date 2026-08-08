@@ -68,7 +68,7 @@ export default function TimeTracking() {
                 <td className="text-end fw-medium">{euro.format(e.amountHt)}</td>
                 <td>{e.status === 'invoiced' ? <Badge bg="success-subtle" text="success" className="fw-normal">Facturé</Badge> : <Badge bg="secondary-subtle" text="secondary" className="fw-normal">Ouvert</Badge>}</td>
                 <td className="text-end pe-3">
-                  {editable && e.status === 'open' && <Button variant="light" size="sm" className="text-danger" title="Supprimer" onClick={() => remove.mutate({ id: e.id })}><i className="bi bi-trash" /></Button>}
+                  {editable && e.status === 'open' && <Button variant="light" size="sm" className="text-danger" title="Supprimer" onClick={() => { if (confirm('Supprimer cette saisie de temps ?')) remove.mutate({ id: e.id }); }}><i className="bi bi-trash" /></Button>}
                 </td>
               </tr>
             ))}

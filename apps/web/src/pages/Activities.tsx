@@ -113,7 +113,7 @@ export default function Activities() {
                         {editable && a.type === 'tache' && (a.done
                           ? <Button variant="link" size="sm" className="text-secondary p-0 me-2" title="Rouvrir la tâche" onClick={() => reopen.mutate({ id: a.id })}><i className="bi bi-arrow-counterclockwise" /></Button>
                           : <Button variant="link" size="sm" className="text-success p-0 me-2" title="Marquer fait" onClick={() => complete.mutate({ id: a.id })}><i className="bi bi-check-lg" /></Button>)}
-                        {editable && <Button variant="link" size="sm" className="text-danger p-0" title="Supprimer" onClick={() => remove.mutate({ id: a.id })}><i className="bi bi-trash" /></Button>}
+                        {editable && <Button variant="link" size="sm" className="text-danger p-0" title="Supprimer" onClick={() => { if (confirm('Supprimer cette activité ?')) remove.mutate({ id: a.id }); }}><i className="bi bi-trash" /></Button>}
                       </td>
                     </tr>
                   ))}
