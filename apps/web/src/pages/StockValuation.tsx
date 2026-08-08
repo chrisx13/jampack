@@ -4,11 +4,20 @@ import { trpc } from '../trpc';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const qfmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 3 });
+const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
 
 export default function StockValuation() {
   const [method, setMethod] = useState<'pmp' | 'fifo'>('pmp');
   const val = trpc.stock.valuation.useQuery({ method });
   const rows = val.data?.rows ?? [];
+
+  const exportCsv = () => {
+    const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+    const head = 'Article;Référence;Quantité;Unité;Coût unitaire;Valeur;Méthode';
+    const lines = rows.map((r) => [esc(r.productName), esc(r.reference ?? ''), fr(r.quantity), esc(r.unit ?? ''), fr(r.pmp), fr(r.value), method.toUpperCase()].join(';'));
+    const url = URL.createObjectURL(new Blob([[head, ...lines].join('\n')], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = `valorisation-stock-${method}.csv`; a.click(); URL.revokeObjectURL(url);
+  };
 
   return (
     <>
@@ -22,6 +31,7 @@ export default function StockValuation() {
             <Button variant={method === 'pmp' ? 'primary' : 'outline-secondary'} onClick={() => setMethod('pmp')}>PMP</Button>
             <Button variant={method === 'fifo' ? 'primary' : 'outline-secondary'} onClick={() => setMethod('fifo')}>FIFO</Button>
           </ButtonGroup>
+          {rows.length > 0 && <Button variant="light" size="sm" title="Exporter en CSV" onClick={exportCsv}><i className="bi bi-filetype-csv me-1" aria-hidden="true" />CSV</Button>}
           {rows.length > 0 && <div className="text-end"><div className="text-secondary small">Valeur totale</div><div className="fs-5 fw-semibold">{euro.format(val.data?.total ?? 0)}</div></div>}
         </div>
       </div>
