@@ -95,3 +95,13 @@ le backlog **implémentable sans dépendance externe (8/8)** a été livré :
   règlement, note de frais mobile, achat fournisseur, clôture TVA/FEC, forme juridique, administration).
 - **Panneau d'aide** in-app (bouton **?**) : **recherche gratuite** locale + **assistant IA (Claude)**
   optionnel (1 crédit) **ancré** sur les guides, citant ses **sources** ; jamais de conseil réglementaire.
+
+## Sécurité & qualité
+- **SAST statique** (`eslint-plugin-security`, offline) intégré au lint : détecte `child_process`,
+  `eval`, `require` dynamique, buffers non sûrs, PRNG faible, caractères bidi et **regex ReDoS**.
+- **Durcissement ReDoS** des regex qui parsent du **contenu utilisateur** (reconnaissance de documents,
+  BIC) : formes bornées + validation en code (comportement préservé, tests verts).
+- **CI conteneurisée (Docker)** : `scripts/ci.sh` rejoue migrate + RLS + seed → lint (dont SAST) →
+  typecheck → tests unit (≥ 90 %) + intégration (Postgres réel/RLS) → build ; **pas de GitHub Actions**.
+- **Export CSV du grand livre des crédits IA** (Administration ▸ Crédits IA) : réconciliation hors ligne
+  du **coût fournisseur** (tokens/modèle) et du **revenu** (crédits) — voir [AI-SOURCING](AI-SOURCING.md).
