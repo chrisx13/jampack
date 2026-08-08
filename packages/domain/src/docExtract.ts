@@ -150,7 +150,7 @@ export function extractFromText(text: string, source: ExtractSource = 'pdf-text'
   const t = text.replace(/\u00A0/g, ' ');
 
   // SIRET (14) puis SIREN (9), étiquetés en priorité, validés par clé de Luhn.
-  const siretM = t.match(/siret\D{0,12}((?:\d[ .]?){14})/i) ?? t.match(/\b(\d{3}[ .]?\d{3}[ .]?\d{3}[ .]?\d{5})\b/);
+  const siretM = t.match(/siret\D{0,12}(\d[\d .]{13,25})/i) ?? t.match(/\b(\d{3}[ .]?\d{3}[ .]?\d{3}[ .]?\d{5})\b/);
   if (siretM) {
     const d = digits(siretM[1]);
     if (d.length === 14) {
@@ -160,7 +160,7 @@ export function extractFromText(text: string, source: ExtractSource = 'pdf-text'
     }
   }
   if (!fields.siren) {
-    const sirenM = t.match(/siren\D{0,12}((?:\d[ .]?){9})/i) ?? t.match(/\b(\d{3}[ .]?\d{3}[ .]?\d{3})\b/);
+    const sirenM = t.match(/siren\D{0,12}(\d[\d .]{8,17})/i) ?? t.match(/\b(\d{3}[ .]?\d{3}[ .]?\d{3})\b/);
     if (sirenM) {
       const d = digits(sirenM[1]);
       if (d.length === 9) {
@@ -171,7 +171,7 @@ export function extractFromText(text: string, source: ExtractSource = 'pdf-text'
   }
 
   // N° TVA intracommunautaire FR : cohérence via la clé DGFiP (frTvaNumber du SIREN).
-  const tvaM = t.match(/\bFR[ ]?([0-9A-Z]{2})[ ]?((?:\d[ ]?){9})/i);
+  const tvaM = t.match(/\bFR ?([0-9A-Z]{2}) ?(\d[\d ]{8,12})/i);
   if (tvaM) {
     const normalized = ('FR' + tvaM[1] + digits(tvaM[2])).toUpperCase().replace(/\s/g, '');
     const sirenPart = normalized.slice(4);
@@ -182,7 +182,7 @@ export function extractFromText(text: string, source: ExtractSource = 'pdf-text'
 
   // IBAN : validé mod-97. On exige une longueur d'IBAN réelle (≥ 15 caractères) pour ne pas
   // confondre avec un n° de TVA intracommunautaire (FR + 11 chiffres = 13 caractères).
-  const ibanM = t.match(/\b([A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30})\b/i);
+  const ibanM = t.match(/\b([A-Z]{2}\d{2}[A-Z0-9 ]{11,34})\b/i);
   if (ibanM) {
     const raw = ibanM[1].replace(/\s/g, '');
     if (raw.length >= 15 && raw.length <= 34) {
@@ -192,7 +192,7 @@ export function extractFromText(text: string, source: ExtractSource = 'pdf-text'
   }
 
   // N° de facture.
-  const numM = t.match(/\b(?:facture|invoice|n[°o]\s*(?:de\s*)?facture)\s*(?:n[°o]|num[ée]ro|#)?\s*[-:]?\s*([A-Za-z0-9][A-Za-z0-9/-]{2,24})/i);
+  const numM = t.match(/(?:facture|invoice)\s?(?:n[°o]|num[ée]ro|#)?\s?[-:]?\s?([A-Za-z0-9][A-Za-z0-9/-]{2,24})/i);
   if (numM && !/^facture$/i.test(numM[1])) fields.invoiceNumber = { value: numM[1], confidence: 'medium', source };
 
   // Date (première date plausible ; si étiquetée « date », confiance plus haute).
@@ -206,7 +206,8 @@ export function extractFromText(text: string, source: ExtractSource = 'pdf-text'
   const ht = labelledAmount(t, /(?:total\s*ht|montant\s*ht|base\s*ht|total\s*h\.?t\.?)/);
   // Montant de TVA : « TVA », un taux éventuel (« 20 % »), puis le montant. On exige des centimes
   // (`,dd`) pour ne pas confondre le montant avec le taux (« 20 % »).
-  const tvaAmtM = t.match(/t\.?v\.?a\.?(?:\s*\d{1,2}(?:[.,]\d)?\s*%)?\s*[:=]?\s*(\d[\d . ]*,\d{2})\s*€?/i);
+  // eslint-disable-next-line security/detect-unsafe-regex -- quantificateur borné {0,18} → backtracking linéaire (faux positif de safe-regex)
+  const tvaAmtM = t.match(/t\.?v\.?a\.?(?:\s?\d{1,2}(?:[.,]\d)?\s?%)?\s?[:=]?\s?(\d[\d .]{0,18},\d{2})\s?€?/i);
   const tva = tvaAmtM ? parseFrAmount(tvaAmtM[1]) : null;
   const rateM = t.match(/tva\D{0,8}(\d{1,2}(?:[.,]\d)?)\s*%/i) ?? t.match(/\b(20|10|5[.,]5|2[.,]1)\s*%/);
   if (ht != null) fields.totalHt = { value: ht, confidence: 'high', source };

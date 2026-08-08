@@ -148,7 +148,11 @@ profilage, décision automatisée ou données sensibles.
 ## 7. Gestion des vulnérabilités
 - Dépendances : audit régulier (`pnpm audit`), mises à jour de sécurité.
 - Validation **locale** avant commit : lint + `typecheck` + tests unitaires (couv. ≥ 90 %) + tests
-  d'intégration + build, rejoués par une **CI conteneurisée (Docker)** — `scripts/ci.sh` (pas de GitHub Actions) ; à compléter par SAST (⏳).
+  d'intégration + build, rejoués par une **CI conteneurisée (Docker)** — `scripts/ci.sh` (pas de GitHub Actions).
+- **SAST statique** (`eslint-plugin-security`, offline) intégré au lint : détecte `child_process`/`eval`/
+  `require` dynamique, buffers non sûrs, PRNG faible, caractères bidi et **regex ReDoS** — appliqué au
+  parsing de contenu utilisateur (reconnaissance de documents). ✅ ; à compléter par un audit de
+  dépendances (`pnpm audit`, ⏳ — nécessite un accès réseau).
 - Divulgation responsable : point de contact sécurité (à définir dans l'offre).
 
 ## 8. Conformité sectorielle
@@ -165,4 +169,4 @@ profilage, décision automatisée ou données sensibles.
 | Purge/anonymisation à échéance (prospects 3 ans, audit 12 mois) | Sur-conservation | Tâche de purge configurable (⏳) |
 | Procédure de violation de données formelle | Délai de notification 72 h | Runbook + registre des violations (⏳) |
 | Politique de confidentialité / mentions d'information | Information des personnes | Gabarit + emplacements (⏳) |
-| SAST / audit de dépendances en CI | Vulnérabilités non détectées | Ajouter SAST + `pnpm audit` bloquant (⏳) |
+| Audit de dépendances en CI | Vulnérabilités transitives non détectées | `pnpm audit` bloquant (⏳ — réseau requis) ; **SAST statique livré** (eslint-plugin-security) |

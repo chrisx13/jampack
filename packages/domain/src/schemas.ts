@@ -251,7 +251,8 @@ export function isValidIban(iban?: string | null): boolean {
 /** Valide le format d'un BIC/SWIFT (ISO 9362) : 8 ou 11 caractères alphanumériques. */
 export function isValidBic(bic?: string | null): boolean {
   if (!bic) return false;
-  return /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic.replace(/\s+/g, '').toUpperCase());
+  // BIC = 8 ou 11 caractères. Deux branches ancrées (évite l'ambiguïté {2}(…{3})? → ReDoS statique).
+  return /^[A-Z]{6}[A-Z0-9]{2}$|^[A-Z]{6}[A-Z0-9]{5}$/.test(bic.replace(/\s+/g, '').toUpperCase());
 }
 
 /** Formate un IBAN par groupes de 4 pour l'affichage (ex. FR76 3000 6000 01…). */
