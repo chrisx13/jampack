@@ -45,6 +45,8 @@ echo "▶ 7/8 Tests d'intégration (Postgres réel, RLS actif)"
 pnpm test:int
 
 echo "▶ 8/8 Build (front Vite)"
-pnpm build
+# On build le FRONT uniquement : l'API tourne via tsx (pas de build) et le desktop (Tauri/Rust) est
+# une piste séparée hors périmètre CI (toolchain Rust absente du conteneur).
+pnpm --filter @jampack/web build
 
 echo "✅ CI Docker : pipeline complet au vert."
