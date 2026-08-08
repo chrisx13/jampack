@@ -104,15 +104,20 @@ function Editor({ onClose }: { onClose: () => void }) {
 export default function JournalEntries() {
   const utils = trpc.useUtils();
   const list = trpc.accounting.entries.list.useQuery(undefined);
+  const journals = trpc.accounting.journals.list.useQuery();
   const can = useCan();
   const [editing, setEditing] = useState(false);
   const [search, setSearch] = useState('');
+  const [journalCode, setJournalCode] = useState('');
 
   if (editing) return <Editor onClose={() => setEditing(false)} />;
 
   const q = search.trim().toLowerCase();
   const rows = list.data ?? [];
-  const filtered = rows.filter((e) => !q || (e.label ?? '').toLowerCase().includes(q) || (e.reference ?? '').toLowerCase().includes(q) || (e.journal?.code ?? '').toLowerCase().includes(q));
+  const filtered = rows.filter((e) =>
+    (!q || (e.label ?? '').toLowerCase().includes(q) || (e.reference ?? '').toLowerCase().includes(q) || (e.journal?.code ?? '').toLowerCase().includes(q))
+    && (!journalCode || e.journal?.code === journalCode)
+  );
 
   const exportCsv = async () => {
     const r = await utils.accounting.entries.exportCsv.fetch();
@@ -130,10 +135,20 @@ export default function JournalEntries() {
         </div>
       </div>
 
-      {rows.length > 8 && (
-        <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
-          <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
-          <input className="form-control form-control-sm ps-4" aria-label="Rechercher une écriture" placeholder="Rechercher (libellé, pièce, journal)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+      {rows.length > 0 && (
+        <div className="d-flex flex-wrap gap-2 mb-3">
+          {rows.length > 8 && (
+            <div className="position-relative" style={{ maxWidth: 360, flex: '1 1 240px' }}>
+              <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+              <input className="form-control form-control-sm ps-4" aria-label="Rechercher une écriture" placeholder="Rechercher (libellé, pièce, journal)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+          )}
+          {(journals.data?.length ?? 0) > 1 && (
+            <Form.Select size="sm" style={{ maxWidth: 220 }} value={journalCode} onChange={(e) => setJournalCode(e.target.value)} aria-label="Filtrer par journal">
+              <option value="">Tous les journaux</option>
+              {journals.data?.map((j) => <option key={j.id} value={j.code}>{j.code} — {j.name}</option>)}
+            </Form.Select>
+          )}
         </div>
       )}
 
