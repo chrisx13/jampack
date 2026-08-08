@@ -4,8 +4,10 @@ import { demoCaller } from './caller';
 
 // Client connecté au rôle APPLICATIF non-propriétaire (RLS réellement appliqué),
 // contrairement au rôle propriétaire `jampack` (BYPASSRLS) utilisé par le reste des tests.
+// On dérive l'URL du rôle applicatif depuis DATABASE_URL (même hôte que le reste des tests) pour
+// fonctionner dans n'importe quel environnement (local ou CI conteneurisée où l'hôte est `ci-db`).
 const APP_URL = process.env.DATABASE_URL_APP
-  ?? 'postgresql://jampack_app:jampack@localhost:5432/jampack?schema=public';
+  ?? (process.env.DATABASE_URL ?? 'postgresql://jampack:jampack@localhost:5432/jampack?schema=public').replace('://jampack:', '://jampack_app:');
 const appDb = new PrismaClient({ datasources: { db: { url: APP_URL } } });
 
 let C: Awaited<ReturnType<typeof demoCaller>>;
