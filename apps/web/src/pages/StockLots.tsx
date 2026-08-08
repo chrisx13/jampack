@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, Table, Spinner, Badge, Alert } from 'react-bootstrap';
 import { trpc } from '../trpc';
 
@@ -6,9 +7,12 @@ const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-F
 
 export default function StockLots() {
   const lots = trpc.stock.lots.useQuery();
-  const rows = lots.data ?? [];
-  const expired = rows.filter((r) => r.expired);
-  const soon = rows.filter((r) => r.expiringSoon);
+  const allRows = lots.data ?? [];
+  const expired = allRows.filter((r) => r.expired);
+  const soon = allRows.filter((r) => r.expiringSoon);
+  const [search, setSearch] = useState('');
+  const q = search.trim().toLowerCase();
+  const rows = allRows.filter((r) => !q || (r.lotNumber ?? '').toLowerCase().includes(q) || r.productName.toLowerCase().includes(q) || r.warehouseName.toLowerCase().includes(q));
 
   return (
     <>
@@ -22,6 +26,13 @@ export default function StockLots() {
             {soon.length > 0 && <div><strong>{soon.length} lot{soon.length > 1 ? 's' : ''}</strong> à péremption sous 30 jours.</div>}
           </div>
         </Alert>
+      )}
+
+      {allRows.length > 8 && (
+        <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
+          <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+          <input className="form-control form-control-sm ps-4" aria-label="Rechercher un lot" placeholder="Rechercher (lot, article, entrepôt)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
       )}
 
       <Card>
@@ -45,7 +56,8 @@ export default function StockLots() {
                   </td>
                 </tr>
               ))}
-              {lots.isSuccess && rows.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun lot enregistré (renseignez un n° de lot sur les mouvements)</td></tr>}
+              {lots.isSuccess && allRows.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun lot enregistré (renseignez un n° de lot sur les mouvements)</td></tr>}
+              {lots.isSuccess && allRows.length > 0 && rows.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun lot pour cette recherche</td></tr>}
             </tbody>
           </Table>
         </Card.Body>

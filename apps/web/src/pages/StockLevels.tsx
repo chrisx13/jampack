@@ -13,10 +13,13 @@ export default function StockLevels() {
   const levels = trpc.stock.levels.useQuery();
   const lowStock = trpc.stock.lowStock.useQuery();
   const inventory = trpc.stock.inventory.useMutation();
-  const rows = levels.data ?? [];
+  const allRows = levels.data ?? [];
   const low = lowStock.data ?? [];
 
   const [count, setCount] = useState<null | { row: LevelRow; value: string }>(null);
+  const [search, setSearch] = useState('');
+  const q = search.trim().toLowerCase();
+  const rows = allRows.filter((r) => !q || r.productName.toLowerCase().includes(q) || (r.reference ?? '').toLowerCase().includes(q) || r.warehouseName.toLowerCase().includes(q));
 
   const submitInventory = async () => {
     if (!count) return;
@@ -52,6 +55,13 @@ export default function StockLevels() {
         </Alert>
       )}
 
+      {allRows.length > 8 && (
+        <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
+          <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+          <input className="form-control form-control-sm ps-4" aria-label="Rechercher un article" placeholder="Rechercher (article, référence, entrepôt)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      )}
+
       <Card>
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
@@ -75,7 +85,8 @@ export default function StockLevels() {
                   </td>
                 </tr>
               ))}
-              {levels.isSuccess && rows.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun mouvement de stock enregistré</td></tr>}
+              {levels.isSuccess && allRows.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun mouvement de stock enregistré</td></tr>}
+              {levels.isSuccess && allRows.length > 0 && rows.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun article pour cette recherche</td></tr>}
             </tbody>
           </Table>
         </Card.Body>
