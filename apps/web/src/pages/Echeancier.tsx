@@ -1,19 +1,31 @@
-import { Card, Table, Spinner, Badge } from 'react-bootstrap';
+import { Card, Table, Spinner, Badge, Button } from 'react-bootstrap';
 import { trpc } from '../trpc';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-FR') : '—');
+const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
 
 export default function Echeancier() {
   const list = trpc.payments.echeancier.useQuery();
   const rows = list.data ?? [];
   const totalDu = rows.reduce((s, r) => s + r.remaining, 0);
 
+  const exportCsv = () => {
+    const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+    const head = 'Numéro;Client;Échéance;Total TTC;Réglé;Reste dû;En retard';
+    const lines = rows.map((r) => [esc(r.number ?? ''), esc(r.company?.name ?? ''), r.dueDate ? new Date(r.dueDate as string).toLocaleDateString('fr-FR') : '', fr(r.totalTtc), fr(r.paid), fr(r.remaining), r.overdue ? 'oui' : ''].join(';'));
+    const url = URL.createObjectURL(new Blob([[head, ...lines].join('\n')], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = 'echeancier-clients.csv'; a.click(); URL.revokeObjectURL(url);
+  };
+
   return (
     <>
-      <div className="d-flex align-items-center justify-content-between mb-4">
+      <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
         <div><h4 className="mb-1 fw-semibold">Échéancier</h4><p className="text-secondary mb-0">Factures validées non soldées</p></div>
-        {rows.length > 0 && <div className="text-end"><div className="text-secondary small">Total dû</div><div className="fs-5 fw-semibold">{euro.format(totalDu)}</div></div>}
+        <div className="d-flex align-items-center gap-3">
+          {rows.length > 0 && <Button variant="light" size="sm" title="Exporter en CSV" onClick={exportCsv}><i className="bi bi-filetype-csv me-1" aria-hidden="true" />CSV</Button>}
+          {rows.length > 0 && <div className="text-end"><div className="text-secondary small">Total dû</div><div className="fs-5 fw-semibold">{euro.format(totalDu)}</div></div>}
+        </div>
       </div>
 
       <Card>
