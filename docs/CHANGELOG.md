@@ -109,3 +109,12 @@ le backlog **implémentable sans dépendance externe (8/8)** a été livré :
   (27 → 14 vulnérabilités ; hautes 9 → 2) ; reliquat dev-only sans impact production. Script `security:audit`.
 - **Confirmations de suppression** ajoutées partout où elles manquaient (activités, immobilisations,
   temps, établissements, règles tarifaires, clés de config) — cohérence + sécurité.
+
+## Ergonomie & accessibilité (lot de finition)
+- **Recherche** harmonisée sur les listes qui grossissent : plan comptable, écritures (+ **filtre par
+  journal**), niveaux/lots/mouvements de stock, contacts, journal d'audit.
+- **Confirmations** avant toute suppression (listes + clés de config).
+- **Toasts** (notifications éphémères) en remplacement des `alert()` natifs (ventes, achats, abonnements,
+  temps, clôture TVA).
+- **Accessibilité (RGAA)** : noms accessibles (`aria-label`) sur les boutons à icône seule (WCAG 4.1.2) ;
+  champs de recherche étiquetés.
