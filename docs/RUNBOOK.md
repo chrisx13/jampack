@@ -56,8 +56,15 @@ rôle `jampack_app` → seed idempotent → lance l'API (via `tsx`, rôle applic
 | Web `502` / nginx `host not found "app"` | upstream résolu au boot | `resolver` DNS Docker + variable |
 | Vues inaccessibles < 992px | media query masquait le panneau | overlay + modes épinglé/à la volée |
 
-## 9. CI/CD
-**Validation locale** avant chaque commit : `install → prisma generate → migrate deploy → seed →
-lint → typecheck → test:cov (unitaires) → test:int (intégration) → build`.
-Le workflow `.github/workflows/ci.yml` (avec service Postgres) reproduit cette chaîne mais est
-**en standby** (décision projet — pas de CI jusqu'à nouvel ordre). **À compléter** : SAST, déploiement UE automatisé.
+## 9. CI (conteneurisée — Docker)
+La CI **tourne sur Docker** (pas de GitHub Actions). Un Postgres éphémère + un runner rejouent tout le
+pipeline : `migrate deploy → rls.sql + rôle applicatif → seed → lint → typecheck → test:cov (unit ≥ 90 %)
+→ test:int (Postgres réel, RLS) → build`.
+
+```bash
+scripts/ci.sh
+# ou : docker compose -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from ci
+```
+
+Le code de sortie du conteneur `ci` est propagé (échec = rouge). Voir `ci/run.sh`, `docker-compose.ci.yml`
+et la cible Docker `ci`. **À compléter** : SAST, déploiement UE automatisé.

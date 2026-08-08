@@ -256,7 +256,7 @@ Console d'exploitation **sans SSH ni console de tiers** — voir [PILOTAGE-TECHN
 ### 4.7 Maintenabilité
 - **NFR-MNT-1 (M)** Types et schémas de validation (Zod) partagés front/back (source unique). ✅
 - **NFR-MNT-2 (S)** Découpage modulaire (un module métier = frontières nettes). ✅
-- **NFR-MNT-3 (S)** `lint` (ESLint) + `typecheck` + **tests (unitaires ≥ 90 % + intégration DB réelle/RLS)** + build **validés en local** avant chaque commit. Workflow CI présent mais **en standby** (décision projet). ✅
+- **NFR-MNT-3 (S)** `lint` (ESLint) + `typecheck` + **tests (unitaires ≥ 90 % + intégration DB réelle/RLS)** + build, rejoués par une **CI conteneurisée (Docker)** — `scripts/ci.sh` (pas de GitHub Actions). ✅
 
 ### 4.8 Portabilité
 - **NFR-POR-1 (M)** Déploiement conteneurisé reproductible (Docker Compose). ✅

@@ -9,9 +9,9 @@ Garantir l'exactitude métier (totaux, numérotation, statuts, intégration acha
 ## 2. Niveaux de test
 | Niveau | Portée | Outillage | État |
 |---|---|---|---|
-| Statique | Types, contrats | `tsc --noEmit` (5 packages), en local | ✅ |
-| Statique | Style/qualité | ESLint (flat config), en local | ✅ |
-| **Unitaire** | **Logique métier (`packages/domain`)** | **Vitest + couverture v8, en local** | ✅ **≥ 90 % (seuil), 171 tests** |
+| Statique | Types, contrats | `tsc --noEmit` (5 packages), CI Docker | ✅ |
+| Statique | Style/qualité | ESLint (flat config), CI Docker | ✅ |
+| **Unitaire** | **Logique métier (`packages/domain`)** | **Vitest + couverture v8, CI Docker** | ✅ **≥ 90 % (seuil), 196 tests** |
 | **Intégration** | **Routeurs tRPC via `createCaller` + DB PostgreSQL réelle (RLS actif)** | **Vitest (config dédiée), exécution séquentielle** | ✅ **112 tests** (ventes, achats/stock, IAM/RLS, notes, exports, reconnaissance de documents, crédits IA, pilotage/config/isolation) |
 | Bout-en-bout UI | Parcours web authentifié | Playwright | ⏳ |
 | Sécurité | Isolation RLS, FORBIDDEN (IAM) | `iam.int.test.ts` (RLS actif) | 🟡 partiel |
@@ -39,8 +39,8 @@ L'intégration des routeurs (DB réelle) est en place (§3). **Prochaine extensi
 
 > Ces scénarios sont **pérennisés** en tests Vitest versionnés (`apps/api/src/tests/*.int.test.ts`,
 > config `vitest.integration.config.ts`), idempotents (auto-nettoyage). Commande : `pnpm test:int`
-> (nécessite `DATABASE_URL` + base migrée/seedée). **Exécution locale** avant commit ; workflow CI
-> présent mais **en standby** (décision projet). **Reste** : mesurer la couverture serveur.
+> (nécessite `DATABASE_URL` + base migrée/seedée). Rejoués par la **CI conteneurisée (Docker)** —
+> `scripts/ci.sh` (pas de GitHub Actions). **Reste** : mesurer la couverture serveur.
 
 ## 4. Environnements
 - **Local/démo** : Docker Compose (db+keycloak+app+web), base seedée.

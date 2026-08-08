@@ -21,6 +21,11 @@ FROM base AS api
 EXPOSE 3000
 CMD ["docker/entrypoint.sh"]
 
+# ---- CI : rejoue tout le pipeline (BDD + lint + typecheck + tests unit/int + build) ----
+FROM base AS ci
+RUN chmod +x ci/run.sh
+CMD ["ci/run.sh"]
+
 # ---- build du front (Vite) ----
 FROM base AS web-build
 # Config OIDC injectée au build (Vite fige les VITE_* à la compilation)

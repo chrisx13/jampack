@@ -57,7 +57,7 @@ const digits = (s: string) => s.replace(/[^\d]/g, '');
 /** Convertit un montant écrit à la française (« 1 234,56 », « 1.234,56 », « 1234.56 ») en nombre. */
 export function parseFrAmount(raw?: string | null): number | null {
   if (!raw) return null;
-  let s = String(raw).replace(/[€\s ]/g, '');
+  let s = String(raw).replace(/[€\s\u00A0]/g, '');
   if (!s) return null;
   const hasDot = s.includes('.');
   const hasComma = s.includes(',');
@@ -78,7 +78,7 @@ export function parseFrAmount(raw?: string | null): number | null {
 /** Convertit une date française (JJ/MM/AAAA, JJ-MM-AA, JJ.MM.AAAA) en ISO (AAAA-MM-JJ). */
 export function parseFrDate(raw?: string | null): string | null {
   if (!raw) return null;
-  const m = String(raw).match(/(\d{1,2})[\/.\- ](\d{1,2})[\/.\- ](\d{2,4})/);
+  const m = String(raw).match(/(\d{1,2})[/.\- ](\d{1,2})[/.\- ](\d{2,4})/);
   if (!m) return null;
   const d = Number(m[1]);
   const mo = Number(m[2]);
@@ -139,7 +139,7 @@ export function extractFromFacturX(xml: string): ExtractionResult {
 
 /** Cherche un montant étiqueté (ex. « Total TTC : 120,00 € ») ; renvoie le nombre ou null. */
 function labelledAmount(text: string, labels: RegExp): number | null {
-  const re = new RegExp(labels.source + String.raw`[^\d\-]{0,24}?(\d[\d . ]*(?:,\d{1,2})?)`, 'i');
+  const re = new RegExp(labels.source + String.raw`[^\d\-]{0,24}?(\d[\d .\u00A0]*(?:,\d{1,2})?)`, 'i');
   const m = text.match(re);
   return m ? parseFrAmount(m[1]) : null;
 }
@@ -147,7 +147,7 @@ function labelledAmount(text: string, labels: RegExp): number | null {
 /** Extrait les champs d'un texte brut (PDF natif ou OCR) par règles françaises. */
 export function extractFromText(text: string, source: ExtractSource = 'pdf-text'): ExtractionResult {
   const fields: ExtractionResult['fields'] = {};
-  const t = text.replace(/ /g, ' ');
+  const t = text.replace(/\u00A0/g, ' ');
 
   // SIRET (14) puis SIREN (9), étiquetés en priorité, validés par clé de Luhn.
   const siretM = t.match(/siret\D{0,12}((?:\d[ .]?){14})/i) ?? t.match(/\b(\d{3}[ .]?\d{3}[ .]?\d{3}[ .]?\d{5})\b/);
@@ -192,12 +192,12 @@ export function extractFromText(text: string, source: ExtractSource = 'pdf-text'
   }
 
   // N° de facture.
-  const numM = t.match(/\b(?:facture|invoice|n[°o]\s*(?:de\s*)?facture)\s*(?:n[°o]|num[ée]ro|#)?\s*[:\-]?\s*([A-Za-z0-9][A-Za-z0-9\-/]{2,24})/i);
+  const numM = t.match(/\b(?:facture|invoice|n[°o]\s*(?:de\s*)?facture)\s*(?:n[°o]|num[ée]ro|#)?\s*[-:]?\s*([A-Za-z0-9][A-Za-z0-9/-]{2,24})/i);
   if (numM && !/^facture$/i.test(numM[1])) fields.invoiceNumber = { value: numM[1], confidence: 'medium', source };
 
   // Date (première date plausible ; si étiquetée « date », confiance plus haute).
-  const dateLab = t.match(/date[^\d]{0,12}(\d{1,2}[\/.\- ]\d{1,2}[\/.\- ]\d{2,4})/i);
-  const dateAny = t.match(/\b(\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4})\b/);
+  const dateLab = t.match(/date[^\d]{0,12}(\d{1,2}[/.\- ]\d{1,2}[/.\- ]\d{2,4})/i);
+  const dateAny = t.match(/\b(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4})\b/);
   const isoDate = parseFrDate(dateLab?.[1] ?? dateAny?.[1]);
   if (isoDate) fields.date = { value: isoDate, confidence: dateLab ? 'high' : 'medium', source };
 

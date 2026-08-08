@@ -5,7 +5,6 @@ let C: Awaited<ReturnType<typeof demoCaller>>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let caller: any;
 
-const SIREN = '732829320';
 const SIRET = '73282932000009';
 const TVA = 'FR44732829320';
 

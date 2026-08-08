@@ -182,7 +182,7 @@ publique REST, hébergeur UE définitif. Restent en phase future : desktop (Taur
 |---|---|---|
 | `docker compose up` lève Postgres + Adminer (dev) | idem | ✅ `docker/docker-compose.yml` (service `adminer`) |
 | Stack complète en un `docker compose up --build` | db + keycloak + app + web | ✅ ➕ `docker-compose.yml` |
-| Validation lint → typecheck → **test** → build | **en local** avant commit : lint → typecheck → **test:cov (≥ 90 %) → test:int** → build | ✅ workflow `.github/workflows/ci.yml` présent mais **en standby** (décision) |
+| CI lint → typecheck → **test** → build | **CI conteneurisée (Docker)** : migrate + RLS + seed → lint → typecheck → **test:cov (≥ 90 %) → test:int** → build | ✅ `scripts/ci.sh`, `docker-compose.ci.yml`, `ci/run.sh` (cible Docker `ci`) — **pas de GitHub Actions** |
 
 ## 8. Backlog d'alignement (issu de cet audit)
 
@@ -193,7 +193,7 @@ Réalisé depuis l'audit initial :
 - [x] **Achats** : commandes → réception → stock, factures **et règlements fournisseurs**.
 - [x] **Comptabilité** : écritures auto, lettrage, TVA/CA3, clôture TVA, FEC.
 - [x] **Trésorerie** : prévisionnel encaissements/décaissements.
-- [x] `lint` + tests unitaires **et** d'intégration **validés en local** avant commit (CI en standby — décision).
+- [x] **CI conteneurisée (Docker)** : `scripts/ci.sh` rejoue lint + typecheck + tests unit/int + build (pas de GitHub Actions).
 - [x] Administration in-app : invitation d'utilisateurs, édition sociétés/rôles.
 - [x] **Reconnaissance de documents** (niveau 1 gratuit local + niveau 2 IA Claude par crédits) — FR-ACH-12.
 - [x] **Console de pilotage super-admin** : opérations prédéfinies, config/secrets chiffrés, diagnostic, mode/hébergement, isolation absolue — FR-OPS-1..5.

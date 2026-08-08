@@ -86,7 +86,7 @@ managé, secrets en variables d'environnement. Voir [Runbook](RUNBOOK.md).
 
 ## 9. Risques techniques & dette
 - tsx en exécution (pas de build JS de l'API) — acceptable, à réévaluer pour la prod.
-- **Validation locale** avant commit (lint → typecheck → `test:cov` ≥ 90 % → `test:int` → build) ; workflow `.github/workflows/ci.yml` présent mais **en standby** (décision projet).
+- **CI conteneurisée (Docker)** : lint → typecheck → `test:cov` ≥ 90 % → `test:int` → build, rejoués dans Docker (`scripts/ci.sh`, `docker-compose.ci.yml`, `ci/run.sh`) — **pas de GitHub Actions**.
 - `InvoiceLine`/lignes filles hors RLS société propre (accès via pièce parente protégée) — TODO.
 - E-invoicing : le connecteur PDP interne **ne vaut pas PDP agréée** tant que l'immatriculation DGFiP /
   raccordement PPF n'est pas réalisé (voir DO-1, [Conformité §3.1](CONFORMITE.md)).

@@ -148,7 +148,7 @@ profilage, décision automatisée ou données sensibles.
 ## 7. Gestion des vulnérabilités
 - Dépendances : audit régulier (`pnpm audit`), mises à jour de sécurité.
 - Validation **locale** avant commit : lint + `typecheck` + tests unitaires (couv. ≥ 90 %) + tests
-  d'intégration + build. Workflow CI présent mais **en standby** (décision projet) ; à compléter par SAST (⏳).
+  d'intégration + build, rejoués par une **CI conteneurisée (Docker)** — `scripts/ci.sh` (pas de GitHub Actions) ; à compléter par SAST (⏳).
 - Divulgation responsable : point de contact sécurité (à définir dans l'offre).
 
 ## 8. Conformité sectorielle

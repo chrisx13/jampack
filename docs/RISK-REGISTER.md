@@ -10,7 +10,7 @@
 | RT-2 | Non-conformité e-invoicing 09/2026 | Réglementaire | 2 | 5 | 10 | Génération Factur-X (CII/EN 16931) et connecteur PDP livrés ; reste la voie réglementaire (immatriculation/raccordement PDP — DO-1) | Surveillé |
 | RT-3 | Erreur module comptable (FEC/TVA) | Réglementaire | 3 | 5 | 15 | S'appuyer sur pièces validées ; partenaire/expert-comptable | Surveillé |
 | RT-4 | Fuite inter-tenant (isolation) | Sécurité | 2 | 5 | 10 | RLS + rôle non-propriétaire ; tests d'isolation ; **isolation absolue** du super-admin général sur les instances hors hébergement JAMPACK | Maîtrisé |
-| RT-5 | Régression sans tests automatisés | Qualité | 2 | 3 | 6 | **Validation locale** systématique (lint, typecheck, tests unitaires couv. ≥ 90 % + intégration DB réelle/RLS) ; **CI en standby** (décision) ; reste : e2e UI Playwright | Maîtrisé |
+| RT-5 | Régression sans tests automatisés | Qualité | 2 | 3 | 6 | **CI conteneurisée (Docker)** : lint, typecheck, tests unitaires (couv. ≥ 90 %) + intégration DB réelle/RLS + build (`scripts/ci.sh`) ; reste : e2e UI Playwright | Maîtrisé |
 | RT-6 | Dépendance PDP / IdP / hébergeur | Fournisseur | 3 | 4 | 12 | Contrats/SLA tiers ; abstraction du connecteur PDP | Surveillé |
 | RT-7 | RGPD : effacement vs conservation légale | Conformité | 2 | 4 | 8 | Politique 10 ans pièces comptables ; outillage export/effacement | Actif |
 | RT-8 | Perte de données (sauvegarde/restauration) | Exploitation | 2 | 5 | 10 | Sauvegardes chiffrées + tests de restauration (RPO/RTO) | Surveillé |
