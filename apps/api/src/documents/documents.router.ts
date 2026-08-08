@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { withTenant } from '@jampack/db';
 import { router, authed, protectedProcedure } from '../trpc/trpc';
-import { analyzeDocument, toExpenseDraft, toSupplierInvoiceDraft } from '@jampack/domain';
+import { analyzeDocument, toExpenseDraft, toSupplierInvoiceDraft, aiCreditsCsv } from '@jampack/domain';
 import { claudeExtract, aiConfigFromEnv } from './aiExtractor';
 import { checkAiAllowance, recordAiUsage, allowanceStatus } from '../ai/allowance';
 
@@ -74,6 +74,16 @@ export const documentsRouter = router({
     withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
       const rows = await tx.aiCreditLedger.findMany({ where: { organizationId: ctx.user.organizationId }, orderBy: { createdAt: 'desc' }, take: 50 });
       return { balance: await creditBalance(tx, ctx.user.organizationId), rows };
+    })
+  ),
+
+  /** Export CSV du grand livre des crédits IA (admin) — réconciliation coût ↔ revenu. */
+  creditsCsv: authed('manage', 'all').query(({ ctx }) =>
+    withTenant(ctx.user.organizationId, ctx.societeId, async (tx) => {
+      const rows = await tx.aiCreditLedger.findMany({ where: { organizationId: ctx.user.organizationId }, orderBy: { createdAt: 'desc' } });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const content = aiCreditsCsv(rows.map((r: any) => ({ date: r.createdAt, reason: r.reason, documentRef: r.documentRef, model: r.model, inputTokens: r.inputTokens, outputTokens: r.outputTokens, cacheReadTokens: r.cacheReadTokens, delta: r.delta })));
+      return { filename: 'credits-ia.csv', content };
     })
   ),
 

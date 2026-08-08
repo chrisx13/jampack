@@ -25,9 +25,18 @@ export default function AiCredits() {
 
   return (
     <>
-      <div className="mb-4">
-        <h4 className="mb-1 fw-semibold">Crédits IA</h4>
-        <p className="text-secondary mb-0">Enrichissement par <strong>Claude</strong>. Chaque utilisateur dispose d'une <strong>franchise gratuite mensuelle</strong> (incluse dans l'abonnement) ; au-delà, 1 crédit par analyse.</p>
+      <div className="d-flex align-items-start justify-content-between mb-4 gap-3">
+        <div>
+          <h4 className="mb-1 fw-semibold">Crédits IA</h4>
+          <p className="text-secondary mb-0">Enrichissement par <strong>Claude</strong>. Chaque utilisateur dispose d'une <strong>franchise gratuite mensuelle</strong> (incluse dans l'abonnement) ; au-delà, 1 crédit par analyse.</p>
+        </div>
+        {rows.length > 0 && (
+          <Button variant="light" title="Exporter le grand livre en CSV" onClick={async () => {
+            const r = await utils.documents.creditsCsv.fetch();
+            const url = URL.createObjectURL(new Blob([r.content], { type: 'text/csv;charset=utf-8' }));
+            const a = document.createElement('a'); a.href = url; a.download = r.filename; a.click(); URL.revokeObjectURL(url);
+          }}><i className="bi bi-filetype-csv me-1" />CSV</Button>
+        )}
       </div>
 
       {status.data && !status.data.enabled && (

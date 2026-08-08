@@ -11,6 +11,7 @@ import {
   isValidSiren, isValidSiret, frTvaNumber,
   isValidIban, isValidBic, formatIban, ledgerCsv, depositLines, nextOccurrence, recurrenceLabel, resolvePrice,
   timeEntryAmountHt, formatDuration, expensesCsv, journalEntriesCsv, timeEntriesCsv, statementEntries, stockMovementsCsv,
+  aiCreditsCsv,
 } from './schemas';
 
 describe('computeInvoiceTotals', () => {
@@ -543,6 +544,21 @@ describe('export CSV — écritures (interop expert-comptable)', () => {
     const [head, l1] = csv.split('\n');
     expect(head).toBe('Journal;Date;N° pièce;Compte;Libellé;Débit;Crédit');
     expect(l1).toBe('VT;05/08/2026;FA-0001;411000;Client;120,00;0,00');
+  });
+});
+
+describe('export CSV — crédits IA', () => {
+  it('sérialise le grand livre des crédits (types FR, tokens, échappement)', () => {
+    const csv = aiCreditsCsv([
+      { date: new Date('2026-08-07T00:00:00Z'), reason: 'topup', documentRef: 'dotation', model: null, inputTokens: null, outputTokens: null, cacheReadTokens: null, delta: 10 },
+      { date: new Date('2026-08-07T00:00:00Z'), reason: 'analyze', documentRef: 'ACME; SARL', model: 'claude-haiku-4-5', inputTokens: 120, outputTokens: 45, cacheReadTokens: 0, delta: -1 },
+      { date: new Date('2026-08-07T00:00:00Z'), reason: 'free', documentRef: 'aide', model: 'claude-haiku-4-5', inputTokens: 80, outputTokens: 30, cacheReadTokens: 0, delta: 0 },
+    ]);
+    const [head, l1, l2, l3] = csv.split('\n');
+    expect(head).toBe('Date;Type;Détail;Modèle;Tokens entrée;Tokens sortie;Tokens cache;Crédit');
+    expect(l1).toBe('07/08/2026;Recharge;dotation;;0;0;0;10');
+    expect(l2).toBe('07/08/2026;Analyse (payante);"ACME; SARL";claude-haiku-4-5;120;45;0;-1');
+    expect(l3.startsWith('07/08/2026;Analyse (gratuite);aide;')).toBe(true);
   });
 });
 

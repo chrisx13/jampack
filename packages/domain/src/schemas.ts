@@ -932,6 +932,25 @@ export function journalEntriesCsv(rows: EntryCsvRow[]): string {
 }
 
 /**
+ * Sérialise le grand livre des crédits IA en CSV (réconciliation coût fournisseur ↔ revenu des crédits).
+ * Colonnes : Date ; Type ; Détail ; Modèle ; Tokens entrée ; Tokens sortie ; Tokens cache ; Crédit.
+ */
+export type AiCreditCsvRow = { date: string | Date; reason: string; documentRef: string | null; model: string | null; inputTokens: number | null; outputTokens: number | null; cacheReadTokens: number | null; delta: number };
+export const aiCreditReasonLabel = (r: string): string =>
+  ({ topup: 'Recharge', analyze: 'Analyse (payante)', free: 'Analyse (gratuite)', adjust: 'Ajustement' } as Record<string, string>)[r] ?? r;
+export function aiCreditsCsv(rows: AiCreditCsvRow[]): string {
+  const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const d = (v: string | Date) => {
+    const x = new Date(v);
+    const p = (k: number) => String(k).padStart(2, '0');
+    return `${p(x.getUTCDate())}/${p(x.getUTCMonth() + 1)}/${x.getUTCFullYear()}`;
+  };
+  const head = 'Date;Type;Détail;Modèle;Tokens entrée;Tokens sortie;Tokens cache;Crédit';
+  const lines = rows.map((r) => [d(r.date), esc(aiCreditReasonLabel(r.reason)), esc(r.documentRef ?? ''), esc(r.model ?? ''), String(r.inputTokens ?? 0), String(r.outputTokens ?? 0), String(r.cacheReadTokens ?? 0), String(r.delta)].join(';'));
+  return [head, ...lines].join('\n');
+}
+
+/**
  * Génère un calendrier iCalendar (RFC 5545) d'événements « journée » (VALUE=DATE)
  * importable dans Outlook/Google Agenda. `date` au format ISO ; `stamp` = DTSTAMP fixe (déterminisme).
  */
