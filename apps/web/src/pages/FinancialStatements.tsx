@@ -1,7 +1,8 @@
-import { Card, Table, Spinner, Row, Col, Badge } from 'react-bootstrap';
+import { Card, Table, Spinner, Row, Col, Badge, Button } from 'react-bootstrap';
 import { trpc } from '../trpc';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
 
 function Lines({ rows }: { rows: { code: string; name: string; amount: number }[] }) {
   return (
@@ -22,9 +23,28 @@ export default function FinancialStatements() {
   const cr = trpc.accounting.incomeStatement.useQuery();
   const bs = trpc.accounting.balanceSheet.useQuery();
 
+  const exportCsv = () => {
+    if (!cr.data || !bs.data) return;
+    const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+    const head = 'État;Rubrique;Code;Libellé;Montant';
+    const rows: string[] = [];
+    const push = (etat: string, rubrique: string, l: { code: string; name: string; amount: number }) => rows.push([etat, rubrique, esc(l.code), esc(l.name), fr(l.amount)].join(';'));
+    cr.data.produits.forEach((l) => push('Compte de résultat', 'Produits', l));
+    cr.data.charges.forEach((l) => push('Compte de résultat', 'Charges', l));
+    rows.push(['Compte de résultat', 'Résultat', '', cr.data.resultat >= 0 ? 'Bénéfice' : 'Perte', fr(cr.data.resultat)].join(';'));
+    bs.data.actif.forEach((l) => push('Bilan', 'Actif', l));
+    bs.data.passif.forEach((l) => push('Bilan', 'Passif', l));
+    rows.push(['Bilan', 'Résultat', '', 'Résultat de l’exercice', fr(bs.data.resultat)].join(';'));
+    const url = URL.createObjectURL(new Blob([[head, ...rows].join('\n')], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = 'etats-financiers.csv'; a.click(); URL.revokeObjectURL(url);
+  };
+
   return (
     <>
-      <div className="mb-4"><h4 className="mb-1 fw-semibold">États financiers</h4><p className="text-secondary mb-0">Compte de résultat et bilan simplifié (PCG), dérivés de la balance générale</p></div>
+      <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+        <div><h4 className="mb-1 fw-semibold">États financiers</h4><p className="text-secondary mb-0">Compte de résultat et bilan simplifié (PCG), dérivés de la balance générale</p></div>
+        {cr.data && bs.data && <Button variant="light" size="sm" title="Exporter en CSV" onClick={exportCsv}><i className="bi bi-filetype-csv me-1" aria-hidden="true" />CSV</Button>}
+      </div>
 
       <Row className="g-3">
         <Col xl={6}>

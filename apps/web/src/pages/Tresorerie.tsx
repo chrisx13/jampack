@@ -1,8 +1,9 @@
-import { Card, Table, Spinner, Badge } from 'react-bootstrap';
+import { Card, Table, Spinner, Badge, Button } from 'react-bootstrap';
 import { trpc } from '../trpc';
 
 const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const dfmt = (d: unknown) => (d ? new Date(d as string).toLocaleDateString('fr-FR') : '—');
+const fr = (n: number) => (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
 
 type Flow = { id: string; number: string | null; party: string; dueDate: unknown; amount: number; overdue: boolean };
 
@@ -57,9 +58,21 @@ export default function Tresorerie() {
   if (q.isLoading || !d) return <div className="text-center py-5"><Spinner /></div>;
 
   const netPositive = d.net >= 0;
+  const exportCsv = () => {
+    const esc = (v: string) => (/[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+    const head = 'Type;Pièce;Tiers;Échéance;Montant;En retard';
+    const line = (type: string, r: Flow) => [type, esc(r.number ?? ''), esc(r.party), dfmt(r.dueDate).replace('—', ''), fr(r.amount), r.overdue ? 'oui' : ''].join(';');
+    const lines = [...d.encaissements.map((r) => line('Encaissement', r)), ...d.decaissements.map((r) => line('Décaissement', r))];
+    const url = URL.createObjectURL(new Blob([[head, ...lines].join('\n')], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a'); a.href = url; a.download = 'tresorerie-flux.csv'; a.click(); URL.revokeObjectURL(url);
+  };
+  const hasFlows = d.encaissements.length + d.decaissements.length > 0;
   return (
     <>
-      <div className="mb-4"><h4 className="mb-1 fw-semibold">Trésorerie prévisionnelle</h4><p className="text-secondary mb-0">Encaissements clients attendus vs décaissements fournisseurs</p></div>
+      <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+        <div><h4 className="mb-1 fw-semibold">Trésorerie prévisionnelle</h4><p className="text-secondary mb-0">Encaissements clients attendus vs décaissements fournisseurs</p></div>
+        {hasFlows && <Button variant="light" size="sm" title="Exporter les flux en CSV" onClick={exportCsv}><i className="bi bi-filetype-csv me-1" aria-hidden="true" />CSV</Button>}
+      </div>
 
       <div className="row g-3 mb-4">
         <div className="col-md-4">
