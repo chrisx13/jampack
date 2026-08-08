@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Table, Button, Form, Spinner, Badge } from 'react-bootstrap';
+import { Card, Table, Button, Form, Spinner, Badge, Modal } from 'react-bootstrap';
 import { trpc } from '../trpc';
 import { useCan } from '../ability';
 import { computeInvoiceTotals, resolvePrice, PAYMENT_METHODS, PAYMENT_METHOD_LABELS, type PaymentMethod } from '@jampack/domain';
@@ -78,6 +78,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   const [paymentUrl, setPaymentUrl] = useState('');
   const [discountType, setDiscountType] = useState<'none' | 'percent' | 'amount'>('none');
   const [discountValue, setDiscountValue] = useState('');
+  const [depositPct, setDepositPct] = useState<string | null>(null); // null = modale fermée
 
   useEffect(() => {
     const doc = existing.data;
@@ -195,12 +196,11 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
   };
   const deposit = cfg.key === 'quotes' ? (trpc as unknown as { quotes: { createDepositInvoice: { useMutation: () => { mutateAsync: (v: { id: string; pct: number }) => Promise<{ id: string }>; isPending: boolean } } } }).quotes.createDepositInvoice.useMutation() : null;
   const onDeposit = async () => {
-    const raw = window.prompt('Pourcentage d’acompte à facturer (%) :', '30');
-    if (raw == null) return;
-    const pct = Number(raw.replace(',', '.'));
+    const pct = Number((depositPct ?? '').replace(',', '.'));
     if (!(pct > 0 && pct <= 100)) { toast('Pourcentage invalide (0 à 100).', 'danger'); return; }
     await deposit!.mutateAsync({ id, pct });
     utils.invoices.list.invalidate();
+    setDepositPct(null);
     toast(`Facture d’acompte (${pct} %) créée en brouillon — voir l’onglet Factures. Elle sera déduite à la conversion en facture de solde.`);
   };
   const publicLink = cfg.key === 'quotes' ? (trpc as unknown as { quotes: { publicLink: { useMutation: () => { mutateAsync: (v: { id: string }) => Promise<{ path: string }>; isPending: boolean } } } }).quotes.publicLink.useMutation() : null;
@@ -208,7 +208,7 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
     const r = await publicLink!.mutateAsync({ id });
     const url = window.location.origin + r.path;
     try { await navigator.clipboard.writeText(url); toast(`Lien de signature copié :\n${url}\n\nEnvoyez-le au client pour qu'il accepte le devis en ligne.`); }
-    catch { window.prompt('Lien de signature du devis (copiez-le) :', url); }
+    catch { toast(`Lien de signature du devis (copiez-le) :\n${url}`, 'info'); }
   };
   const onAccept = async () => { await accept!.mutateAsync({ id }); uapi.list.invalidate(); uapi.get.invalidate({ id }); };
   const onRefuse = async () => { await refuse!.mutateAsync({ id }); uapi.list.invalidate(); uapi.get.invalidate({ id }); };
@@ -281,8 +281,23 @@ function Editor({ cfg, id: initialId, onClose }: { cfg: SalesCfg; id: string | '
           {cfg.key === 'quotes' && (status === 'sent' || status === 'accepted') && (
             <>
               <Button variant="light" onClick={onPublicLink} disabled={publicLink!.isPending} title="Lien de signature en ligne"><i className="bi bi-link-45deg me-1" />Lien de signature</Button>
-              <Button variant="outline-primary" onClick={onDeposit} disabled={deposit!.isPending}><i className="bi bi-cash-coin me-1" />Facture d'acompte</Button>
+              <Button variant="outline-primary" onClick={() => setDepositPct('30')} disabled={deposit!.isPending}><i className="bi bi-cash-coin me-1" />Facture d'acompte</Button>
               <Button variant="primary" onClick={onConvert} disabled={convert!.isPending}><i className="bi bi-arrow-right-circle me-1" />Convertir en facture</Button>
+              <Modal show={depositPct !== null} onHide={() => setDepositPct(null)} centered>
+                <Modal.Header closeButton><Modal.Title className="fs-6">Facture d'acompte</Modal.Title></Modal.Header>
+                <Modal.Body>
+                  <Form.Label className="small mb-1">Pourcentage d'acompte à facturer</Form.Label>
+                  <div className="input-group" style={{ maxWidth: 160 }}>
+                    <Form.Control type="number" min={1} max={100} step={1} autoFocus value={depositPct ?? ''} onChange={(e) => setDepositPct(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') onDeposit(); }} />
+                    <span className="input-group-text">%</span>
+                  </div>
+                  <Form.Text className="text-secondary">Une facture d'acompte en brouillon sera créée ; elle sera déduite à la conversion en facture de solde.</Form.Text>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="light" onClick={() => setDepositPct(null)}>Annuler</Button>
+                  <Button onClick={onDeposit} disabled={deposit!.isPending}>{deposit!.isPending ? <Spinner size="sm" /> : 'Créer l\'acompte'}</Button>
+                </Modal.Footer>
+              </Modal>
             </>
           )}
           {/* Facture émise : comptabiliser + créer un avoir */}
