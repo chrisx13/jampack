@@ -16,7 +16,19 @@
     "test:int": "vitest run -c vitest.integration.config.ts",
     "db:migrate": "pnpm --filter @jampack/db migrate",
     "db:seed": "pnpm --filter @jampack/db seed",
-    "db:rls": "pnpm --filter @jampack/db rls"
+    "db:rls": "pnpm --filter @jampack/db rls",
+    "security:audit": "pnpm audit --audit-level=high"
+  },
+  "pnpm": {
+    "overrides": {
+      "body-parser": ">=1.20.6",
+      "qs": ">=6.15.2",
+      "nanoid": ">=3.3.17",
+      "multer": ">=2.2.0",
+      "tmp": ">=0.2.6",
+      "glob": ">=10.5.0",
+      "file-type": ">=21.3.2"
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9",
