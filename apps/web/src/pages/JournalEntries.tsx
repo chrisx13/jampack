@@ -106,8 +106,13 @@ export default function JournalEntries() {
   const list = trpc.accounting.entries.list.useQuery(undefined);
   const can = useCan();
   const [editing, setEditing] = useState(false);
+  const [search, setSearch] = useState('');
 
   if (editing) return <Editor onClose={() => setEditing(false)} />;
+
+  const q = search.trim().toLowerCase();
+  const rows = list.data ?? [];
+  const filtered = rows.filter((e) => !q || (e.label ?? '').toLowerCase().includes(q) || (e.reference ?? '').toLowerCase().includes(q) || (e.journal?.code ?? '').toLowerCase().includes(q));
 
   const exportCsv = async () => {
     const r = await utils.accounting.entries.exportCsv.fetch();
@@ -125,12 +130,19 @@ export default function JournalEntries() {
         </div>
       </div>
 
+      {rows.length > 8 && (
+        <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
+          <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+          <input className="form-control form-control-sm ps-4" aria-label="Rechercher une écriture" placeholder="Rechercher (libellé, pièce, journal)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      )}
+
       <Card><Card.Body className="p-0">
         <Table hover responsive className="mb-0 align-middle">
           <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Date</th><th scope="col">Journal</th><th scope="col">Pièce</th><th scope="col">Libellé</th><th scope="col" className="text-end pe-3">Montant</th></tr></thead>
           <tbody>
             {list.isLoading && <tr><td colSpan={5} className="text-center py-4"><Spinner size="sm" /></td></tr>}
-            {list.data?.map((e) => (
+            {filtered.map((e) => (
               <tr key={e.id}>
                 <td className="ps-3 text-secondary">{dfmt(e.date)}</td>
                 <td><Badge bg="secondary-subtle" text="secondary" className="fw-normal">{e.journal?.code}</Badge></td>
@@ -139,7 +151,8 @@ export default function JournalEntries() {
                 <td className="text-end pe-3 fw-medium">{euro.format(e.total)}</td>
               </tr>
             ))}
-            {list.data?.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucune écriture</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucune écriture</td></tr>}
+            {rows.length > 0 && filtered.length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucune écriture pour cette recherche</td></tr>}
           </tbody>
         </Table>
       </Card.Body></Card>

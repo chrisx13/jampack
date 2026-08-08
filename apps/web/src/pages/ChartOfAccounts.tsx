@@ -14,6 +14,9 @@ export default function ChartOfAccounts() {
 
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
+  const [search, setSearch] = useState('');
+  const q = search.trim().toLowerCase();
+  const filtered = (accounts.data ?? []).filter((a) => !q || a.code.toLowerCase().includes(q) || a.name.toLowerCase().includes(q));
 
   const refresh = () => { utils.accounting.accounts.list.invalidate(); utils.accounting.journals.list.invalidate(); };
   const add = async () => { if (!code || !name) return; await create.mutateAsync({ code, name }); setCode(''); setName(''); refresh(); };
@@ -41,15 +44,22 @@ export default function ChartOfAccounts() {
 
       <div className="row g-3">
         <div className="col-lg-7">
+          {(accounts.data?.length ?? 0) > 8 && (
+            <div className="position-relative mb-2" style={{ maxWidth: 360 }}>
+              <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+              <input className="form-control form-control-sm ps-4" aria-label="Rechercher un compte" placeholder="Rechercher (n° ou libellé)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+          )}
           <Card><Card.Body className="p-0">
             <Table hover responsive className="mb-0 align-middle">
               <thead className="text-secondary small"><tr><th scope="col" className="ps-3">Compte</th><th scope="col">Libellé</th><th scope="col" className="pe-3">Classe</th></tr></thead>
               <tbody>
                 {accounts.isLoading && <tr><td colSpan={3} className="text-center py-4"><Spinner size="sm" /></td></tr>}
-                {accounts.data?.map((a) => (
+                {filtered.map((a) => (
                   <tr key={a.id}><td className="ps-3 fw-medium">{a.code}</td><td>{a.name}</td><td className="pe-3 text-secondary">{a.class}</td></tr>
                 ))}
                 {empty && <tr><td colSpan={3} className="text-center text-secondary py-4">Aucun compte — initialisez le PCG</td></tr>}
+                {!empty && accounts.isSuccess && filtered.length === 0 && <tr><td colSpan={3} className="text-center text-secondary py-4">Aucun compte pour cette recherche</td></tr>}
               </tbody>
             </Table>
           </Card.Body></Card>
