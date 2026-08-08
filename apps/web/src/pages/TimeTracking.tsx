@@ -83,7 +83,7 @@ export default function TimeTracking() {
         <Modal.Header closeButton><Modal.Title>Saisir un temps</Modal.Title></Modal.Header>
         <Modal.Body>
           <div className="row g-2">
-            <Form.Group className="col-md-6" controlId="te-date"><Form.Label>Date</Form.Label><Form.Control type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} /></Form.Group>
+            <Form.Group className="col-md-6" controlId="te-date"><Form.Label>Date</Form.Label><Form.Control autoFocus type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} /></Form.Group>
             <Form.Group className="col-md-6" controlId="te-company"><Form.Label>Client</Form.Label>
               <Form.Select value={f.companyId} onChange={(e) => setF({ ...f, companyId: e.target.value })}>
                 <option value="">— Sélectionner —</option>

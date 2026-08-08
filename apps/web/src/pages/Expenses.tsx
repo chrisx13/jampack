@@ -128,7 +128,7 @@ export default function Expenses() {
                 {EXPENSE_CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
               </Form.Select>
             </Form.Group>
-            <Form.Group className="col-12" controlId="exp-desc"><Form.Label>Description</Form.Label><Form.Control value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Objet de la dépense…" /></Form.Group>
+            <Form.Group className="col-12" controlId="exp-desc"><Form.Label>Description</Form.Label><Form.Control autoFocus value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} placeholder="Objet de la dépense…" /></Form.Group>
             <Form.Group className="col-md-6" controlId="exp-ht"><Form.Label>Montant HT</Form.Label><Form.Control type="number" min={0} step="0.01" value={f.amountHt} onChange={(e) => setF({ ...f, amountHt: e.target.value })} /></Form.Group>
             <Form.Group className="col-md-6" controlId="exp-tva"><Form.Label>TVA %</Form.Label><Form.Control type="number" min={0} step="0.1" value={f.taxRatePct} onChange={(e) => setF({ ...f, taxRatePct: e.target.value })} /></Form.Group>
             {receipt && <div className="col-12"><Badge bg="info-subtle" text="info" className="fw-normal"><i className="bi bi-paperclip me-1" />Justificatif joint (photo)</Badge></div>}

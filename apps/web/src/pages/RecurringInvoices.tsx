@@ -48,7 +48,7 @@ function Editor({ id, onClose }: { id: string | 'new'; onClose: () => void }) {
               {(companies.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Form.Select>
           </Form.Group>
-          <Form.Group className="col-md-6" controlId="rec-label"><Form.Label>Libellé</Form.Label><Form.Control value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Maintenance mensuelle…" /></Form.Group>
+          <Form.Group className="col-md-6" controlId="rec-label"><Form.Label>Libellé</Form.Label><Form.Control autoFocus value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Maintenance mensuelle…" /></Form.Group>
           <Form.Group className="col-md-4" controlId="rec-freq"><Form.Label>Fréquence</Form.Label>
             <Form.Select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
               {RECURRENCE_FREQUENCIES.map((f) => <option key={f} value={f}>{recurrenceLabel(f)}</option>)}
