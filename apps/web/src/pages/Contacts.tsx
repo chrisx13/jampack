@@ -18,6 +18,10 @@ export default function Contacts() {
   const [edit, setEdit] = useState<null | Partial<Row>>(null);
   const [del, setDel] = useState<Row | null>(null);
   const [form, setForm] = useState(empty);
+  const [search, setSearch] = useState('');
+  const q = search.trim().toLowerCase();
+  const allRows = list.data ?? [];
+  const filtered = allRows.filter((c) => !q || `${c.firstName} ${c.lastName}`.toLowerCase().includes(q) || (c.email ?? '').toLowerCase().includes(q) || (c.phone ?? '').toLowerCase().includes(q) || (c.company?.name ?? '').toLowerCase().includes(q));
 
   const invalidate = () => utils.crm.contacts.list.invalidate();
   const create = trpc.crm.contacts.create.useMutation({ onSuccess: () => { invalidate(); setEdit(null); } });
@@ -46,6 +50,13 @@ export default function Contacts() {
         {can('create', 'Contact') && <Button onClick={() => open()}><i className="bi bi-plus-lg me-1" />Nouveau contact</Button>}
       </div>
 
+      {allRows.length > 8 && (
+        <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
+          <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+          <input className="form-control form-control-sm ps-4" aria-label="Rechercher un contact" placeholder="Rechercher (nom, email, téléphone, société)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      )}
+
       <Card>
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
@@ -53,7 +64,7 @@ export default function Contacts() {
               <tr><th scope="col" className="ps-3">Nom</th><th scope="col">Client</th><th scope="col">Société</th><th scope="col">Email</th><th scope="col">Téléphone</th><th scope="col" className="text-end pe-3">Actions</th></tr>
             </thead>
             <tbody>
-              {list.data?.map((c) => (
+              {filtered.map((c) => (
                 <tr key={c.id}>
                   <td className="ps-3 fw-medium">
                     <span className="rounded-circle bg-info-subtle text-info d-inline-grid me-2" style={{ width: 32, height: 32, placeItems: 'center', fontSize: 12 }}>
@@ -71,7 +82,8 @@ export default function Contacts() {
                   </td>
                 </tr>
               ))}
-              {list.data?.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun contact pour cette société</td></tr>}
+              {allRows.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun contact pour cette société</td></tr>}
+              {allRows.length > 0 && filtered.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun contact pour cette recherche</td></tr>}
             </tbody>
           </Table>
         </Card.Body>

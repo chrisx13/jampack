@@ -23,6 +23,9 @@ export default function StockMovements() {
   const create = trpc.stock.movements.create.useMutation();
   const remove = trpc.stock.movements.remove.useMutation();
 
+  const [search, setSearch] = useState('');
+  const allMoves = movements.data ?? [];
+  const searchMoves = allMoves.filter((m) => { const q = search.trim().toLowerCase(); return !q || (m.product?.name ?? '').toLowerCase().includes(q) || (m.warehouse?.name ?? '').toLowerCase().includes(q) || (STOCK_KIND_LABELS[m.kind as StockKind] ?? m.kind).toLowerCase().includes(q); });
   const [warehouseId, setWarehouseId] = useState('');
   const [productId, setProductId] = useState('');
   const [kind, setKind] = useState<StockKind>('entree');
@@ -144,6 +147,13 @@ export default function StockMovements() {
         </Card>
       )}
 
+      {allMoves.length > 8 && (
+        <div className="position-relative mb-3" style={{ maxWidth: 360 }}>
+          <i className="bi bi-search position-absolute text-secondary" style={{ left: 12, top: '50%', transform: 'translateY(-50%)' }} aria-hidden="true" />
+          <input className="form-control form-control-sm ps-4" aria-label="Rechercher un mouvement" placeholder="Rechercher (article, entrepôt, type)…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+      )}
+
       <Card>
         <Card.Body className="p-0">
           <Table hover responsive className="mb-0 align-middle">
@@ -152,7 +162,7 @@ export default function StockMovements() {
             </thead>
             <tbody>
               {movements.isLoading && <tr><td colSpan={6} className="text-center py-4"><Spinner size="sm" /></td></tr>}
-              {movements.data?.map((m) => {
+              {searchMoves.map((m) => {
                 const s = KIND_STYLE[m.kind] ?? KIND_STYLE.ajustement;
                 return (
                   <tr key={m.id}>
@@ -165,7 +175,8 @@ export default function StockMovements() {
                   </tr>
                 );
               })}
-              {movements.data?.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun mouvement</td></tr>}
+              {allMoves.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun mouvement</td></tr>}
+              {allMoves.length > 0 && searchMoves.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun mouvement pour cette recherche</td></tr>}
             </tbody>
           </Table>
         </Card.Body>
