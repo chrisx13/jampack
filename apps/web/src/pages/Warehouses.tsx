@@ -77,7 +77,7 @@ export default function Warehouses() {
                   </td>
                 </tr>
               ))}
-              {list.data?.filter((w) => w.isActive).length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-4">Aucun entrepôt</td></tr>}
+              {list.data?.filter((w) => w.isActive).length === 0 && <tr><td colSpan={5} className="text-center text-secondary py-5"><div className="mb-2"><i className="bi bi-house-gear fs-3 opacity-50" aria-hidden="true" /></div>Aucun entrepôt — ajoutez-en un via le formulaire ci-dessus.</td></tr>}
             </tbody>
           </Table>
         </Card.Body>

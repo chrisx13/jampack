@@ -82,7 +82,13 @@ export default function Contacts() {
                   </td>
                 </tr>
               ))}
-              {allRows.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun contact pour cette société</td></tr>}
+              {allRows.length === 0 && (
+                <tr><td colSpan={6} className="text-center text-secondary py-5">
+                  <div className="mb-2"><i className="bi bi-person-lines-fill fs-3 opacity-50" aria-hidden="true" /></div>
+                  <div className="mb-3">Aucun contact pour cette société.</div>
+                  {can('create', 'Contact') && <Button size="sm" onClick={() => open()}><i className="bi bi-plus-lg me-1" aria-hidden="true" />Nouveau contact</Button>}
+                </td></tr>
+              )}
               {allRows.length > 0 && filtered.length === 0 && <tr><td colSpan={6} className="text-center text-secondary py-4">Aucun contact pour cette recherche</td></tr>}
             </tbody>
           </Table>
